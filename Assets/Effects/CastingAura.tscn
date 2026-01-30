@@ -1,0 +1,22 @@
+[gd_scene load_steps=4 format=3 uid="uid://cx6m0r3b7u2jd"]
+
+[ext_resource type="Shader" uid="uid://ccyqy3i6a7y6m" path="res://Assets/Effects/aura_shader.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_aura"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/aura_color = Color(0, 0.8, 1, 0.6)
+shader_parameter/speed = 3.0
+shader_parameter/intensity = 2.5
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_aura"]
+top_radius = 1.2
+bottom_radius = 1.2
+height = 2.5
+cap_top = false
+cap_bottom = false
+
+[node name="CastingAura" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
+material_override = SubResource("ShaderMaterial_aura")
+mesh = SubResource("CylinderMesh_aura")

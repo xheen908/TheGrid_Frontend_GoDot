@@ -1,0 +1,19 @@
+[gd_scene load_steps=4 format=3 uid="uid://cx6m0r3b7u2jc"]
+
+[ext_resource type="Shader" uid="uid://ccyqy3i6a7y6l" path="res://Screens/selection_circle.gdshader" id="1_shader"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_circle"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/circle_color = Color(0, 1, 1, 1)
+shader_parameter/thickness = 0.05
+shader_parameter/glow_intensity = 3.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_circle"]
+size = Vector2(2, 2)
+
+[node name="SelectionCircle" type="MeshInstance3D"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.05, 0)
+cast_shadow = 0
+mesh = SubResource("PlaneMesh_circle")
+surface_material_override/0 = SubResource("ShaderMaterial_circle")

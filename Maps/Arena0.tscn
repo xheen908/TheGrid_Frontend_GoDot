@@ -1,0 +1,119 @@
+[gd_scene load_steps=11 format=3 uid="uid://cejaxdjw40qad"]
+
+[ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
+[ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_arena"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.1, 0.05, 0, 1)
+shader_parameter/line_color = Color(1, 0.4, 0, 1)
+shader_parameter/grid_size = 3.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_arena"]
+size = Vector2(80, 80)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+size = Vector3(80, 5, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(80, 5, 2)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
+sky_top_color = Color(0.02, 0.02, 0.05, 1)
+sky_horizon_color = Color(0.1, 0.1, 0.2, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0.1, 0.1, 0.2, 1)
+sun_angle_max = 0.0
+sun_curve = 0.01
+
+[sub_resource type="Sky" id="Sky_night"]
+sky_material = SubResource("ProceduralSkyMaterial_night")
+
+[sub_resource type="Environment" id="Environment_night"]
+background_mode = 2
+sky = SubResource("Sky_night")
+ambient_light_source = 3
+ambient_light_color = Color(0.05, 0.05, 0.1, 1)
+ambient_light_sky_contribution = 0.1
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 1.0
+glow_blend_mode = 0
+fog_enabled = true
+fog_light_color = Color(0.05, 0.05, 0.1, 1)
+fog_sky_affect = 0.5
+
+[node name="Arena0" type="Node3D"]
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_arena")
+mesh = SubResource("PlaneMesh_arena")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_floor")
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="Wall1" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 40)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall1"]
+material_override = SubResource("ShaderMaterial_arena")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall1"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Wall2" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -40)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall2"]
+material_override = SubResource("ShaderMaterial_arena")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall2"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Wall3" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 40, 2.5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall3"]
+material_override = SubResource("ShaderMaterial_arena")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall3"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Wall4" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -40, 2.5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall4"]
+material_override = SubResource("ShaderMaterial_arena")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall4"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="ExitPortal" parent="." instance=ExtResource("2_portal")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 35, 0, 0)
+collision_mask = 2
+spawn_position = Vector3(15, 0, 0)
+spawn_rotation_y = -1.571
+portal_color = Color(1, 1, 0, 1)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_night")
+
+[node name="Moon" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 20, 0)
+light_color = Color(0.7, 0.8, 1, 1)
+light_energy = 0.3
+shadow_enabled = true
+shadow_opacity = 0.7

@@ -1,0 +1,38 @@
+[gd_scene load_steps=5 format=3 uid="uid://cx6m0r3b7u2jd"]
+
+[ext_resource type="Script" path="res://Screens/frostbolt.gd" id="1_script"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frost"]
+albedo_color = Color(0, 0.6, 1, 1)
+emission_enabled = true
+emission = Color(0, 0.8, 1, 1)
+emission_energy_multiplier = 8.0
+transparency = 1
+blend_mode = 1
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_bolt"]
+radius = 0.08
+height = 1.5
+radial_segments = 8
+rings = 4
+
+[sub_resource type="BoxMesh" id="BoxMesh_glint"]
+size = Vector3(0.5, 0.05, 0.05)
+
+[node name="Frostbolt" type="Node3D"]
+script = ExtResource("1_script")
+
+[node name="Core" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
+material_override = SubResource("StandardMaterial3D_frost")
+mesh = SubResource("CapsuleMesh_bolt")
+
+[node name="Glint" type="MeshInstance3D" parent="Core"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+material_override = SubResource("StandardMaterial3D_frost")
+mesh = SubResource("BoxMesh_glint")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+light_color = Color(0, 0.9, 1, 1)
+light_energy = 3.0
+omni_range = 5.0

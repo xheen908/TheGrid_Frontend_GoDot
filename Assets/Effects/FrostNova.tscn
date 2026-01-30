@@ -1,0 +1,71 @@
+[gd_scene load_steps=5 format=3 uid="uid://b1514s66wj2ry"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_nova"]
+transparency = 1
+blend_mode = 1
+albedo_color = Color(0, 0.6, 1, 0.3)
+emission_enabled = true
+emission = Color(0, 0.8, 1, 1)
+emission_energy_multiplier = 4.0
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_nova"]
+top_radius = 10.0
+bottom_radius = 10.0
+height = 0.1
+
+[sub_resource type="Animation" id="Animation_nova"]
+resource_name = "nova_expand"
+length = 0.8
+tracks/0/type = "value"
+tracks/0/imported = false
+tracks/0/enabled = true
+tracks/0/path = NodePath(".:scale")
+tracks/0/interp = 1
+tracks/0/loop_wrap = true
+tracks/0/keys = {
+"times": PackedFloat32Array(0, 0.5),
+"transitions": PackedFloat32Array(0.5, 1),
+"update": 0,
+"values": [Vector3(0.1, 1, 0.1), Vector3(1, 1, 1)]
+}
+tracks/1/type = "value"
+tracks/1/imported = false
+tracks/1/enabled = true
+tracks/1/path = NodePath(".:material_override:albedo_color")
+tracks/1/interp = 1
+tracks/1/loop_wrap = true
+tracks/1/keys = {
+"times": PackedFloat32Array(0, 0.4, 0.8),
+"transitions": PackedFloat32Array(1, 1, 1),
+"update": 0,
+"values": [Color(0, 0.6, 1, 0.5), Color(0, 0.6, 1, 0.5), Color(0, 0.6, 1, 0)]
+}
+tracks/2/type = "method"
+tracks/2/imported = false
+tracks/2/enabled = true
+tracks/2/path = NodePath(".")
+tracks/2/interp = 1
+tracks/2/loop_wrap = true
+tracks/2/keys = {
+"times": PackedFloat32Array(0.8),
+"transitions": PackedFloat32Array(1),
+"values": [{
+"args": [],
+"method": &"queue_free"
+}]
+}
+
+[sub_resource type="AnimationLibrary" id="AnimationLibrary_nova"]
+_data = {
+"nova_expand": SubResource("Animation_nova")
+}
+
+[node name="FrostNova" type="MeshInstance3D"]
+material_override = SubResource("StandardMaterial3D_nova")
+mesh = SubResource("CylinderMesh_nova")
+
+[node name="AnimationPlayer" type="AnimationPlayer" parent="."]
+libraries = {
+"": SubResource("AnimationLibrary_nova")
+}
+autoplay = "nova_expand"

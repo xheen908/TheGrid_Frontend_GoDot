@@ -1,0 +1,89 @@
+[gd_scene load_steps=9 format=3 uid="uid://cd8gb2nj03epb"]
+
+[ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_fvvxo"]
+[ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_fvvxo"]
+render_priority = 0
+shader = ExtResource("1_fvvxo")
+shader_parameter/background_color = Color(0, 0, 0, 1)
+shader_parameter/line_color = Color(0.54509807, 0.9411765, 0, 1)
+shader_parameter/grid_size = 3.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 3.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_sgjat"]
+size = Vector2(200, 200)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
+sky_top_color = Color(0.02, 0.02, 0.05, 1)
+sky_horizon_color = Color(0.1, 0.1, 0.2, 1)
+ground_bottom_color = Color(0, 0, 0, 1)
+ground_horizon_color = Color(0.1, 0.1, 0.2, 1)
+sun_angle_max = 0.0
+sun_curve = 0.01
+
+[sub_resource type="Sky" id="Sky_night"]
+sky_material = SubResource("ProceduralSkyMaterial_night")
+
+[sub_resource type="Environment" id="Environment_night"]
+background_mode = 2
+sky = SubResource("Sky_night")
+ambient_light_source = 3
+ambient_light_color = Color(0.05, 0.05, 0.1, 1)
+ambient_light_sky_contribution = 0.1
+tonemap_mode = 2
+glow_enabled = true
+glow_intensity = 1.0
+glow_blend_mode = 0
+fog_enabled = true
+fog_light_color = Color(0.05, 0.05, 0.1, 1)
+fog_sky_affect = 0.5
+
+[node name="WorldMap0" type="Node3D"]
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_fvvxo")
+mesh = SubResource("PlaneMesh_sgjat")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_floor")
+
+[node name="PortalArena" parent="." instance=ExtResource("2_portal")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 9.698362, 0, -1.3957834)
+target_map = "Arena0"
+spawn_position = Vector3(25, 0, 0)
+spawn_rotation_y = 1.571
+portal_color = Color(0.7092715, 0.33216104, 0.025786916, 1)
+
+[node name="PortalDungeon" parent="." instance=ExtResource("2_portal")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10.237104, 0, 14.556404)
+target_map = "Dungeon0"
+spawn_position = Vector3(-25, 0, 0)
+spawn_rotation_y = -1.571
+portal_color = Color(0.86365896, 0.0005841148, 0.8622901, 1)
+
+[node name="PortalArena1" parent="." instance=ExtResource("2_portal")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10, 0, -15)
+target_map = "Arena1"
+portal_color = Color(0, 0.8, 1, 1)
+
+[node name="PortalArena2" parent="." instance=ExtResource("2_portal")]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10, 0, 30)
+target_map = "Arena2"
+spawn_position = Vector3(0, 5, 0)
+portal_color = Color(0, 1, 0, 1)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_night")
+
+[node name="Moon" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.8660253, -0.4330129, 0.2500001, 0, 0.49999994, 0.86602545, -0.50000024, -0.74999994, 0.43301257, 0, 20, 215.66986)
+light_color = Color(0.7, 0.8, 1, 1)
+light_energy = 0.3
+shadow_enabled = true
+shadow_opacity = 0.7

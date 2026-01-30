@@ -1,0 +1,11 @@
+Microsoft (R)-Build-Engine, Version 16.11.6+a918ceb31 für .NET Framework
+Copyright (C) Microsoft Corporation. Alle Rechte vorbehalten.
+
+  mariadb_obj.vcxproj -> C:\Users\xheen908\Documents\thegrid_backend_c\build\_deps\mariadb-connector-c-build\libmariadb\mariadb_obj.dir\Release\mariadb_obj.lib
+  mariadbclient.vcxproj -> C:\Users\xheen908\Documents\thegrid_backend_c\build\_deps\mariadb-connector-c-build\libmariadb\Release\mariadbclient.lib
+  uv_a.vcxproj -> C:\Users\xheen908\Documents\thegrid_backend_c\build\_deps\libuv-build\Release\libuv.lib
+  SocketHandlers.cpp
+C:\Users\xheen908\Documents\thegrid_backend_c\src\SocketHandlers.cpp(324,5): error C2653: "WorldServer": Keine Klasse oder Namespace [C:\Users\xheen908\Documents\thegrid_backend_c\build\thegrid_world.vcxproj]
+C:\Users\xheen908\Documents\thegrid_backend_c\src\SocketHandlers.cpp(324,18): error C3861: "defer": Bezeichner wurde nicht gefunden. [C:\Users\xheen908\Documents\thegrid_backend_c\build\thegrid_world.vcxproj]
+C:\Users\xheen908\Documents\thegrid_backend_c\src\SocketHandlers.cpp(339,5): error C2653: "WorldServer": Keine Klasse oder Namespace [C:\Users\xheen908\Documents\thegrid_backend_c\build\thegrid_world.vcxproj]
+C:\Users\xheen908\Documents\thegrid_backend_c\src\SocketHandlers.cpp(339,18): error C3861: "defer": Bezeichner wurde nicht gefunden. [C:\Users\xheen908\Documents\thegrid_backend_c\build\thegrid_world.vcxproj]

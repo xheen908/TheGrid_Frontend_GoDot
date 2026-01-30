@@ -1,0 +1,112 @@
+[gd_scene load_steps=4 format=3 uid="uid://cr3oymla0m46c"]
+
+[ext_resource type="Script" uid="uid://goakolejtdqo" path="res://main.gd" id="1_ubikw"]
+[ext_resource type="Texture2D" uid="uid://c5qare21gyn61" path="res://Assets/bg.png" id="2_um32c"]
+[ext_resource type="FontFile" uid="uid://b4wlpcoccn8e7" path="res://Assets/TRON.TTF" id="3_2xujt"]
+
+[node name="Control" type="Control"]
+layout_mode = 3
+anchors_preset = 0
+offset_left = 7.0
+offset_top = 3.0
+offset_right = 47.0
+offset_bottom = 43.0
+script = ExtResource("1_ubikw")
+metadata/_edit_horizontal_guides_ = [-42.0]
+
+[node name="Background" type="ColorRect" parent="."]
+texture_filter = 4
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14406255, 0.14406255, 0.14406255, 1)
+metadata/_edit_use_anchors_ = true
+
+[node name="TextureRect" type="TextureRect" parent="Background"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.125
+anchor_top = -0.075
+anchor_right = 29.075
+anchor_bottom = 16.35
+offset_left = -136.0
+offset_top = 3.0
+offset_right = 202.0
+offset_bottom = 3.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_um32c")
+expand_mode = 1
+
+[node name="Label" type="Label" parent="Background"]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 0
+offset_left = 221.0
+offset_top = 133.0
+offset_right = 1000.0
+offset_bottom = 272.0
+theme_override_constants/line_spacing = 5
+theme_override_fonts/font = ExtResource("3_2xujt")
+theme_override_font_sizes/font_size = 60
+text = "The Grid"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="Label2" type="Label" parent="Background"]
+layout_mode = 0
+offset_left = 33.0
+offset_top = 611.0
+offset_right = 183.0
+offset_bottom = 634.0
+theme_override_colors/font_color = Color(1, 1, 0.05490196, 1)
+text = "build: alpha_build 1"
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 375.0
+offset_top = 216.0
+offset_right = 834.0
+offset_bottom = 489.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+
+[node name="UsernameTitle" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Username:"
+
+[node name="Username" type="LineEdit" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="PasswordTitle" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+text = "Password:"
+
+[node name="Password" type="LineEdit" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="space" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+
+[node name="LoginButton" type="MenuButton" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(300, 40)
+layout_mode = 2
+theme_override_font_sizes/font_size = 22
+text = "Login"
+flat = false
+
+[connection signal="pressed" from="CenterContainer/VBoxContainer/LoginButton" to="." method="_on_menu_button_pressed"]

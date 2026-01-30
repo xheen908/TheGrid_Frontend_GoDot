@@ -1,0 +1,169 @@
+[gd_scene load_steps=15 format=3 uid="uid://c7bstas1qixst"]
+
+[ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
+[ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_arena2"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/grid_size = 3.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(100, 100)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+size = Vector3(100, 10, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(100, 10, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_plateau"]
+size = Vector3(20, 3, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_plateau"]
+size = Vector3(20, 3, 20)
+
+[sub_resource type="BoxMesh" id="BoxMesh_ramp"]
+size = Vector3(10, 0.5, 4)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_ramp"]
+size = Vector3(10, 0.5, 4)
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_arena2"]
+sky_top_color = Color(0.1, 0.02, 0.02, 1)
+sky_horizon_color = Color(0.2, 0.1, 0.1, 1)
+
+[sub_resource type="Sky" id="Sky_arena2"]
+sky_material = SubResource("ProceduralSkyMaterial_arena2")
+
+[sub_resource type="Environment" id="Environment_arena2"]
+background_mode = 2
+sky = SubResource("Sky_arena2")
+ambient_light_source = 3
+ambient_light_color = Color(0.2, 0.1, 0.1, 1)
+tonemap_mode = 2
+glow_enabled = true
+
+[node name="Arena2" type="Node3D"]
+
+[node name="Floor" type="MeshInstance3D" parent="."]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+shape = SubResource("WorldBoundaryShape3D_floor")
+
+[node name="Walls" type="Node3D" parent="."]
+
+[node name="Wall_N" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -50)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_N"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_N"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Wall_S" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 50)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_S"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_S"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Wall_E" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 50, 5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_E"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_E"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Wall_W" type="StaticBody3D" parent="Walls"]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -50, 5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_W"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_wall")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_W"]
+shape = SubResource("BoxShape3D_wall")
+
+[node name="Plateau" type="StaticBody3D" parent="."]
+transform = Transform3D(4, 0, 0, 0, 1, 0, 0, 0, 4, 0, 1.5, 0)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Plateau"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_plateau")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Plateau"]
+shape = SubResource("BoxShape3D_plateau")
+
+[node name="Ramps" type="Node3D" parent="."]
+
+[node name="Ramp_SE" type="StaticBody3D" parent="Ramps"]
+transform = Transform3D(0.39244425, 0, -0.8626703, 0, 3.1, 0, 0.39244425, 0, 0.8626703, -40, 0.715, -40.13)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ramps/Ramp_SE"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ramps/Ramp_SE"]
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Ramp_SE2" type="StaticBody3D" parent="Ramps"]
+transform = Transform3D(0.39244425, 0, -0.8626703, 0, 3.1, 0, 0.39244425, 0, 0.8626703, 40, 0.715, 39.87)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ramps/Ramp_SE2"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ramps/Ramp_SE2"]
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Ramp_SE4" type="StaticBody3D" parent="Ramps"]
+transform = Transform3D(0.39244425, 0, -0.8626703, 0, 3.1, 0, 0.39244425, 0, 0.8626703, 40, 0.715, -40.13)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ramps/Ramp_SE4"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ramps/Ramp_SE4"]
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="Ramp_SE3" type="StaticBody3D" parent="Ramps"]
+transform = Transform3D(0.39244425, 0, -0.8626703, 0, 3.1, 0, 0.39244425, 0, 0.8626703, -40, 0.715, 39.87)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ramps/Ramp_SE3"]
+material_override = SubResource("ShaderMaterial_arena2")
+mesh = SubResource("BoxMesh_ramp")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ramps/Ramp_SE3"]
+shape = SubResource("BoxShape3D_ramp")
+
+[node name="ExitPortal" parent="." instance=ExtResource("2_portal")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 45)
+portal_color = Color(1, 1, 0, 1)
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_arena2")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866, -0.433, 0.25, 0, 0.5, 0.866, -0.5, -0.75, 0.433, 0, 10, 0)
+light_color = Color(1, 0.8, 0.8, 1)
+light_energy = 0.8
+shadow_enabled = true

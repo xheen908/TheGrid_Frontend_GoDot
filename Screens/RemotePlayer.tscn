@@ -1,0 +1,96 @@
+[gd_scene load_steps=18 format=3 uid="uid://cx6m0r3b7u2jb"]
+
+[ext_resource type="Script" path="res://Screens/remote_player.gd" id="1_script"]
+[ext_resource type="PackedScene" path="res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Mage.fbx" id="2_visuals"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_k6my7"]
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_idle"]
+animation = &"Idle"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_walk"]
+animation = &"Walking"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_walk_back"]
+animation = &"Walking Backwards"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_strafe_l"]
+animation = &"Left Strafe Walking"
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_strafe_r"]
+animation = &"Right Strafe Walking"
+
+[sub_resource type="AnimationNodeBlendSpace2D" id="AnimationNodeBlendSpace2D_iws"]
+blend_point_0/node = SubResource("AnimationNodeAnimation_idle")
+blend_point_0/pos = Vector2(0, 0)
+blend_point_1/node = SubResource("AnimationNodeAnimation_walk")
+blend_point_1/pos = Vector2(0, -1)
+blend_point_2/node = SubResource("AnimationNodeAnimation_walk_back")
+blend_point_2/pos = Vector2(0, 1)
+blend_point_3/node = SubResource("AnimationNodeAnimation_strafe_l")
+blend_point_3/pos = Vector2(-1, 0)
+blend_point_4/node = SubResource("AnimationNodeAnimation_strafe_r")
+blend_point_4/pos = Vector2(1, 0)
+
+[sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jump"]
+animation = &"Jump"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_start_iws"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_iws_jump"]
+advance_mode = 2
+advance_condition = &"jump"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_jump_iws"]
+switch_mode = 2
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_main"]
+states/IWS/node = SubResource("AnimationNodeBlendSpace2D_iws")
+states/IWS/position = Vector2(350, 100)
+states/Jump/node = SubResource("AnimationNodeAnimation_jump")
+states/Jump/position = Vector2(550, 100)
+transitions = [SubResource("AnimationNodeStateMachineTransition_start_iws"), "Start", "IWS", SubResource("AnimationNodeStateMachineTransition_iws_jump"), "IWS", "Jump", SubResource("AnimationNodeStateMachineTransition_jump_iws"), "Jump", "IWS"]
+
+[node name="RemotePlayer" type="CharacterBody3D"]
+collision_layer = 2
+collision_mask = 1
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_k6my7")
+
+[node name="Visuals" parent="." instance=ExtResource("2_visuals")]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 0, 0)
+
+[node name="AnimationTree" type="AnimationTree" parent="."]
+tree_root = SubResource("AnimationNodeStateMachine_main")
+anim_player = NodePath("Visuals/AnimationPlayer")
+parameters/conditions/jump = false
+parameters/IWS/blend_position = Vector2(0, 0)
+
+[node name="NameLabel" type="Label3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.8, 0)
+billboard = 1
+text = "Remote User"
+font_size = 64
+outline_size = 12
+
+[node name="ChatBubble" type="Label3D" parent="."]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3.2, 0)
+visible = false
+billboard = 1
+double_sided = false
+no_depth_test = true
+render_priority = 10
+outline_render_priority = 9
+modulate = Color(1, 1, 1, 1)
+outline_modulate = Color(0, 0, 0, 1)
+text = "..."
+font_size = 48
+outline_size = 8
+autowrap_mode = 3
+width = 300.0

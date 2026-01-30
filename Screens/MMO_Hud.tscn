@@ -1,0 +1,698 @@
+[gd_scene load_steps=7 format=3 uid="uid://dmh8m7n4v1b2x"]
+
+[ext_resource type="Script" path="res://Screens/mmo_hud.gd" id="1_script"]
+[ext_resource type="Texture2D" uid="uid://66jle3l3c13s" path="res://Assets/UI/spell_frostblitz.jpg" id="2_purge"]
+[ext_resource type="Texture2D" uid="uid://x6y726ar2u0g" path="res://Assets/UI/spell_frost_nova.jpg" id="3_nova"]
+[ext_resource type="Texture2D" uid="uid://pc4yxxver8ie" path="res://Assets/UI/spell_ice_barrier.jpg" id="4_barrier"]
+[ext_resource type="Texture2D" uid="uid://dl8dhvyj6lpdc" path="res://Assets/UI/white.png" id="5_white"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp"]
+bg_color = Color(0.8, 0, 0, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_mana"]
+bg_color = Color(0, 0.4, 0.8, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu"]
+bg_color = Color(0.05, 0.05, 0.05, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[node name="MMO_Hud" type="CanvasLayer"]
+script = ExtResource("1_script")
+
+[node name="MapNameLabel" type="Label" parent="."]
+unique_name_in_owner = true
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -150.0
+offset_top = 20.0
+offset_right = 150.0
+offset_bottom = 54.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 6
+theme_override_font_sizes/font_size = 24
+text = "ZONE: UNKNOWN"
+horizontal_alignment = 1
+
+[node name="PlayerFrame" type="Panel" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(250, 80)
+offset_left = 20.0
+offset_top = 20.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="UnitLevel" type="Label" parent="PlayerFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 50.0
+offset_bottom = 28.0
+text = "L1"
+
+[node name="UnitName" type="Label" parent="PlayerFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 50.0
+offset_top = 5.0
+offset_right = 240.0
+offset_bottom = 28.0
+text = "Character Name"
+horizontal_alignment = 1
+
+[node name="HealthBar" type="ProgressBar" parent="PlayerFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 30.0
+offset_right = 240.0
+offset_bottom = 50.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
+value = 100.0
+show_percentage = false
+
+[node name="HPLabel" type="Label" parent="PlayerFrame/HealthBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 11
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ManaBar" type="ProgressBar" parent="PlayerFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 55.0
+offset_right = 240.0
+offset_bottom = 70.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
+value = 80.0
+show_percentage = false
+
+[node name="PlayerBuffContainer" type="HBoxContainer" parent="PlayerFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 75.0
+offset_right = 240.0
+offset_bottom = 110.0
+theme_override_constants/separation = 5
+
+[node name="TargetFrame" type="Panel" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(250, 80)
+offset_left = 280.0
+offset_top = 20.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="TargetName" type="Label" parent="TargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 5.0
+offset_right = 240.0
+offset_bottom = 28.0
+text = "Target Name"
+horizontal_alignment = 1
+
+[node name="TargetHealthBar" type="ProgressBar" parent="TargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 30.0
+offset_right = 240.0
+offset_bottom = 50.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
+value = 100.0
+show_percentage = false
+
+[node name="TargetHPLabel" type="Label" parent="TargetFrame/TargetHealthBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 11
+text = "100 / 100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TargetManaBar" type="ProgressBar" parent="TargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 55.0
+offset_right = 240.0
+offset_bottom = 70.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
+value = 80.0
+show_percentage = false
+
+[node name="DebuffContainer" type="HBoxContainer" parent="TargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 10.0
+offset_top = 75.0
+offset_right = 240.0
+offset_bottom = 110.0
+theme_override_constants/separation = 5
+
+[node name="TargetOfTargetFrame" type="Panel" parent="."]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(120, 50)
+offset_left = 540.0
+offset_top = 20.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="ToTName" type="Label" parent="TargetOfTargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 5.0
+offset_top = 2.0
+offset_right = 115.0
+offset_bottom = 20.0
+theme_override_font_sizes/font_size = 12
+text = "ToT Name"
+horizontal_alignment = 1
+
+[node name="ToTHealthBar" type="ProgressBar" parent="TargetOfTargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 5.0
+offset_top = 22.0
+offset_right = 115.0
+offset_bottom = 32.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
+value = 100.0
+show_percentage = false
+
+[node name="ToTHPLabel" type="Label" parent="TargetOfTargetFrame/ToTHealthBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 3
+theme_override_font_sizes/font_size = 8
+text = "100/100"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ToTManaBar" type="ProgressBar" parent="TargetOfTargetFrame"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 5.0
+offset_top = 35.0
+offset_right = 115.0
+offset_bottom = 40.0
+theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
+value = 80.0
+show_percentage = false
+
+[node name="ActionBars" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -200.0
+offset_top = -80.0
+offset_right = 200.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="ActionBars"]
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 10
+
+[node name="ActionSlot1" type="Button" parent="ActionBars/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot1"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("2_purge")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot1Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot1"]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 0.0
+fill_mode = 5
+texture_progress = ExtResource("5_white")
+
+[node name="Slot1CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot1"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "25"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot2" type="Button" parent="ActionBars/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot2"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("3_nova")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot2Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot2"]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 0.0
+fill_mode = 5
+texture_progress = ExtResource("5_white")
+
+[node name="Slot2CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot2"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "25"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot3" type="Button" parent="ActionBars/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot3"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("4_barrier")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot3Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot3"]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+value = 0.0
+fill_mode = 5
+texture_progress = ExtResource("5_white")
+
+[node name="Slot3CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot3"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "30"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot4" type="Button" parent="ActionBars/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "4"
+
+[node name="ActionSlot5" type="Button" parent="ActionBars/HBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(40, 40)
+layout_mode = 2
+text = "5"
+
+[node name="XPBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+modulate = Color(0.8, 0, 1, 1)
+custom_minimum_size = Vector2(0, 10)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -10.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
+value = 50.0
+show_percentage = false
+
+[node name="XPLabel" type="Label" parent="XPBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/outline_size = 4
+theme_override_font_sizes/font_size = 10
+text = "XP: 50% / 1000"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MinimapContainer" type="SubViewportContainer" parent="."]
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -220.0
+offset_top = 20.0
+offset_right = -20.0
+offset_bottom = 220.0
+grow_horizontal = 0
+
+[node name="SubViewport" type="SubViewport" parent="MinimapContainer"]
+handle_input_locally = false
+size = Vector2i(200, 200)
+render_target_update_mode = 4
+
+[node name="MinimapCamera" type="Camera3D" parent="MinimapContainer/SubViewport"]
+unique_name_in_owner = true
+transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 50, 0)
+projection = 1
+size = 40.0
+
+[node name="EscMenu" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="EscMenu"]
+custom_minimum_size = Vector2(300, 250)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="EscMenu/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 15
+alignment = 1
+
+[node name="Label" type="Label" parent="EscMenu/PanelContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Menü"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Weiter"
+
+[node name="CharScreenButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Charakter Auswahl"
+
+[node name="BindingsButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Tastaturbelegung"
+
+[node name="ExitGameButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Spiel beenden"
+
+[node name="BindingsMenu" type="CenterContainer" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="PanelContainer" type="PanelContainer" parent="BindingsMenu"]
+custom_minimum_size = Vector2(500, 400)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
+
+[node name="VBox" type="VBoxContainer" parent="BindingsMenu/PanelContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="BindingsMenu/PanelContainer/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Tastatur- & Gamepadbelegung"
+horizontal_alignment = 1
+
+[node name="ScrollContainer" type="ScrollContainer" parent="BindingsMenu/PanelContainer/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ControlList" type="VBoxContainer" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 5
+
+[node name="Header" type="HBoxContainer" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList"]
+layout_mode = 2
+
+[node name="ActionLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header"]
+custom_minimum_size = Vector2(150, 0)
+layout_mode = 2
+text = "Aktion"
+
+[node name="DefaultLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Standard"
+horizontal_alignment = 1
+
+[node name="AltLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header"]
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Alternativ"
+horizontal_alignment = 1
+
+[node name="CloseBindingsButton" type="Button" parent="BindingsMenu/PanelContainer/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 35)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Schließen"
+
+[node name="LogoutLabel" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -150.0
+offset_top = -100.0
+offset_right = 150.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 28
+text = "Logout in 10s..."
+horizontal_alignment = 1
+
+[node name="ChatContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = -250.0
+offset_right = 420.0
+offset_bottom = -20.0
+grow_vertical = 0
+theme_override_constants/separation = 5
+
+[node name="ChatLog" type="RichTextLabel" parent="ChatContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_bg")
+bbcode_enabled = true
+text = "[color=yellow][System][/color] Willkommen im Grid. Tippe /w name für Flüstern."
+scroll_following = true
+
+[node name="ChatInputLine" type="HBoxContainer" parent="ChatContainer"]
+layout_mode = 2
+
+[node name="ChannelLabel" type="Label" parent="ChatContainer/ChatInputLine"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "[Gruppe]"
+
+[node name="ChatInput" type="LineEdit" parent="ChatContainer/ChatInputLine"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nachricht senden... (Enter)"
+context_menu_enabled = false
+
+[node name="CastBar" type="ProgressBar" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -150.0
+offset_top = -120.0
+offset_right = 150.0
+offset_bottom = -100.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
+value = 50.0
+show_percentage = false
+
+[node name="CastLabel" type="Label" parent="CastBar"]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "FROSTBLITZ"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="PartyContainer" type="VBoxContainer" parent="."]
+unique_name_in_owner = true
+offset_left = 20.0
+offset_top = 130.0
+offset_right = 220.0
+offset_bottom = 530.0
+theme_override_constants/separation = 10
+
+[node name="PartyInvitePopup" type="ConfirmationDialog" parent="."]
+unique_name_in_owner = true
+title = "Gruppeneinladung"
+initial_position = 2
+size = Vector2i(300, 100)
+dialog_text = "Spieler X lädt dich ein."
+ok_button_text = "Annehmen"
+cancel_button_text = "Ablehnen"
+
+[node name="TargetContextMenu" type="PopupMenu" parent="."]
+unique_name_in_owner = true
+size = Vector2i(150, 60)
+item_count = 2
+item_0/text = "Einladen"
+item_1/text = "Flüstern"
+item_1/id = 1

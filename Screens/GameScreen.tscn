@@ -1,0 +1,18 @@
+[gd_scene load_steps=3 format=3 uid="uid://c4c0qgawkjeui"]
+
+[ext_resource type="Script" uid="uid://bxkvvtefu0agi" path="res://Screens/game_screen.gd" id="1_p7x0p"]
+[ext_resource type="PackedScene" uid="uid://dmh8m7n4v1b2x" path="res://Screens/MMO_Hud.tscn" id="2_hud"]
+
+[node name="GameScreen" type="Node3D"]
+script = ExtResource("1_p7x0p")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.5, 0.866025, 0, -0.866025, 0.5, 0, 10, 0)
+shadow_enabled = true
+
+[node name="WorldContainer" type="Node3D" parent="."]
+
+[node name="MMO_Hud" parent="." instance=ExtResource("2_hud")]
+unique_name_in_owner = true
