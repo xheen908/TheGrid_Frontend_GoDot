@@ -1,6 +1,6 @@
 [gd_scene load_steps=4 format=3 uid="uid://b5s8w3x1r8m2k"]
 
-[ext_resource type="Script" uid="uid://c7x8y2z1w9p3k" path="res://Screens/CreateCharacterScreen.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://dskepgax0rg1w" path="res://Screens/CreateCharacterScreen.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://c5qare21gyn61" path="res://Assets/bg.png" id="2_bg"]
 [ext_resource type="FontFile" uid="uid://b4wlpcoccn8e7" path="res://Assets/TRON.TTF" id="3_font"]
 
@@ -78,10 +78,18 @@ text = "Klasse wählen:"
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
-selected = 0
-item_count = 1
-popup/item_0/text = "Developer"
+selected = 2
+item_count = 5
+popup/item_0/text = "Barbarian"
 popup/item_0/id = 0
+popup/item_1/text = "Knight"
+popup/item_1/id = 1
+popup/item_2/text = "Mage"
+popup/item_2/id = 2
+popup/item_3/text = "Ranger"
+popup/item_3/id = 3
+popup/item_4/text = "Rogue"
+popup/item_4/id = 4
 
 [node name="Control" type="Control" parent="CenterContainer/VBoxContainer"]
 custom_minimum_size = Vector2(0, 20)

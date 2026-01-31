@@ -22,6 +22,7 @@ var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 var is_left_mouse_held = false
 var is_right_mouse_held = false
+var was_moving_last_frame = false
 
 signal target_changed(new_target: Node3D)
 var username = ""
@@ -39,6 +40,15 @@ var selection_circle = null
 var casting_aura_scene = preload("res://Assets/Effects/CastingAura.tscn")
 var casting_aura = null
 var skeleton_debug_printed = false
+
+var models = {
+	"Barbarian": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Barbarian.fbx"),
+	"Knight": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Knight.fbx"),
+	"Mage": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Mage.fbx"),
+	"Ranger": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Ranger.fbx"),
+	"Rogue": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Rogue.fbx")
+}
+var character_class = "Mage"
 
 func _ready():
 	add_to_group("player")
@@ -86,18 +96,42 @@ func stop_casting():
 		if shield <= 0:
 			casting_aura.hide()
 
+func initialise_class(new_class: String):
+	if new_class == "": new_class = "Mage"
+	if character_class == new_class and visuals: return
+	
+	character_class = new_class
+	if models.has(new_class):
+		var model_scene = models[new_class]
+		if visuals:
+			var old_transform = visuals.transform
+			var old_name = visuals.name
+			visuals.queue_free()
+			
+			visuals = model_scene.instantiate()
+			visuals.name = old_name
+			visuals.transform = old_transform
+			add_child(visuals)
+			
+			# Re-setup animations for the new model
+			_setup_animations()
+			if anim_tree:
+				var new_anim_player = visuals.find_child("AnimationPlayer", true)
+				if new_anim_player:
+					anim_tree.anim_player = new_anim_player.get_path()
+
 func _setup_animations():
 	# Ensure AnimationPlayer exists
-	var anim_player = find_child("AnimationPlayer", true)
+	var anim_player = null
+	if visuals:
+		anim_player = visuals.find_child("AnimationPlayer", true)
+	
 	if not anim_player:
-		# Search in Visuals specifically if find_child failed globally first (unlikely but safe)
 		if visuals:
-			anim_player = visuals.find_child("AnimationPlayer", true)
-			if not anim_player:
-				anim_player = AnimationPlayer.new()
-				anim_player.name = "AnimationPlayer"
-				visuals.add_child(anim_player)
-				print("PlayerAnims: Created new AnimationPlayer")
+			anim_player = AnimationPlayer.new()
+			anim_player.name = "AnimationPlayer"
+			visuals.add_child(anim_player)
+			print("PlayerAnims: Created new AnimationPlayer")
 	
 	if not anim_player.has_animation_library(""):
 		anim_player.add_animation_library("", AnimationLibrary.new())
@@ -301,6 +335,9 @@ func _input(event):
 				if "mob_id" in current_target:
 					mid = current_target.mob_id
 				if mid != "":
+					if velocity.length() > 0.5:
+						show_message("Du kannst das nicht während der Bewegung wirken!")
+						return
 					NetworkManager.cast_spell("Frostblitz", mid)
 					get_viewport().set_input_as_handled()
 				
@@ -406,7 +443,13 @@ var last_sent_rot = Vector3.ZERO
 func _physics_process(delta):
 	# Aura permanent anzeigen wenn ein Schild aktiv ist
 	if casting_aura:
-		if shield > 0:
+		var has_shield_buff = false
+		for b in buffs:
+			if b.get("type") == "Eisbarriere":
+				has_shield_buff = true
+				break
+				
+		if shield > 0 or has_shield_buff:
 			casting_aura.show()
 		elif not is_casting:
 			casting_aura.hide()
@@ -506,14 +549,18 @@ func _update_selection_circle():
 			mat.set_shader_parameter("circle_color", Color(0, 1, 1, 1)) # Türkis für Spieler/Neutrale
 
 func _check_and_send_update():
+	var is_moving_now = velocity.length() > 0.1
 	var pos_changed = global_position.distance_to(last_sent_pos) > 0.05
 	var rot_changed = abs(rotation.y - last_sent_rot.y) > 0.01
 	
-	if pos_changed or rot_changed:
+	# Sende Update wenn sich etwas geändert hat ODER wenn wir gerade angehalten haben
+	if pos_changed or rot_changed or (was_moving_last_frame and not is_moving_now):
 		if NetworkManager and NetworkManager.is_ws_connected():
 			NetworkManager.send_player_update(global_position, rotation)
 			last_sent_pos = global_position
 			last_sent_rot = rotation
+	
+	was_moving_last_frame = is_moving_now
 
 func show_message(text: String):
 	if not chat_bubble: return

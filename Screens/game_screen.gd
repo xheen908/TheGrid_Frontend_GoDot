@@ -58,6 +58,10 @@ func _on_remote_player_status_updated(data: Dictionary):
 		if "level" in data: rp.level = data["level"]
 		# Falls is_gm im Status-Paket ist, auch hier updaten
 		if "is_gm" in data: rp.update_remote_data(rp.global_position, rp.rotation, data["is_gm"])
+		if "char_class" in data: rp.initialise_class(data["char_class"])
+		# EXPLIZITER SHIELD UPDATE
+		rp.shield = data.get("shield", 0)
+		rp.buffs = data.get("buffs", [])
 	elif current_player and NetworkManager.current_player_data.get("char_name") == uname:
 		if "hp" in data: current_player.hp = data["hp"]
 		if "max_hp" in data: current_player.max_hp = data["max_hp"]
@@ -171,6 +175,7 @@ func _on_remote_player_moved(data: Dictionary):
 	
 	if remote_players.has(uname):
 		remote_players[uname].update_remote_data(pos, rot, is_gm)
+		if "char_class" in data: remote_players[uname].initialise_class(data["char_class"])
 	else:
 		# KRITISCHER CHECK: Prüfen ob bereits ein Knoten für diesen Namen existiert
 		# (Verhindert Duplikate bei schnellen Reconnects oder Sync-Fehlern)
@@ -179,12 +184,14 @@ func _on_remote_player_moved(data: Dictionary):
 				print("Verwaistes Model gefunden für ", uname, ". Re-assigning.")
 				remote_players[uname] = existing_rp
 				existing_rp.update_remote_data(pos, rot, is_gm)
+				if "char_class" in data: existing_rp.initialise_class(data["char_class"])
 				return
 		
 		# Neuer Spieler!
 		var rp = remote_player_scene.instantiate()
 		add_child(rp)
 		rp.setup(uname, pos, is_gm)
+		if "char_class" in data: rp.initialise_class(data["char_class"])
 		remote_players[uname] = rp
 		print("Remote Player verbunden: ", uname)
 
@@ -212,11 +219,28 @@ func _on_spell_cast_finished(caster: String, target_id: String, spell_id: String
 		caster_node = current_player
 		if current_player and current_player.has_method("stop_casting"):
 			current_player.stop_casting()
+			if spell_id == "interrupted":
+				if current_player.has_method("show_message"):
+					current_player.show_message("Unterbrochen!")
 	elif remote_players.has(caster):
 		caster_node = remote_players[caster]
 		if caster_node.has_method("stop_casting"):
 			caster_node.stop_casting()
 
+	if spell_id == "Eisbarriere":
+		# AoE Spawnen (Optional falls Eisbarriere auch ein AoE-Effekt hat, hier eher Schild-Logik)
+		if caster_node:
+			caster_node.shield = 2666 # Sofortiger visueller Trigger
+			if "buffs" in caster_node:
+				# Temporären Buff hinzufügen bis das nächste Status-Update vom Server kommt
+				var found = false
+				for b in caster_node.buffs:
+					if b.get("type") == "Eisbarriere":
+						found = true
+						break
+				if not found:
+					caster_node.buffs.append({"type": "Eisbarriere", "remaining": 30})
+	
 	if spell_id == "Frost Nova":
 		# AoE Spawnen
 		var pos_dict = extra_data.get("pos", {})
@@ -293,6 +317,15 @@ func spawn_player():
 			var gm_status = NetworkManager.current_player_data.get("gm_status", false)
 			if player.has_method("update_gm_status"):
 				player.update_gm_status(gm_status)
+				
+			# Klasse initial setzen
+			var char_class = NetworkManager.current_player_data.get("char_class", "")
+			if char_class == "":
+				var class_info = NetworkManager.current_player_data.get("class_info", {})
+				char_class = class_info.get("class_name", "Mage")
+			
+			if player.has_method("initialise_class"):
+				player.initialise_class(char_class)
 		else:
 			player.global_position = Vector3(0, 5, 0)
 			print("Erfolg: Player gespawnt an Default Position.")

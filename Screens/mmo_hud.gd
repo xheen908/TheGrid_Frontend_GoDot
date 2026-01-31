@@ -73,8 +73,9 @@ func _ready():
 			unit_level_label.text = "L" + str(NetworkManager.current_player_data.get("level", 1))
 		
 		# Map Name generieren
-		var raw_map = NetworkManager.current_player_data.get("world_state", {}).get("map_name", "WorldMap0")
-		map_name_label.text = _format_map_name(raw_map)
+		if map_name_label:
+			var raw_map = NetworkManager.current_player_data.get("world_state", {}).get("map_name", "WorldMap0")
+			map_name_label.text = _format_map_name(raw_map)
 	_load_input_settings()
 	
 	_setup_action_slots()
@@ -149,14 +150,16 @@ func _input(event):
 			chat_input.grab_focus()
 			
 			# Letzten Chat-Modus visualisieren
-			if last_chat_mode != "":
-				%ChannelLabel.text = last_chat_mode
-				%ChannelLabel.show()
+			# Letzten Chat-Modus visualisieren
+			if last_chat_mode != "" and has_node("%ChannelLabel"):
+				var channel_label = %ChannelLabel
+				channel_label.text = last_chat_mode
+				channel_label.show()
 				if last_chat_mode == "[Gruppe]":
-					%ChannelLabel.add_theme_color_override("font_color", Color.GREEN)
+					channel_label.add_theme_color_override("font_color", Color.GREEN)
 				else:
-					%ChannelLabel.add_theme_color_override("font_color", Color.WHITE)
-			else:
+					channel_label.add_theme_color_override("font_color", Color.WHITE)
+			elif has_node("%ChannelLabel"):
 				%ChannelLabel.hide()
 				
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -212,7 +215,7 @@ func _on_chat_submitted(text: String):
 		elif text.begins_with("/w "):
 			to_send = text
 			# Whisper ist oft einmalig, Modus nicht speichern
-		elif not %ChannelLabel.visible:
+		elif not has_node("%ChannelLabel") or not %ChannelLabel.visible:
 			# Normaler Chat
 			last_chat_mode = ""
 
@@ -343,6 +346,11 @@ func _on_action_slot_pressed(slot):
 				NetworkManager.cast_spell("Frost Nova", "")
 			3: # Eisbarriere
 				NetworkManager.cast_spell("Eisbarriere", "")
+	
+	# Fokus sofort freigeben, damit die Tastatur wieder das Spiel steuert
+	var focus_owner = get_viewport().gui_get_focus_owner()
+	if focus_owner:
+		focus_owner.release_focus()
 
 func _setup_action_slots():
 	print("MMO_Hud: _setup_action_slots() gestartet.")
@@ -365,6 +373,7 @@ func _setup_action_slots():
 	for slot_name in slots:
 		if has_node(slot_name):
 			var slot = get_node(slot_name)
+			slot.focus_mode = Control.FOCUS_NONE # Verhindert, dass der Button aktiv bleibt
 			var icon_node = slot.get_node_or_null("Icon")
 			if icon_node:
 				var tex_path = slots[slot_name]

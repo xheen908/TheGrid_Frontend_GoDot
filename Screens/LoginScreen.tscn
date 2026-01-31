@@ -62,7 +62,7 @@ offset_top = 611.0
 offset_right = 183.0
 offset_bottom = 634.0
 theme_override_colors/font_color = Color(1, 1, 0.05490196, 1)
-text = "build: alpha_build 1"
+text = "build: alpha_build 3"
 
 [node name="CenterContainer" type="CenterContainer" parent="."]
 layout_mode = 1

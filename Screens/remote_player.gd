@@ -22,6 +22,15 @@ var buffs = []
 var casting_aura_scene = preload("res://Assets/Effects/CastingAura.tscn")
 var casting_aura = null
 
+var models = {
+	"Barbarian": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Barbarian.fbx"),
+	"Knight": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Knight.fbx"),
+	"Mage": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Mage.fbx"),
+	"Ranger": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Ranger.fbx"),
+	"Rogue": preload("res://Assets/models/KayKit_Adventurers_2.0_FREE/Characters/fbx/Rogue.fbx")
+}
+var character_class = "Mage"
+
 func _ready():
 	add_to_group("remote_player")
 	add_to_group("targetable")
@@ -43,6 +52,30 @@ func start_casting(spell_id: String):
 func stop_casting():
 	is_casting = false
 	if casting_aura: casting_aura.hide()
+
+func initialise_class(new_class: String):
+	if new_class == "": new_class = "Mage"
+	if character_class == new_class and visuals: return
+	
+	character_class = new_class
+	if models.has(new_class):
+		var model_scene = models[new_class]
+		if visuals:
+			var old_transform = visuals.transform
+			var old_name = visuals.name
+			visuals.queue_free()
+			
+			visuals = model_scene.instantiate()
+			visuals.name = old_name
+			visuals.transform = old_transform
+			add_child(visuals)
+			
+			# Re-setup animations for the new model
+			_setup_animations()
+			if anim_tree:
+				var new_anim_player = visuals.find_child("AnimationPlayer", true)
+				if new_anim_player:
+					anim_tree.anim_player = new_anim_player.get_path()
 func setup(p_username: String, start_pos: Vector3, p_is_gm: bool = false):
 	username = p_username
 	global_position = start_pos
@@ -85,7 +118,13 @@ func _physics_process(delta):
 	
 	# Aura permanent anzeigen wenn ein Schild aktiv ist
 	if casting_aura:
-		if shield > 0:
+		var has_shield_buff = false
+		for b in buffs:
+			if b.get("type") == "Eisbarriere":
+				has_shield_buff = true
+				break
+				
+		if shield > 0 or has_shield_buff:
 			casting_aura.show()
 		else:
 			casting_aura.hide()

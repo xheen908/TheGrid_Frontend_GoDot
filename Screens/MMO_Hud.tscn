@@ -1,10 +1,16 @@
-[gd_scene load_steps=7 format=3 uid="uid://dmh8m7n4v1b2x"]
+[gd_scene load_steps=9 format=3 uid="uid://dmh8m7n4v1b2x"]
 
-[ext_resource type="Script" path="res://Screens/mmo_hud.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://cskni4usyia5b" path="res://Screens/mmo_hud.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://66jle3l3c13s" path="res://Assets/UI/spell_frostblitz.jpg" id="2_purge"]
 [ext_resource type="Texture2D" uid="uid://x6y726ar2u0g" path="res://Assets/UI/spell_frost_nova.jpg" id="3_nova"]
 [ext_resource type="Texture2D" uid="uid://pc4yxxver8ie" path="res://Assets/UI/spell_ice_barrier.jpg" id="4_barrier"]
-[ext_resource type="Texture2D" uid="uid://dl8dhvyj6lpdc" path="res://Assets/UI/white.png" id="5_white"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.1, 0.1, 0.1, 0.6)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_hp"]
 bg_color = Color(0.8, 0, 0, 1)
@@ -12,13 +18,6 @@ border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-corner_radius_top_left = 5
-corner_radius_top_right = 5
-corner_radius_bottom_right = 5
-corner_radius_bottom_left = 5
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
-bg_color = Color(0.1, 0.1, 0.1, 0.6)
 corner_radius_top_left = 5
 corner_radius_top_right = 5
 corner_radius_bottom_right = 5
@@ -50,27 +49,14 @@ corner_radius_bottom_left = 10
 [node name="MMO_Hud" type="CanvasLayer"]
 script = ExtResource("1_script")
 
-[node name="MapNameLabel" type="Label" parent="."]
-unique_name_in_owner = true
-anchors_preset = 5
-anchor_left = 0.5
-anchor_right = 0.5
-offset_left = -150.0
-offset_top = 20.0
-offset_right = 150.0
-offset_bottom = 54.0
-grow_horizontal = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 6
-theme_override_font_sizes/font_size = 24
-text = "ZONE: UNKNOWN"
-horizontal_alignment = 1
-
 [node name="PlayerFrame" type="Panel" parent="."]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(250, 80)
 offset_left = 20.0
 offset_top = 20.0
+offset_right = 270.0
+offset_bottom = 100.0
+scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
 [node name="UnitLevel" type="Label" parent="PlayerFrame"]
@@ -141,8 +127,9 @@ theme_override_constants/separation = 5
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(250, 80)
-offset_left = 280.0
+offset_left = 230.0
 offset_top = 20.0
+scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
 [node name="TargetName" type="Label" parent="TargetFrame"]
@@ -204,8 +191,9 @@ theme_override_constants/separation = 5
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(120, 50)
-offset_left = 540.0
+offset_left = 440.0
 offset_top = 20.0
+scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
 [node name="ToTName" type="Label" parent="TargetOfTargetFrame"]
@@ -262,18 +250,19 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -80.0
-offset_right = 200.0
-offset_bottom = -20.0
+offset_left = -93.0
+offset_top = -55.0
+offset_right = 192.7143
+offset_bottom = 5.0
 grow_horizontal = 2
 grow_vertical = 0
+scale = Vector2(0.7, 0.7)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
 [node name="HBoxContainer" type="HBoxContainer" parent="ActionBars"]
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 10
+alignment = 1
 
 [node name="ActionSlot1" type="Button" parent="ActionBars/HBoxContainer"]
 unique_name_in_owner = true
@@ -300,9 +289,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-value = 0.0
 fill_mode = 5
-texture_progress = ExtResource("5_white")
 
 [node name="Slot1CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot1"]
 unique_name_in_owner = true
@@ -344,9 +331,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-value = 0.0
 fill_mode = 5
-texture_progress = ExtResource("5_white")
 
 [node name="Slot2CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot2"]
 unique_name_in_owner = true
@@ -388,9 +373,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-value = 0.0
 fill_mode = 5
-texture_progress = ExtResource("5_white")
 
 [node name="Slot3CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot3"]
 unique_name_in_owner = true
@@ -452,11 +435,12 @@ vertical_alignment = 1
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
-offset_left = -220.0
-offset_top = 20.0
-offset_right = -20.0
-offset_bottom = 220.0
+offset_left = -170.99994
+offset_top = 30.0
+offset_right = 29.0
+offset_bottom = 230.0
 grow_horizontal = 0
+scale = Vector2(0.75, 0.75)
 
 [node name="SubViewport" type="SubViewport" parent="MinimapContainer"]
 handle_input_locally = false
@@ -608,11 +592,12 @@ unique_name_in_owner = true
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
-offset_left = 20.0
-offset_top = -250.0
-offset_right = 420.0
-offset_bottom = -20.0
+offset_left = 5.0
+offset_top = -184.0
+offset_right = 405.0
+offset_bottom = 46.0
 grow_vertical = 0
+scale = Vector2(0.75, 0.75)
 theme_override_constants/separation = 5
 
 [node name="ChatLog" type="RichTextLabel" parent="ChatContainer"]
@@ -685,8 +670,8 @@ unique_name_in_owner = true
 title = "Gruppeneinladung"
 initial_position = 2
 size = Vector2i(300, 100)
-dialog_text = "Spieler X lädt dich ein."
 ok_button_text = "Annehmen"
+dialog_text = "Spieler X lädt dich ein."
 cancel_button_text = "Ablehnen"
 
 [node name="TargetContextMenu" type="PopupMenu" parent="."]
@@ -694,5 +679,6 @@ unique_name_in_owner = true
 size = Vector2i(150, 60)
 item_count = 2
 item_0/text = "Einladen"
+item_0/id = 0
 item_1/text = "Flüstern"
 item_1/id = 1

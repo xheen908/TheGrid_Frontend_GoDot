@@ -71,7 +71,7 @@ shape = SubResource("WorldBoundaryShape3D_floor")
 [node name="BridgeComplex" type="Node3D" parent="."]
 
 [node name="MainBridge" type="StaticBody3D" parent="BridgeComplex"]
-transform = Transform3D(3.5, 0, 0, 0, 0.25, 0, 0, 0, 1.2, 0, 4.25, 0)
+transform = Transform3D(3.6, 0, 0, 0, 0.25, 0, 0, 0, 1.2, 0, 5.85, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/MainBridge"]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, -4, 0)
@@ -83,7 +83,7 @@ transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, -4, 0)
 shape = SubResource("BoxShape3D_block")
 
 [node name="RampRight" type="StaticBody3D" parent="BridgeComplex"]
-transform = Transform3D(1.11, 0.443, 0, -0.222, 2.215, 0, 0, 0, 1.2, 22.5, 2.25, 0)
+transform = Transform3D(0.98032546, 1.1294328, 0, -0.56599116, 1.9562349, 0, 0, 0, 1.2, 22.4, 2.25, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/RampRight"]
 transform = Transform3D(1, 2.9802322e-08, 0, 0, 0.9999998, 0, 0, 0, 0.9999998, 0.3465004, -0.868206, 0)
@@ -95,7 +95,7 @@ transform = Transform3D(1, 2.9802322e-08, 0, 0, 0.9999999, 0, 0, 0, 0.99999994, 
 shape = SubResource("BoxShape3D_block")
 
 [node name="RampLeft" type="StaticBody3D" parent="BridgeComplex"]
-transform = Transform3D(1.11, -0.443, 0, 0.222, 2.215, 0, 0, 0, 1.2, -22.5, 1.25, 0)
+transform = Transform3D(0.98032546, -1.1294328, 0, 0.56599116, 1.9562349, 0, 0, 0, 1.2, -22.1, 1.25, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/RampLeft"]
 transform = Transform3D(1, -2.9802322e-08, 0, 0, 0.9999999, 0, 0, 0, 0.99999994, -0.1732502, -0.43410325, 0)
@@ -107,7 +107,7 @@ transform = Transform3D(1, -2.9802322e-08, 0, 0, 0.9999999, 0, 0, 0, 0.99999994,
 shape = SubResource("BoxShape3D_block")
 
 [node name="Pillar" type="StaticBody3D" parent="."]
-transform = Transform3D(2, 0, 0, 0, 0.34, 0, 0, 0, 2, -1, 2, 12)
+transform = Transform3D(2, 0, 0, 0, 0.45, 0, 0, 0, 2, -1, 2.5, 12)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Pillar"]
 material_override = SubResource("ShaderMaterial_dungeon")
@@ -117,7 +117,7 @@ mesh = SubResource("CylinderMesh_pillar")
 shape = SubResource("CylinderShape3D_pillar")
 
 [node name="Pillar2" type="StaticBody3D" parent="."]
-transform = Transform3D(2, 0, 0, 0, 0.34, 0, 0, 0, 2, -1, 2, -12)
+transform = Transform3D(2, 0, 0, 0, 0.45, 0, 0, 0, 2, -1, 2.5, -12)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Pillar2"]
 material_override = SubResource("ShaderMaterial_dungeon")

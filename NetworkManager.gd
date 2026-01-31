@@ -1,18 +1,24 @@
 extends Node
 
-const BASE_URL = "http://localhost:3000/api"
-const WS_URL = "ws://localhost:3001/ws"
+var BASE_URL = "http://localhost:3000/api"
+var WS_URL = "ws://localhost:3001/ws"
 const SAVE_PATH = "user://session.cfg"
 
 var auth_token: String = ""
 var current_player_data = null
 var socket = WebSocketPeer.new()
 var is_connected_to_ws = false
+var is_authenticating = false
 var teleport_locked = false
+
+signal ws_connected
+signal ws_connection_failed(reason: String)
+signal ws_authenticated
 
 signal login_finished(success: bool, message: String)
 signal characters_loaded(chars: Array)
 signal character_created(success: bool, message: String)
+signal character_deleted(success: bool, message: String)
 signal player_moved(data: Dictionary)
 signal logout_timer_started(seconds: int)
 signal logout_cancelled(reason: String)
@@ -30,6 +36,7 @@ signal party_updated(members: Array)
 signal player_leveled_up(username: String)
 
 func _ready():
+	load_realmlist()
 	load_session()
 
 func _process(_delta):
@@ -37,29 +44,52 @@ func _process(_delta):
 	var state = socket.get_ready_state()
 	
 	if state == WebSocketPeer.STATE_OPEN:
-		is_connected_to_ws = true
+		if not is_connected_to_ws:
+			print("NetworkManager: WebSocket offen!")
+			is_connected_to_ws = true
+			ws_connected.emit()
+			
 		while socket.get_available_packet_count() > 0:
 			var packet = socket.get_packet()
 			_on_ws_message(packet.get_string_from_utf8())
 	elif state == WebSocketPeer.STATE_CLOSED:
+		var code = socket.get_close_code()
+		var reason = socket.get_close_reason()
+		
 		if is_connected_to_ws:
-			print("WS Verbindung verloren. Kehre zum Login zurück...")
+			print("WS Verbindung verloren. Code: ", code, " Grund: ", reason)
 			is_connected_to_ws = false
+			is_authenticating = false
 			current_player_data = null
 			get_tree().change_scene_to_file("res://Screens/LoginScreen.tscn")
-		elif socket.get_ready_state() == WebSocketPeer.STATE_CLOSED:
-			# Falls der Verbindungsaufbau fehlschlägt
-			# Wir setzen is_connected_to_ws auf false zur Sicherheit
-			is_connected_to_ws = false
+		else:
+			# Verbindung wurde gar nicht erst aufgebaut
+			pass 
+	elif state == WebSocketPeer.STATE_CONNECTING:
+		pass
+
 
 func connect_to_ws():
-	print("Verbinde zu WebSocket...")
+	if is_ws_connected(): 
+		ws_connected.emit()
+		return
+		
+	print("NetworkManager: Verbinde zu WebSocket: ", WS_URL)
+	is_connected_to_ws = false
+	is_authenticating = false
+	
 	var err = socket.connect_to_url(WS_URL)
 	if err != OK:
 		print("WS Fehler beim Verbinden: ", err)
+		ws_connection_failed.emit("Verbindung konnte nicht gestartet werden.")
 		return
 	
-	# Warten bis offen (passiert in _process)
+	# Timeout Timer
+	get_tree().create_timer(5.0).timeout.connect(func():
+		if not is_connected_to_ws:
+			socket.close()
+			ws_connection_failed.emit("Zeitüberschreitung bei Verbindung zum Worldserver.")
+	)
 
 func _on_ws_message(message: String):
 	var data = JSON.parse_string(message)
@@ -68,6 +98,8 @@ func _on_ws_message(message: String):
 	match data.get("type"):
 		"authenticated":
 			print("WS erfolgreich authentifiziert!")
+			is_authenticating = false
+			ws_authenticated.emit()
 		"player_moved":
 			player_moved.emit(data)
 		"logout_timer_started":
@@ -239,7 +271,7 @@ func _on_chars_completed(_result, response_code, _headers, body, http):
 	
 	http.queue_free()
 
-func create_character(char_name: String):
+func create_character(char_name: String, char_class: String):
 	if auth_token == "":
 		return
 		
@@ -247,7 +279,7 @@ func create_character(char_name: String):
 	add_child(http)
 	http.request_completed.connect(_on_create_char_completed.bind(http))
 	
-	var body = JSON.stringify({"name": char_name})
+	var body = JSON.stringify({"name": char_name, "class": char_class})
 	var headers = [
 		"Content-Type: application/json",
 		"Authorization: Bearer " + auth_token
@@ -264,6 +296,31 @@ func _on_create_char_completed(_result, response_code, _headers, body, http):
 		character_created.emit(false, err_msg)
 	http.queue_free()
 
+func delete_character(char_id: int):
+	if auth_token == "":
+		return
+		
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(_on_delete_char_completed.bind(http))
+	
+	var body = JSON.stringify({"id": char_id})
+	var headers = [
+		"Content-Type: application/json",
+		"Authorization: Bearer " + auth_token
+	]
+	
+	http.request(BASE_URL + "/characters/delete", headers, HTTPClient.METHOD_POST, body)
+
+func _on_delete_char_completed(_result, response_code, _headers, body, http):
+	var response = JSON.parse_string(body.get_string_from_utf8())
+	if response_code == 200:
+		character_deleted.emit(true, "Charakter gelöscht")
+	else:
+		var err_msg = response.get("error", "Löschen fehlgeschlagen") if response else "Serverfehler"
+		character_deleted.emit(false, err_msg)
+	http.queue_free()
+
 # --- PERSISTENZ (Best Practice) ---
 func save_session(token: String):
 	var config = ConfigFile.new()
@@ -274,3 +331,29 @@ func load_session():
 	var config = ConfigFile.new()
 	if config.load(SAVE_PATH) == OK:
 		auth_token = config.get_value("Auth", "token", "")
+
+func load_realmlist():
+	var file_path = "res://realmlist.config"
+	
+	# Falls wir in einem Export-Build sind, schauen wir auch neben der EXE
+	if not FileAccess.file_exists(file_path):
+		var exe_dir = OS.get_executable_path().get_base_dir()
+		file_path = exe_dir + "/realmlist.config"
+	
+	if FileAccess.file_exists(file_path):
+		var f = FileAccess.open(file_path, FileAccess.READ)
+		var host_address = f.get_as_text().strip_edges()
+		if host_address != "":
+			print("NetworkManager: Lade Realmlist von ", file_path, " -> ", host_address)
+			BASE_URL = host_address + "/api"
+			
+			# Wir versuchen die WS URL basierend auf dem Host abzuleiten
+			# Wir entfernen http:// oder https:// um den Hostnamen zu bekommen
+			var clean_host = host_address.replace("http://", "").replace("https://", "")
+			if ":" in clean_host:
+				clean_host = clean_host.split(":")[0]
+			
+			WS_URL = "ws://" + clean_host + ":3001/ws"
+			print("NetworkManager: BASE_URL=", BASE_URL, " WS_URL=", WS_URL)
+	else:
+		print("NetworkManager: Keine realmlist.config gefunden, nutze Standard: ", BASE_URL)

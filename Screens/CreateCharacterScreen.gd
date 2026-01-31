@@ -22,9 +22,14 @@ func _on_create_pressed():
 		error_label.text = "Name muss mindestens 3 Zeichen lang sein."
 		return
 	
+	# Ersten Buchstaben groß machen
+	char_name = char_name[0].to_upper() + char_name.substr(1)
+	
+	var char_class = class_option.get_item_text(class_option.selected)
+	
 	error_label.text = ""
 	create_button.disabled = true
-	NetworkManager.create_character(char_name)
+	NetworkManager.create_character(char_name, char_class)
 
 func _on_back_pressed():
 	get_tree().change_scene_to_file("res://Screens/CharacterScreen.tscn")
