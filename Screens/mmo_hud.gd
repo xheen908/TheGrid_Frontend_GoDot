@@ -564,7 +564,7 @@ func _update_target_frames():
 	elif "current_target" in target:
 		tot = target.current_target
 		
-	if tot:
+	if tot and tot.get("hp", 100) > 0:
 		tot_frame.show()
 		tot_name_label.text = _get_display_name(tot)
 		var tot_hp = tot.get("hp") if "hp" in tot else 100

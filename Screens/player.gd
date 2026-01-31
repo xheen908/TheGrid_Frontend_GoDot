@@ -411,6 +411,12 @@ func _physics_process(delta):
 		elif not is_casting:
 			casting_aura.hide()
 			
+	# Auto-Deselect dead targets
+	if is_instance_valid(current_target):
+		var thp = current_target.get("hp") if "hp" in current_target else 1
+		if thp <= 0:
+			set_target(null)
+			
 	# Add the gravity.
 	if not is_on_floor():
 		velocity.y -= gravity * delta
