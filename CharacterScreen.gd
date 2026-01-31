@@ -4,6 +4,7 @@ extends Control
 @onready var char_list_container = %CharListContainer
 @onready var enter_button = %EnterWorldButton
 @onready var back_button = %BackButton
+@onready var create_char_button = %CreateCharacterButton
 
 var selected_char_data = null
 
@@ -21,6 +22,8 @@ func _ready():
 		back_button.pressed.connect(_on_back_pressed)
 	if not enter_button.pressed.is_connected(_on_enter_world_pressed):
 		enter_button.pressed.connect(_on_enter_world_pressed)
+	if not create_char_button.pressed.is_connected(_on_create_char_pressed):
+		create_char_button.pressed.connect(_on_create_char_pressed)
 	
 	# 4. NetworkManager Signale abonnieren
 	if NetworkManager:
@@ -120,3 +123,6 @@ func _on_enter_world_pressed():
 
 func _on_back_pressed():
 	get_tree().change_scene_to_file("res://Screens/LoginScreen.tscn")
+
+func _on_create_char_pressed():
+	get_tree().change_scene_to_file("res://Screens/CreateCharacterScreen.tscn")

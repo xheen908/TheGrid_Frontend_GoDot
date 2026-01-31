@@ -114,6 +114,7 @@ size_flags_vertical = 3
 size_flags_stretch_ratio = 1.11
 theme_override_constants/separation = 5
 
-[node name="Button" type="Button" parent="MarginContainer/Control/VBoxContainer"]
+[node name="CreateCharacterButton" type="Button" parent="MarginContainer/Control/VBoxContainer"]
+unique_name_in_owner = true
 layout_mode = 2
 text = "Neuer Charakter"

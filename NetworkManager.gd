@@ -12,6 +12,7 @@ var teleport_locked = false
 
 signal login_finished(success: bool, message: String)
 signal characters_loaded(chars: Array)
+signal character_created(success: bool, message: String)
 signal player_moved(data: Dictionary)
 signal logout_timer_started(seconds: int)
 signal logout_cancelled(reason: String)
@@ -236,6 +237,31 @@ func _on_chars_completed(_result, response_code, _headers, body, http):
 	else:
 		print("Fehler beim Laden der Charaktere")
 	
+	http.queue_free()
+
+func create_character(char_name: String):
+	if auth_token == "":
+		return
+		
+	var http = HTTPRequest.new()
+	add_child(http)
+	http.request_completed.connect(_on_create_char_completed.bind(http))
+	
+	var body = JSON.stringify({"name": char_name})
+	var headers = [
+		"Content-Type: application/json",
+		"Authorization: Bearer " + auth_token
+	]
+	
+	http.request(BASE_URL + "/characters", headers, HTTPClient.METHOD_POST, body)
+
+func _on_create_char_completed(_result, response_code, _headers, body, http):
+	var response = JSON.parse_string(body.get_string_from_utf8())
+	if response_code == 200:
+		character_created.emit(true, "Charakter erfolgreich erstellt")
+	else:
+		var err_msg = response.get("error", "Erstellung fehlgeschlagen") if response else "Serverfehler"
+		character_created.emit(false, err_msg)
 	http.queue_free()
 
 # --- PERSISTENZ (Best Practice) ---
