@@ -126,11 +126,6 @@ mesh = SubResource("CylinderMesh_pillar")
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar2"]
 shape = SubResource("CylinderShape3D_pillar")
 
-[node name="ExitPortal" parent="." instance=ExtResource("2_portal")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -46.326942, 0, 0)
-spawn_position = Vector3(-37.102852, 0.000836, -37.018576)
-spawn_rotation_y = 1.571
-portal_color = Color(1, 1, 0, 1)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
 environment = SubResource("Environment_night")

@@ -7,6 +7,7 @@ extends Node3D
 var current_player = null
 var remote_players = {} # username -> node
 var mobs = {} # mob_id -> node
+var game_objects = {} # id -> node
 
 # Pfade zu deinen Szenen
 var player_scene = preload("res://Screens/Player.tscn")
@@ -15,6 +16,7 @@ var enemy_scene = preload("res://Screens/Enemy.tscn")
 var frostbolt_scene = preload("res://Screens/Frostbolt.tscn")
 var frostnova_scene = preload("res://Assets/Effects/FrostNova.tscn")
 var levelup_effect_scene = preload("res://Assets/Effects/LevelUpEffect.tscn")
+var portal_scene = preload("res://Maps/Portal.tscn")
 
 func _ready():
 	load_map()
@@ -46,6 +48,8 @@ func _ready():
 			NetworkManager.player_status_updated.connect(_on_remote_player_status_updated)
 		if not NetworkManager.player_leveled_up.is_connected(_on_player_leveled_up):
 			NetworkManager.player_leveled_up.connect(_on_player_leveled_up)
+		if not NetworkManager.game_objects_received.is_connected(_on_game_objects_received):
+			NetworkManager.game_objects_received.connect(_on_game_objects_received)
 
 func _on_remote_player_status_updated(data: Dictionary):
 	var uname = data.get("username", "")
@@ -128,6 +132,8 @@ func _on_map_changed(map_name: String, pos: Vector3, ry: float):
 	remote_players.clear()
 	for m in mobs.values(): m.queue_free()
 	mobs.clear()
+	for o in game_objects.values(): o.queue_free()
+	game_objects.clear()
 
 func _on_mobs_synchronized(mob_data_list: Array):
 	# Bestehende Mobs updaten oder neue spawnen
@@ -154,6 +160,62 @@ func _on_mobs_synchronized(mob_data_list: Array):
 	for mid in to_remove:
 		mobs[mid].queue_free()
 		mobs.erase(mid)
+
+func _on_game_objects_received(object_data_list: Array):
+	print("Game Objects empfangen: ", object_data_list.size())
+	# Ähnlich wie bei Mobs: Neue spawnen, ID-basierte Verwaltung
+	var current_ids = []
+	for data in object_data_list:
+		var oid = data.get("id", 0)
+		current_ids.append(oid)
+		
+		if game_objects.has(oid):
+			# Update falls nötig (Position etc.)
+			var obj = game_objects[oid]
+			var pos = data.get("position", {"x":0, "y":0, "z":0})
+			obj.global_position = Vector3(pos.x, pos.y, pos.z)
+			var rot = data.get("rotation", {"x":0, "y":0, "z":0})
+			obj.rotation = Vector3(rot.x, rot.y, rot.z)
+		else:
+			# Neu spawnen
+			var obj = null
+			var type = data.get("type", "")
+			match type:
+				"portal":
+					obj = portal_scene.instantiate()
+					var extra = data.get("extra_data", {})
+					if obj.has_method("setup_dynamic"):
+						obj.setup_dynamic(extra)
+					else:
+						# Fallback falls das Script noch nicht angepasst ist
+						if "target_map" in extra: obj.target_map = extra.target_map
+						if "spawn_pos" in extra: 
+							var sp = extra.spawn_pos
+							obj.spawn_position = Vector3(sp.x, sp.y, sp.z)
+						if "spawn_rot_y" in extra: obj.spawn_rotation_y = extra.spawn_rot_y
+						if "color" in extra: obj.portal_color = Color(extra.color)
+				_:
+					print("Unbekannter Objekt-Typ: ", type)
+			
+			if obj:
+				add_child(obj)
+					
+				var pos_dict = data.get("position", {"x":0, "y":0, "z":0})
+				obj.global_position = Vector3(pos_dict.x, pos_dict.y, pos_dict.z)
+				var rot_dict = data.get("rotation", {"x":0, "y":0, "z":0})
+				obj.rotation = Vector3(rot_dict.x, rot_dict.y, rot_dict.z)
+				game_objects[oid] = obj
+				print("Objekt gespawnt: ", type, " ID: ", oid, " Position: ", obj.global_position)
+	
+	# Aufräumen
+	var to_remove = []
+	for oid in game_objects.keys():
+		if not oid in current_ids:
+			to_remove.append(oid)
+	
+	for oid in to_remove:
+		game_objects[oid].queue_free()
+		game_objects.erase(oid)
 
 func _on_remote_player_moved(data: Dictionary):
 	var uname = data.get("username", "")

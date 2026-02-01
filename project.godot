@@ -8,11 +8,15 @@
 
 config_version=5
 
+[animation]
+
+compatibility/default_parent_skeleton_in_mesh_instance_3d=true
+
 [application]
 
 config/name="Godot_MMORPG"
 run/main_scene="uid://cr3oymla0m46c"
-config/features=PackedStringArray("4.5", "Forward Plus")
+config/features=PackedStringArray("4.6", "Forward Plus")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -124,4 +128,4 @@ target_cycle={
 
 [rendering]
 
-anti_aliasing/quality/msaa_3d=2
+anti_aliasing/quality/msaa_3d=3

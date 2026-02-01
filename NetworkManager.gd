@@ -34,6 +34,7 @@ signal combat_text_received(data: Dictionary)
 signal party_invite_received(from: String)
 signal party_updated(members: Array)
 signal player_leveled_up(username: String)
+signal game_objects_received(objects: Array)
 
 func _ready():
 	load_realmlist()
@@ -150,6 +151,9 @@ func _on_ws_message(message: String):
 			party_updated.emit(data.get("members", []))
 		"level_up":
 			player_leveled_up.emit(data.get("username", ""))
+		"game_objects_init":
+			print("WebSocket: Game Objects Init empfangen")
+			game_objects_received.emit(data.get("objects", []))
 		"error":
 			print("WS Server Fehler: ", data.get("message"))
 
