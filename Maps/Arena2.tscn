@@ -157,6 +157,7 @@ shape = SubResource("BoxShape3D_ramp")
 
 [node name="ExitPortal" parent="." instance=ExtResource("2_portal")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 45)
+spawn_position = Vector3(-37.571739, 0.000836, 36.802277)
 portal_color = Color(1, 1, 0, 1)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]

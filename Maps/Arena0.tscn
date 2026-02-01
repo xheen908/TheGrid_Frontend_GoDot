@@ -104,7 +104,7 @@ shape = SubResource("BoxShape3D_wall")
 [node name="ExitPortal" parent="." instance=ExtResource("2_portal")]
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 35, 0, 0)
 collision_mask = 2
-spawn_position = Vector3(15, 0, 0)
+spawn_position = Vector3(37.1346, 0.000836, -37.64199)
 spawn_rotation_y = -1.571
 portal_color = Color(1, 1, 0, 1)
 

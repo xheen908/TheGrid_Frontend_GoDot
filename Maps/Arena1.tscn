@@ -186,7 +186,7 @@ shape = SubResource("CylinderShape3D_pillar")
 
 [node name="ExitPortal" parent="." instance=ExtResource("2_portal")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -32)
-spawn_position = Vector3(5, 0, 0)
+spawn_position = Vector3(37.321186, 0.000836, 36.723835)
 portal_color = Color(1, 1, 0, 1)
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]

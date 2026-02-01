@@ -1,19 +1,19 @@
-[gd_scene load_steps=9 format=3 uid="uid://cd8gb2nj03epb"]
+[gd_scene format=3 uid="uid://cd8gb2nj03epb"]
 
-[ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_fvvxo"]
+[ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
 [ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
 
-[sub_resource type="ShaderMaterial" id="ShaderMaterial_fvvxo"]
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_wall"]
 render_priority = 0
-shader = ExtResource("1_fvvxo")
-shader_parameter/background_color = Color(0, 0, 0, 1)
-shader_parameter/line_color = Color(0.54509807, 0.9411765, 0, 1)
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0, 0.05, 0.1, 1)
+shader_parameter/line_color = Color(0, 0.8, 1, 1)
 shader_parameter/grid_size = 3.0
-shader_parameter/line_width = 1.0
-shader_parameter/glow_strength = 3.0
+shader_parameter/line_width = 1.1
+shader_parameter/glow_strength = 4.5
 
-[sub_resource type="PlaneMesh" id="PlaneMesh_sgjat"]
-size = Vector2(200, 200)
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(250, 250)
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
 
@@ -22,8 +22,6 @@ sky_top_color = Color(0.02, 0.02, 0.05, 1)
 sky_horizon_color = Color(0.1, 0.1, 0.2, 1)
 ground_bottom_color = Color(0, 0, 0, 1)
 ground_horizon_color = Color(0.1, 0.1, 0.2, 1)
-sun_angle_max = 0.0
-sun_curve = 0.01
 
 [sub_resource type="Sky" id="Sky_night"]
 sky_material = SubResource("ProceduralSkyMaterial_night")
@@ -33,57 +31,377 @@ background_mode = 2
 sky = SubResource("Sky_night")
 ambient_light_source = 3
 ambient_light_color = Color(0.05, 0.05, 0.1, 1)
-ambient_light_sky_contribution = 0.1
 tonemap_mode = 2
 glow_enabled = true
 glow_intensity = 1.0
-glow_blend_mode = 0
 fog_enabled = true
 fog_light_color = Color(0.05, 0.05, 0.1, 1)
 fog_sky_affect = 0.5
 
-[node name="WorldMap0" type="Node3D"]
+[sub_resource type="BoxMesh" id="BoxMesh_wall_large"]
+size = Vector3(31, 8, 2)
 
-[node name="Floor" type="MeshInstance3D" parent="."]
-material_override = SubResource("ShaderMaterial_fvvxo")
-mesh = SubResource("PlaneMesh_sgjat")
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall_large"]
+size = Vector3(31, 8, 2)
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+[sub_resource type="BoxMesh" id="BoxMesh_corridor_wall"]
+size = Vector3(30, 8, 2)
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+[sub_resource type="BoxShape3D" id="BoxShape3D_corridor_wall"]
+size = Vector3(30, 8, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_room_wall"]
+size = Vector3(12, 8, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_room_wall"]
+size = Vector3(12, 8, 2)
+
+[node name="WorldMap0" type="Node3D" unique_id=387358050]
+
+[node name="Environment" type="Node3D" parent="." unique_id=209289550]
+
+[node name="Floor" type="MeshInstance3D" parent="Environment" unique_id=1697685672]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("PlaneMesh_floor")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Environment/Floor" unique_id=622968638]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Environment/Floor/StaticBody3D" unique_id=585627342]
 shape = SubResource("WorldBoundaryShape3D_floor")
 
-[node name="PortalArena" parent="." instance=ExtResource("2_portal")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 9.698362, 0, -1.3957834)
-target_map = "Arena0"
-spawn_position = Vector3(25, 0, 0)
-spawn_rotation_y = 1.571
-portal_color = Color(0.7092715, 0.33216104, 0.025786916, 1)
-
-[node name="PortalDungeon" parent="." instance=ExtResource("2_portal")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10.237104, 0, 14.556404)
-target_map = "Dungeon0"
-spawn_position = Vector3(-25, 0, 0)
-spawn_rotation_y = -1.571
-portal_color = Color(0.86365896, 0.0005841148, 0.8622901, 1)
-
-[node name="PortalArena1" parent="." instance=ExtResource("2_portal")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10, 0, -15)
-target_map = "Arena1"
-portal_color = Color(0, 0.8, 1, 1)
-
-[node name="PortalArena2" parent="." instance=ExtResource("2_portal")]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 10, 0, 30)
-target_map = "Arena2"
-spawn_position = Vector3(0, 5, 0)
-portal_color = Color(0, 1, 0, 1)
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Environment" unique_id=1835479583]
 environment = SubResource("Environment_night")
 
-[node name="Moon" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.8660253, -0.4330129, 0.2500001, 0, 0.49999994, 0.86602545, -0.50000024, -0.74999994, 0.43301257, 0, 20, 215.66986)
-light_color = Color(0.7, 0.8, 1, 1)
-light_energy = 0.3
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment" unique_id=183776446]
+transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 20, 0)
+light_color = Color(0.8, 0.9, 1, 1)
+light_energy = 0.5
 shadow_enabled = true
-shadow_opacity = 0.7
+
+[node name="Architecture" type="Node3D" parent="." unique_id=2121124285]
+
+[node name="Wall1_N" type="StaticBody3D" parent="Architecture" unique_id=796675791]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 29.449291)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall1_N" unique_id=1916441341]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall1_N" unique_id=621818755]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall3_E" type="StaticBody3D" parent="Architecture" unique_id=1616950821]
+transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 29.141357, 4, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall3_E" unique_id=1965029678]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall3_E" unique_id=1774538397]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S" type="StaticBody3D" parent="Architecture" unique_id=70540191]
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 4, -29.531864)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S" unique_id=358844796]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S" unique_id=2112525020]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S2" type="StaticBody3D" parent="Architecture" unique_id=750584007]
+transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 0.65838575, -0.013333589)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S2" unique_id=1728965839]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S2" unique_id=1230827885]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S3" type="StaticBody3D" parent="Architecture" unique_id=447784860]
+transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 19.233158, 57.11188)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S3" unique_id=418575154]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S3" unique_id=230967137]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S4" type="StaticBody3D" parent="Architecture" unique_id=476081900]
+transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 19.233158, -60.24104)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S4" unique_id=145884761]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S4" unique_id=678709242]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S6" type="StaticBody3D" parent="Architecture" unique_id=2130004132]
+transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, -51.65938, 19.233158, 0.7319069)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S6" unique_id=632221910]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S6" unique_id=92054279]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S5" type="StaticBody3D" parent="Architecture" unique_id=407209018]
+transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 46.708595, 19.233158, -0.273098)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S5" unique_id=1308494529]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S5" unique_id=477875320]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall7_W" type="StaticBody3D" parent="Architecture" unique_id=1719192666]
+transform = Transform3D(1.19249e-08, 0, -1, 0, 1, 0, 1, 0, 1.19249e-08, -29.1458, 4, 0)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall7_W" unique_id=1581266457]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall7_W" unique_id=954694659]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Corridor_NE_L" type="StaticBody3D" parent="Architecture" unique_id=998595522]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 26, 4, -40)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NE_L" unique_id=1902295517]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NE_L" unique_id=1903313569]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_NE_R" type="StaticBody3D" parent="Architecture" unique_id=287159017]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 40, 4, -26)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NE_R" unique_id=450391591]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NE_R" unique_id=139696246]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_SE_L" type="StaticBody3D" parent="Architecture" unique_id=95124829]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, 40, 4, 26)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SE_L" unique_id=1565929489]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SE_L" unique_id=5906905]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_SE_R" type="StaticBody3D" parent="Architecture" unique_id=2045457265]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, 26, 4, 40)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SE_R" unique_id=633017881]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SE_R" unique_id=1869081213]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_SW_L" type="StaticBody3D" parent="Architecture" unique_id=1918330998]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -26, 4, 40)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SW_L" unique_id=422682341]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SW_L" unique_id=1099126724]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_SW_R" type="StaticBody3D" parent="Architecture" unique_id=658709655]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -40, 4, 26)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SW_R" unique_id=162339682]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SW_R" unique_id=1735787992]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_NW_L" type="StaticBody3D" parent="Architecture" unique_id=2033101258]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -40, 4, -26)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NW_L" unique_id=552762154]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NW_L" unique_id=868883860]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="Corridor_NW_R" type="StaticBody3D" parent="Architecture" unique_id=1087795366]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -26, 4, -40)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NW_R" unique_id=1696422415]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_corridor_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NW_R" unique_id=1726780864]
+shape = SubResource("BoxShape3D_corridor_wall")
+
+[node name="SmallRoom_NE" type="Node3D" parent="Architecture" unique_id=1436061262]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, -55)
+
+[node name="Back" type="StaticBody3D" parent="Architecture/SmallRoom_NE" unique_id=365149460]
+transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, -6.997555, 4, 6.6455345)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NE/Back" unique_id=730746707]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NE/Back" unique_id=921992863]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side1" type="StaticBody3D" parent="Architecture/SmallRoom_NE" unique_id=1514603180]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.997555, 4, 3.6455345)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NE/Side1" unique_id=432482361]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NE/Side1" unique_id=1608546817]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side2" type="StaticBody3D" parent="Architecture/SmallRoom_NE" unique_id=467153763]
+transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, -3.9975548, 4, 13.6455345)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NE/Side2" unique_id=1960150541]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NE/Side2" unique_id=117846628]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="SmallRoom_SE" type="Node3D" parent="Architecture" unique_id=2071924932]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, 55)
+
+[node name="Back" type="StaticBody3D" parent="Architecture/SmallRoom_SE" unique_id=1193885118]
+transform = Transform3D(0.707, 0, 0.707, 0, 1, 0, -0.707, 0, 0.707, -6.808178, 4, -6.24712)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SE/Back" unique_id=1346260381]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SE/Back" unique_id=1319307352]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side1" type="StaticBody3D" parent="Architecture/SmallRoom_SE" unique_id=230798790]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.808178, 4, -3.24712)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SE/Side1" unique_id=1769775306]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SE/Side1" unique_id=1719080217]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side2" type="StaticBody3D" parent="Architecture/SmallRoom_SE" unique_id=2071072202]
+transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, -3.808178, 4, -13.24712)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SE/Side2" unique_id=1747047180]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SE/Side2" unique_id=2131989332]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="SmallRoom_SW" type="Node3D" parent="Architecture" unique_id=874583508]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 0, 55)
+
+[node name="Back" type="StaticBody3D" parent="Architecture/SmallRoom_SW" unique_id=1620568194]
+transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, 6.2932854, 4, -6.523201)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SW/Back" unique_id=1404874944]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SW/Back" unique_id=393317356]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side1" type="StaticBody3D" parent="Architecture/SmallRoom_SW" unique_id=60544806]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.293285, 4, -3.523201)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SW/Side1" unique_id=303447988]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SW/Side1" unique_id=462113315]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side2" type="StaticBody3D" parent="Architecture/SmallRoom_SW" unique_id=31074792]
+transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, 3.2932854, 4, -13.523201)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SW/Side2" unique_id=1238361211]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SW/Side2" unique_id=1456384854]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="SmallRoom_NW" type="Node3D" parent="Architecture" unique_id=1564871313]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 0, -55)
+
+[node name="Back" type="StaticBody3D" parent="Architecture/SmallRoom_NW" unique_id=1154153368]
+transform = Transform3D(0.707, 0, 0.707, 0, 1, 0, -0.707, 0, 0.707, 7.0723953, 4, 6.985527)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NW/Back" unique_id=352259699]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NW/Back" unique_id=302048088]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side1" type="StaticBody3D" parent="Architecture/SmallRoom_NW" unique_id=1515310850]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.072395, 4, 3.985527)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NW/Side1" unique_id=68846684]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NW/Side1" unique_id=2102476512]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="Side2" type="StaticBody3D" parent="Architecture/SmallRoom_NW" unique_id=94661438]
+transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, 4.0723953, 4, 13.985527)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NW/Side2" unique_id=429350476]
+material_override = SubResource("ShaderMaterial_wall")
+mesh = SubResource("BoxMesh_room_wall")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NW/Side2" unique_id=33739779]
+shape = SubResource("BoxShape3D_room_wall")
+
+[node name="PortalNW" parent="." unique_id=71393978 instance=ExtResource("2_portal")]
+transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -40.927605, 0, -41.014473)
+target_map = "Dungeon0"
+spawn_position = Vector3(0, 0, 2)
+portal_color = Color(0.86, 0, 0.86, 1)
+
+[node name="PortalNE" parent="." unique_id=1848427664 instance=ExtResource("2_portal")]
+transform = Transform3D(0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, 0.707107, 40.876713, 0, -41.354465)
+target_map = "Arena0"
+spawn_position = Vector3(0, 0, 2)
+portal_color = Color(0.7, 0.33, 0.02, 1)
+
+[node name="PortalSE" parent="." unique_id=1207238964 instance=ExtResource("2_portal")]
+transform = Transform3D(-0.707107, 0, -0.707107, 0, 1, 0, 0.707107, 0, -0.707107, 41.191822, 0, 41.75288)
+target_map = "Arena1"
+spawn_position = Vector3(0, 0, 2)
+portal_color = Color(0, 0.8, 1, 1)
+
+[node name="PortalSW" parent="." unique_id=2052130206 instance=ExtResource("2_portal")]
+transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -41.706715, 0, 41.4768)
+target_map = "Arena2"
+spawn_position = Vector3(-0.014011, 3.000208, -38.214027)
+portal_color = Color(0, 1, 0, 1)
