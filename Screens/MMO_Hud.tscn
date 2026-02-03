@@ -1,9 +1,10 @@
-[gd_scene load_steps=9 format=3 uid="uid://dmh8m7n4v1b2x"]
+[gd_scene format=3 uid="uid://dmh8m7n4v1b2x"]
 
 [ext_resource type="Script" uid="uid://cskni4usyia5b" path="res://Screens/mmo_hud.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://66jle3l3c13s" path="res://Assets/UI/spell_frostblitz.jpg" id="2_purge"]
 [ext_resource type="Texture2D" uid="uid://x6y726ar2u0g" path="res://Assets/UI/spell_frost_nova.jpg" id="3_nova"]
 [ext_resource type="Texture2D" uid="uid://pc4yxxver8ie" path="res://Assets/UI/spell_ice_barrier.jpg" id="4_barrier"]
+[ext_resource type="Texture2D" uid="uid://dmh8m7n4v1b2x_cone" path="res://Assets/UI/spell_cone_of_cold.jpg" id="5_cone"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -46,10 +47,10 @@ corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
-[node name="MMO_Hud" type="CanvasLayer"]
+[node name="MMO_Hud" type="CanvasLayer" unique_id=811803260]
 script = ExtResource("1_script")
 
-[node name="PlayerFrame" type="Panel" parent="."]
+[node name="PlayerFrame" type="Panel" parent="." unique_id=658144980]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(250, 80)
 offset_left = 20.0
@@ -59,7 +60,7 @@ offset_bottom = 100.0
 scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="UnitLevel" type="Label" parent="PlayerFrame"]
+[node name="UnitLevel" type="Label" parent="PlayerFrame" unique_id=1641940666]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -68,7 +69,7 @@ offset_right = 50.0
 offset_bottom = 28.0
 text = "L1"
 
-[node name="UnitName" type="Label" parent="PlayerFrame"]
+[node name="UnitName" type="Label" parent="PlayerFrame" unique_id=1308011691]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 50.0
@@ -78,7 +79,7 @@ offset_bottom = 28.0
 text = "Character Name"
 horizontal_alignment = 1
 
-[node name="HealthBar" type="ProgressBar" parent="PlayerFrame"]
+[node name="HealthBar" type="ProgressBar" parent="PlayerFrame" unique_id=1866776447]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -89,7 +90,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
 value = 100.0
 show_percentage = false
 
-[node name="HPLabel" type="Label" parent="PlayerFrame/HealthBar"]
+[node name="HPLabel" type="Label" parent="PlayerFrame/HealthBar" unique_id=1073058401]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -103,7 +104,7 @@ text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ManaBar" type="ProgressBar" parent="PlayerFrame"]
+[node name="ManaBar" type="ProgressBar" parent="PlayerFrame" unique_id=1953598897]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -114,7 +115,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
 value = 80.0
 show_percentage = false
 
-[node name="PlayerBuffContainer" type="HBoxContainer" parent="PlayerFrame"]
+[node name="PlayerBuffContainer" type="HBoxContainer" parent="PlayerFrame" unique_id=86369494]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -123,7 +124,7 @@ offset_right = 240.0
 offset_bottom = 110.0
 theme_override_constants/separation = 5
 
-[node name="TargetFrame" type="Panel" parent="."]
+[node name="TargetFrame" type="Panel" parent="." unique_id=1201091541]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(250, 80)
@@ -132,7 +133,7 @@ offset_top = 20.0
 scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="TargetName" type="Label" parent="TargetFrame"]
+[node name="TargetName" type="Label" parent="TargetFrame" unique_id=335506118]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -142,7 +143,7 @@ offset_bottom = 28.0
 text = "Target Name"
 horizontal_alignment = 1
 
-[node name="TargetHealthBar" type="ProgressBar" parent="TargetFrame"]
+[node name="TargetHealthBar" type="ProgressBar" parent="TargetFrame" unique_id=2122045391]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -153,7 +154,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
 value = 100.0
 show_percentage = false
 
-[node name="TargetHPLabel" type="Label" parent="TargetFrame/TargetHealthBar"]
+[node name="TargetHPLabel" type="Label" parent="TargetFrame/TargetHealthBar" unique_id=1003157786]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -167,7 +168,7 @@ text = "100 / 100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="TargetManaBar" type="ProgressBar" parent="TargetFrame"]
+[node name="TargetManaBar" type="ProgressBar" parent="TargetFrame" unique_id=1205205600]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -178,7 +179,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
 value = 80.0
 show_percentage = false
 
-[node name="DebuffContainer" type="HBoxContainer" parent="TargetFrame"]
+[node name="DebuffContainer" type="HBoxContainer" parent="TargetFrame" unique_id=1666789835]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 10.0
@@ -187,7 +188,7 @@ offset_right = 240.0
 offset_bottom = 110.0
 theme_override_constants/separation = 5
 
-[node name="TargetOfTargetFrame" type="Panel" parent="."]
+[node name="TargetOfTargetFrame" type="Panel" parent="." unique_id=1191112614]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(120, 50)
@@ -196,7 +197,7 @@ offset_top = 20.0
 scale = Vector2(0.8, 0.8)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="ToTName" type="Label" parent="TargetOfTargetFrame"]
+[node name="ToTName" type="Label" parent="TargetOfTargetFrame" unique_id=1086795594]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 5.0
@@ -207,7 +208,7 @@ theme_override_font_sizes/font_size = 12
 text = "ToT Name"
 horizontal_alignment = 1
 
-[node name="ToTHealthBar" type="ProgressBar" parent="TargetOfTargetFrame"]
+[node name="ToTHealthBar" type="ProgressBar" parent="TargetOfTargetFrame" unique_id=1251193437]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 5.0
@@ -218,7 +219,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_hp")
 value = 100.0
 show_percentage = false
 
-[node name="ToTHPLabel" type="Label" parent="TargetOfTargetFrame/ToTHealthBar"]
+[node name="ToTHPLabel" type="Label" parent="TargetOfTargetFrame/ToTHealthBar" unique_id=1063773429]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -232,7 +233,7 @@ text = "100/100"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ToTManaBar" type="ProgressBar" parent="TargetOfTargetFrame"]
+[node name="ToTManaBar" type="ProgressBar" parent="TargetOfTargetFrame" unique_id=1095979988]
 unique_name_in_owner = true
 layout_mode = 0
 offset_left = 5.0
@@ -243,7 +244,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
 value = 80.0
 show_percentage = false
 
-[node name="ActionBars" type="PanelContainer" parent="."]
+[node name="ActionBars" type="PanelContainer" parent="." unique_id=2128002380]
 unique_name_in_owner = true
 anchors_preset = 7
 anchor_left = 0.5
@@ -259,17 +260,17 @@ grow_vertical = 0
 scale = Vector2(0.7, 0.7)
 theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
 
-[node name="HBoxContainer" type="HBoxContainer" parent="ActionBars"]
+[node name="HBoxContainer" type="HBoxContainer" parent="ActionBars" unique_id=247321410]
 layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="ActionSlot1" type="Button" parent="ActionBars/HBoxContainer"]
+[node name="ActionSlot1" type="Button" parent="ActionBars/HBoxContainer" unique_id=915454794]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 
-[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot1"]
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot1" unique_id=1685086172]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -280,7 +281,7 @@ texture = ExtResource("2_purge")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Slot1Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot1"]
+[node name="Slot1Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot1" unique_id=747240222]
 unique_name_in_owner = true
 modulate = Color(0, 0, 0, 0.7)
 layout_mode = 1
@@ -291,7 +292,7 @@ grow_horizontal = 2
 grow_vertical = 2
 fill_mode = 5
 
-[node name="Slot1CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot1"]
+[node name="Slot1CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot1" unique_id=1589200771]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -306,12 +307,12 @@ text = "25"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ActionSlot2" type="Button" parent="ActionBars/HBoxContainer"]
+[node name="ActionSlot2" type="Button" parent="ActionBars/HBoxContainer" unique_id=1614650823]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 
-[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot2"]
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot2" unique_id=79345869]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -322,7 +323,7 @@ texture = ExtResource("3_nova")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Slot2Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot2"]
+[node name="Slot2Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot2" unique_id=781353104]
 unique_name_in_owner = true
 modulate = Color(0, 0, 0, 0.7)
 layout_mode = 1
@@ -333,7 +334,7 @@ grow_horizontal = 2
 grow_vertical = 2
 fill_mode = 5
 
-[node name="Slot2CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot2"]
+[node name="Slot2CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot2" unique_id=1259673500]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -348,12 +349,12 @@ text = "25"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ActionSlot3" type="Button" parent="ActionBars/HBoxContainer"]
+[node name="ActionSlot3" type="Button" parent="ActionBars/HBoxContainer" unique_id=997740952]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
 
-[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot3"]
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot3" unique_id=768328846]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -364,7 +365,7 @@ texture = ExtResource("4_barrier")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="Slot3Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot3"]
+[node name="Slot3Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot3" unique_id=1838305369]
 unique_name_in_owner = true
 modulate = Color(0, 0, 0, 0.7)
 layout_mode = 1
@@ -375,7 +376,7 @@ grow_horizontal = 2
 grow_vertical = 2
 fill_mode = 5
 
-[node name="Slot3CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot3"]
+[node name="Slot3CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot3" unique_id=2111471766]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -390,19 +391,55 @@ text = "30"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ActionSlot4" type="Button" parent="ActionBars/HBoxContainer"]
+[node name="ActionSlot4" type="Button" parent="ActionBars/HBoxContainer" unique_id=1158939602]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
-text = "4"
 
-[node name="ActionSlot5" type="Button" parent="ActionBars/HBoxContainer"]
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot4" unique_id=1158939603]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot4" unique_id=1158939604]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot4" unique_id=1158939605]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+text = "10"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot5" type="Button" parent="ActionBars/HBoxContainer" unique_id=2069512069]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "5"
 
-[node name="XPBar" type="ProgressBar" parent="."]
+[node name="XPBar" type="ProgressBar" parent="." unique_id=1526723056]
 unique_name_in_owner = true
 modulate = Color(0.8, 0, 1, 1)
 custom_minimum_size = Vector2(0, 10)
@@ -417,7 +454,7 @@ theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
 value = 50.0
 show_percentage = false
 
-[node name="XPLabel" type="Label" parent="XPBar"]
+[node name="XPLabel" type="Label" parent="XPBar" unique_id=1390168880]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -431,7 +468,7 @@ text = "XP: 50% / 1000"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="MinimapContainer" type="SubViewportContainer" parent="."]
+[node name="MinimapContainer" type="SubViewportContainer" parent="." unique_id=78675797]
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -442,18 +479,18 @@ offset_bottom = 230.0
 grow_horizontal = 0
 scale = Vector2(0.75, 0.75)
 
-[node name="SubViewport" type="SubViewport" parent="MinimapContainer"]
+[node name="SubViewport" type="SubViewport" parent="MinimapContainer" unique_id=204108952]
 handle_input_locally = false
 size = Vector2i(200, 200)
 render_target_update_mode = 4
 
-[node name="MinimapCamera" type="Camera3D" parent="MinimapContainer/SubViewport"]
+[node name="MinimapCamera" type="Camera3D" parent="MinimapContainer/SubViewport" unique_id=1015909136]
 unique_name_in_owner = true
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, 1, 0, -1, -4.37114e-08, 0, 50, 0)
 projection = 1
 size = 40.0
 
-[node name="EscMenu" type="CenterContainer" parent="."]
+[node name="EscMenu" type="CenterContainer" parent="." unique_id=1182939810]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 15
@@ -462,51 +499,51 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="EscMenu"]
+[node name="PanelContainer" type="PanelContainer" parent="EscMenu" unique_id=1231962626]
 custom_minimum_size = Vector2(300, 250)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
 
-[node name="VBoxContainer" type="VBoxContainer" parent="EscMenu/PanelContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="EscMenu/PanelContainer" unique_id=36500959]
 layout_mode = 2
 theme_override_constants/separation = 15
 alignment = 1
 
-[node name="Label" type="Label" parent="EscMenu/PanelContainer/VBoxContainer"]
+[node name="Label" type="Label" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=182161733]
 layout_mode = 2
 theme_override_font_sizes/font_size = 24
 text = "Menü"
 horizontal_alignment = 1
 
-[node name="ResumeButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+[node name="ResumeButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1943169586]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Weiter"
 
-[node name="CharScreenButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+[node name="CharScreenButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1527241477]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Charakter Auswahl"
 
-[node name="BindingsButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+[node name="BindingsButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1269826787]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Tastaturbelegung"
 
-[node name="ExitGameButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer"]
+[node name="ExitGameButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1461238063]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Spiel beenden"
 
-[node name="BindingsMenu" type="CenterContainer" parent="."]
+[node name="BindingsMenu" type="CenterContainer" parent="." unique_id=1930173244]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 15
@@ -515,59 +552,59 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="PanelContainer" type="PanelContainer" parent="BindingsMenu"]
+[node name="PanelContainer" type="PanelContainer" parent="BindingsMenu" unique_id=248565690]
 custom_minimum_size = Vector2(500, 400)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
 
-[node name="VBox" type="VBoxContainer" parent="BindingsMenu/PanelContainer"]
+[node name="VBox" type="VBoxContainer" parent="BindingsMenu/PanelContainer" unique_id=965755873]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="Label" type="Label" parent="BindingsMenu/PanelContainer/VBox"]
+[node name="Label" type="Label" parent="BindingsMenu/PanelContainer/VBox" unique_id=1605188663]
 layout_mode = 2
 theme_override_font_sizes/font_size = 20
 text = "Tastatur- & Gamepadbelegung"
 horizontal_alignment = 1
 
-[node name="ScrollContainer" type="ScrollContainer" parent="BindingsMenu/PanelContainer/VBox"]
+[node name="ScrollContainer" type="ScrollContainer" parent="BindingsMenu/PanelContainer/VBox" unique_id=1195172971]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="ControlList" type="VBoxContainer" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer"]
+[node name="ControlList" type="VBoxContainer" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer" unique_id=964392736]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 5
 
-[node name="Header" type="HBoxContainer" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList"]
+[node name="Header" type="HBoxContainer" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList" unique_id=1790866481]
 layout_mode = 2
 
-[node name="ActionLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header"]
+[node name="ActionLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header" unique_id=1764690956]
 custom_minimum_size = Vector2(150, 0)
 layout_mode = 2
 text = "Aktion"
 
-[node name="DefaultLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header"]
+[node name="DefaultLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header" unique_id=1003799657]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 text = "Standard"
 horizontal_alignment = 1
 
-[node name="AltLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header"]
+[node name="AltLabel" type="Label" parent="BindingsMenu/PanelContainer/VBox/ScrollContainer/ControlList/Header" unique_id=98890484]
 custom_minimum_size = Vector2(120, 0)
 layout_mode = 2
 text = "Alternativ"
 horizontal_alignment = 1
 
-[node name="CloseBindingsButton" type="Button" parent="BindingsMenu/PanelContainer/VBox"]
+[node name="CloseBindingsButton" type="Button" parent="BindingsMenu/PanelContainer/VBox" unique_id=667575804]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 35)
 layout_mode = 2
 size_flags_horizontal = 4
 text = "Schließen"
 
-[node name="LogoutLabel" type="Label" parent="."]
+[node name="LogoutLabel" type="Label" parent="." unique_id=1979096189]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 8
@@ -587,7 +624,7 @@ theme_override_font_sizes/font_size = 28
 text = "Logout in 10s..."
 horizontal_alignment = 1
 
-[node name="ChatContainer" type="VBoxContainer" parent="."]
+[node name="ChatContainer" type="VBoxContainer" parent="." unique_id=1748535117]
 unique_name_in_owner = true
 anchors_preset = 2
 anchor_top = 1.0
@@ -600,7 +637,7 @@ grow_vertical = 0
 scale = Vector2(0.75, 0.75)
 theme_override_constants/separation = 5
 
-[node name="ChatLog" type="RichTextLabel" parent="ChatContainer"]
+[node name="ChatLog" type="RichTextLabel" parent="ChatContainer" unique_id=1161278401]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
@@ -609,42 +646,42 @@ bbcode_enabled = true
 text = "[color=yellow][System][/color] Willkommen im Grid. Tippe /w name für Flüstern."
 scroll_following = true
 
-[node name="ChatInputLine" type="HBoxContainer" parent="ChatContainer"]
+[node name="ChatInputLine" type="HBoxContainer" parent="ChatContainer" unique_id=540799744]
 layout_mode = 2
 
-[node name="ChannelLabel" type="Label" parent="ChatContainer/ChatInputLine"]
+[node name="ChannelLabel" type="Label" parent="ChatContainer/ChatInputLine" unique_id=1574894036]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(0, 1, 0, 1)
 text = "[Gruppe]"
 
-[node name="ChatInput" type="LineEdit" parent="ChatContainer/ChatInputLine"]
+[node name="ChatInput" type="LineEdit" parent="ChatContainer/ChatInputLine" unique_id=451186810]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 placeholder_text = "Nachricht senden... (Enter)"
 context_menu_enabled = false
 
-[node name="CastBar" type="ProgressBar" parent="."]
+[node name="CastBar" type="ProgressBar" parent="." unique_id=1322804223]
 unique_name_in_owner = true
-visible = false
 anchors_preset = 7
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -150.0
-offset_top = -120.0
-offset_right = 150.0
-offset_bottom = -100.0
+offset_left = -200.0
+offset_top = -140.0
+offset_right = 200.0
+offset_bottom = -115.0
 grow_horizontal = 2
 grow_vertical = 0
+theme_override_styles/background = SubResource("StyleBoxFlat_bg")
 theme_override_styles/fill = SubResource("StyleBoxFlat_mana")
 value = 50.0
 show_percentage = false
 
-[node name="CastLabel" type="Label" parent="CastBar"]
+[node name="CastLabel" type="Label" parent="CastBar" unique_id=1853289833]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -652,12 +689,14 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 12
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 14
 text = "FROSTBLITZ"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="PartyContainer" type="VBoxContainer" parent="."]
+[node name="PartyContainer" type="VBoxContainer" parent="." unique_id=1297151302]
 unique_name_in_owner = true
 offset_left = 20.0
 offset_top = 130.0
@@ -665,7 +704,7 @@ offset_right = 220.0
 offset_bottom = 530.0
 theme_override_constants/separation = 10
 
-[node name="PartyInvitePopup" type="ConfirmationDialog" parent="."]
+[node name="PartyInvitePopup" type="ConfirmationDialog" parent="." unique_id=529066359]
 unique_name_in_owner = true
 title = "Gruppeneinladung"
 initial_position = 2
@@ -674,7 +713,7 @@ ok_button_text = "Annehmen"
 dialog_text = "Spieler X lädt dich ein."
 cancel_button_text = "Ablehnen"
 
-[node name="TargetContextMenu" type="PopupMenu" parent="."]
+[node name="TargetContextMenu" type="PopupMenu" parent="." unique_id=1702435439]
 unique_name_in_owner = true
 size = Vector2i(150, 60)
 item_count = 2

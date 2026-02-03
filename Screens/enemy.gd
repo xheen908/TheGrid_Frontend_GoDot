@@ -78,6 +78,8 @@ func _check_geometric_mesh(enemy_name: String):
 	elif "pyramide" in lower_name or "pyramid" in lower_name:
 		mesh = CylinderMesh.new()
 		mesh.top_radius = 0.0
+		mesh.bottom_radius = 1.0
+		mesh.height = 1.27 # Gizeh-Proportion: Höhe zu Basis (ca. 0.63 * Breite)
 		mesh.radial_segments = 4
 		mesh.rings = 1
 		color = Color(1, 0.5, 0) # Orange
@@ -111,9 +113,9 @@ func _check_geometric_mesh(enemy_name: String):
 		var mat = ShaderMaterial.new()
 		mat.shader = neon_shader
 		mat.set_shader_parameter("line_color", color)
-		mat.set_shader_parameter("line_thickness", 0.15)
-		mat.set_shader_parameter("glow_intensity", 4.0)
-		mat.set_shader_parameter("frequency", 10.0 if not "sphere" in lower_name else 20.0)
+		mat.set_shader_parameter("line_thickness", 0.12)
+		mat.set_shader_parameter("glow_intensity", 2.5)
+		mat.set_shader_parameter("frequency", 4.0)
 		geo_mesh_instance.material_override = mat
 
 func _update_visuals():

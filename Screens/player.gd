@@ -33,6 +33,8 @@ var max_hp = 100
 var shield = 0
 var buffs = []
 var is_casting = false
+var gravity_enabled = true
+var speed_multiplier = 1.0
 
 var selection_circle_scene = preload("res://Screens/SelectionCircle.tscn")
 var selection_circle = null
@@ -59,7 +61,9 @@ func _ready():
 	_setup_animations()
 	
 	if anim_tree:
+		anim_tree.active = false
 		anim_tree.active = true
+		print("Player: AnimationTree initial refresh")
 		
 	# Selection Circle initialisieren
 	selection_circle = selection_circle_scene.instantiate()
@@ -86,12 +90,19 @@ func update_gm_status(is_gm: bool):
 
 func start_casting(spell_id: String):
 	is_casting = true
+	if anim_tree:
+		anim_tree.set("parameters/conditions/is_casting", true)
+		anim_tree.set("parameters/conditions/not_casting", false)
+	
 	if casting_aura and spell_id != "Frostblitz":
 		casting_aura.show()
-	# Später: Hier echte Animationen auf dem CharacterBody abspielen
 
 func stop_casting():
 	is_casting = false
+	if anim_tree:
+		anim_tree.set("parameters/conditions/is_casting", false)
+		anim_tree.set("parameters/conditions/not_casting", true)
+		
 	if casting_aura:
 		if shield <= 0:
 			casting_aura.hide()
@@ -100,6 +111,7 @@ func initialise_class(new_class: String):
 	if new_class == "": new_class = "Mage"
 	if character_class == new_class and visuals: return
 	
+	print("Player: Changing class to ", new_class)
 	character_class = new_class
 	if models.has(new_class):
 		var model_scene = models[new_class]
@@ -118,7 +130,10 @@ func initialise_class(new_class: String):
 			if anim_tree:
 				var new_anim_player = visuals.find_child("AnimationPlayer", true)
 				if new_anim_player:
-					anim_tree.anim_player = new_anim_player.get_path()
+					anim_tree.anim_player = anim_tree.get_path_to(new_anim_player)
+					anim_tree.active = false
+					anim_tree.active = true
+					print("PlayerAnims: AnimationTree re-linked to ", anim_tree.anim_player)
 
 func _setup_animations():
 	# Ensure AnimationPlayer exists
@@ -136,8 +151,15 @@ func _setup_animations():
 	if not anim_player.has_animation_library(""):
 		anim_player.add_animation_library("", AnimationLibrary.new())
 	var lib = anim_player.get_animation_library("")
+	print("PlayerAnims: Library found/created. Anim count: ", lib.get_animation_list().size())
 
-	# Reset Visuals rotation (Try 180 degrees if ZERO was backward)
+	# AnimationTree Verbindung erneuern
+	if anim_tree:
+		anim_tree.anim_player = anim_tree.get_path_to(anim_player)
+		anim_tree.active = true
+		anim_tree.set("parameters/IWS/blend_position", Vector2.ZERO)
+		print("PlayerAnims: AnimationTree linked to: ", anim_tree.anim_player)
+
 	if visuals:
 		visuals.rotation.y = PI # Rotate 180 degrees
 		
@@ -148,14 +170,14 @@ func _setup_animations():
 		name_label.hide() # Standardmäßig aus, außer GM Flag ist an
 
 	# Define where to find animations and how to map them
-	# Key: Target Name (for AnimationTree), Value: { "file": path, "anim": source_name }
 	var anim_mapping = {
 		"Idle": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_General.fbx", "source": "Idle_A", "loop": true},
 		"Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
-		"Walking Backwards": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
-		"Left Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
-		"Right Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
-		"Jump": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Jump_Start", "loop": false}
+		"Walking Backwards": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_B", "loop": true},
+		"Left Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_C", "loop": true},
+		"Right Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_C", "loop": true},
+		"Jump": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Jump_Start", "loop": false},
+		"Casting": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_General.fbx", "source": "Attack_Staff", "loop": true}
 	}
 
 	for target_name in anim_mapping:
@@ -168,109 +190,65 @@ func _setup_animations():
 			if res:
 				var scene = res.instantiate()
 				var source_player = scene.find_child("AnimationPlayer")
-				if source_player and source_player.has_animation(source_name):
-					var source_anim = source_player.get_animation(source_name)
-					var anim = source_anim.duplicate()
+				if source_player:
+					# Find animation - if specific source not found, fallback to Walking_A
+					var real_source_name = ""
+					var available_anims = source_player.get_animation_list()
 					
-					# DEBUG: Print original first track
-					if anim.get_track_count() > 0:
-						print("DEBUG [", target_name, "] Original Track 0: ", anim.track_get_path(0))
+					for a_name in available_anims:
+						if a_name.ends_with(source_name) or a_name.ends_with("/" + source_name):
+							real_source_name = a_name
+							break
 					
-					# Retargeting: Dynamic Skeleton Path
-					# 1. Find the actual Skeleton3D node in our Visuals
-					var target_skeleton: Skeleton3D = null
-					if visuals:
-						target_skeleton = _find_skeleton_recursive(visuals)
+					# Fallback logic
+					if real_source_name == "":
+						for a_name in available_anims:
+							if a_name.ends_with("Walking_A"): # Best generic fallback
+								real_source_name = a_name
+								break
 					
-					var target_skeleton_path = ""
-					if target_skeleton and anim_player:
-						target_skeleton_path = str(anim_player.get_path_to(target_skeleton))
-					else:
-						# Fallback if no skeleton found (unlikely for a character)
-						print("PlayerAnims: WARNING - No Skeleton3D found in Visuals!")
-						target_skeleton_path = "Skeleton3D" # Best guess
-					
-
-					if not skeleton_debug_printed and target_skeleton:
-						print("DEBUG: Target Skeleton Bone List (First 10):")
-						for b in range(min(10, target_skeleton.get_bone_count())):
-							print(" - ", target_skeleton.get_bone_name(b))
-						skeleton_debug_printed = true
-
-					var track_count = anim.get_track_count()
-					for i in range(track_count):
-						var track_path = str(anim.track_get_path(i))
-						var parts = track_path.split("/")
-						var bone_name_in_track = parts[parts.size() - 1]
+					if real_source_name != "":
+						var source_anim = source_player.get_animation(real_source_name)
+						var anim = source_anim.duplicate()
 						
-						# Check if it's an attribute track (:)
-						if ":" in bone_name_in_track:
-							# For 3D skeleton anims in Godot, path is NodePath:BoneName
-							# But sometimes it's NodePath:Property (like blend shapes)
-							# If we suspect it's a bone...
-							pass
+						# Retargeting logic: Wir setzen den Root des Players auf sich selbst ('.')
+						# Damit sind alle Pfade relativ zum AnimationPlayer-Knoten.
+						anim_player.root_node = NodePath(".")
+						var target_skeleton: Skeleton3D = _find_skeleton_recursive(visuals) if visuals else null
+						var target_skeleton_path = str(anim_player.get_path_to(target_skeleton)) if target_skeleton else "Skeleton3D"
 						
-						# If the path actually used : to separate bone, the split might be tricky.
-						# Standard path: "Skeleton3D:Hips" -> parts=["Skeleton3D:Hips"]? 
-						# No, NodePath("A/B:C") splits by slash to A, B:C.
-						
-						# Let's handle the NodePath properly
-						var np = anim.track_get_path(i)
-						var subname = np.get_concatenated_subnames() # effectively the property or bone name
-						
-						# Optimization: Assuming the problem is Case Sensitivity or Prefix
-						if target_skeleton:
-							var final_bone_name = subname
+						for i in range(anim.get_track_count()):
+							var np = anim.track_get_path(i)
+							var bone_name = np.get_concatenated_subnames()
 							
-							# 1. Try Exact Match
-							if target_skeleton.find_bone(final_bone_name) == -1:
-								# 2. Try Capitalized (hips -> Hips)
-								var cap_name = final_bone_name.capitalize().replace(" ", "")
-								# Capitalize often adds spaces "hip node" -> "Hip Node", we want PascalCase usually
-								# Better: Try manually uppercase first letter
-								var pascal = final_bone_name.substr(0,1).to_upper() + final_bone_name.substr(1)
+							if target_skeleton:
+								var final_bone = bone_name
+								if target_skeleton.find_bone(final_bone) == -1:
+									var pascal = final_bone.substr(0,1).to_upper() + final_bone.substr(1)
+									if target_skeleton.find_bone(pascal) != -1: final_bone = pascal
+									elif target_skeleton.find_bone(final_bone.to_lower()) != -1: final_bone = final_bone.to_lower()
+									elif target_skeleton.find_bone("mixamorig:" + final_bone) != -1: final_bone = "mixamorig:" + final_bone
 								
-								if target_skeleton.find_bone(pascal) != -1:
-									final_bone_name = pascal
-								# 3. Try Lowercase
-								elif target_skeleton.find_bone(final_bone_name.to_lower()) != -1:
-									final_bone_name = final_bone_name.to_lower()
-								# 4. Try KeyKit/Mixamo patterns
-								elif target_skeleton.find_bone("mixamorig:" + final_bone_name) != -1:
-									final_bone_name = "mixamorig:" + final_bone_name
-								elif target_skeleton.find_bone(final_bone_name.replace("mixamorig:", "")) != -1:
-									final_bone_name = final_bone_name.replace("mixamorig:", "")
-								
-								# Apply correction if changed
-								if final_bone_name != subname:
-									# Reconstruct path using our mapped Skeleton Path
-									var new_full_path = target_skeleton_path + ":" + final_bone_name
-									anim.track_set_path(i, new_full_path)
-									continue # Done for this track
-
-						# Default fallback if no match or no skeleton
-						anim.track_set_path(i, target_skeleton_path + ":" + subname)
-							
-					# DEBUG: Print new first track
-					if anim.get_track_count() > 0:
-						print("DEBUG [", target_name, "] Retargeted Track 0: ", anim.track_get_path(0))
-
-					if data.loop:
-						anim.loop_mode = Animation.LOOP_LINEAR
-					else:
-						anim.loop_mode = Animation.LOOP_NONE
+								anim.track_set_path(i, target_skeleton_path + ":" + final_bone)
+							else:
+								anim.track_set_path(i, target_skeleton_path + ":" + bone_name)
 						
-					lib.add_animation(target_name, anim)
-					print("PlayerAnims: Mapped ", source_name, " -> ", target_name)
-				else:
-					print("PlayerAnims: Source anim '", source_name, "' not found in ", path)
-					if source_player:
-						print(" - Available animations: ", source_player.get_animation_list())
+						anim.loop_mode = Animation.LOOP_LINEAR if data.loop else Animation.LOOP_NONE
+						lib.add_animation(target_name, anim)
+						print("PlayerAnims: Mapped ", real_source_name, " -> ", target_name)
+					else:
+						print("PlayerAnims: Source anim '", source_name, "' not found in ", path)
 				
 				scene.queue_free()
-
-			else:
-				print("PlayerAnims: Failed to load ", path)
+	
+	# Am Ende: AnimationTree hart triggern
+	if anim_tree and anim_player:
+		anim_tree.anim_player = anim_tree.get_path_to(anim_player)
+		anim_tree.active = true
+		var playback = anim_tree.get("parameters/playback")
+		if playback:
+			playback.start("IWS")
+			print("PlayerAnims: StateMachine started at IWS")
 
 
 func _unhandled_input(event):
@@ -327,19 +305,31 @@ func _input(event):
 	# Frostblitz (Action cast_1)
 	if event.is_action_pressed("cast_1"):
 		if not get_viewport().gui_get_focus_owner():
+			# Falls kein Ziel da ist, versuche eins zu finden
 			if not current_target:
-				_cycle_targets() # Versuche ein Ziel zu finden
+				_cycle_targets()
 				
 			if current_target:
-				var mid = ""
+				var target_id = ""
 				if "mob_id" in current_target:
-					mid = current_target.mob_id
-				if mid != "":
+					target_id = current_target.mob_id
+				elif "username" in current_target:
+					target_id = current_target.username
+				
+				if target_id != "":
 					if velocity.length() > 0.5:
 						show_message("Du kannst das nicht während der Bewegung wirken!")
 						return
-					NetworkManager.cast_spell("Frostblitz", mid)
+					
+					print("Player: Casting Frostblitz on ", target_id)
+					NetworkManager.cast_spell("Frostblitz", target_id)
 					get_viewport().set_input_as_handled()
+				else:
+					print("Player: Target has no ID (mob_id/username)")
+					show_message("Ungültiges Ziel!")
+			else:
+				print("Player: No target for Frostblitz")
+				show_message("Kein Ziel ausgewählt!")
 				
 	# Frost Nova (Action cast_2)
 	if event.is_action_pressed("cast_2"):
@@ -347,8 +337,15 @@ func _input(event):
 			NetworkManager.cast_spell("Frost Nova", "")
 			get_viewport().set_input_as_handled()
 			
-	# Eisbarriere (Action cast_3)
+	# Kältekegel (Action cast_3)
 	if event.is_action_pressed("cast_3"):
+		if not get_viewport().gui_get_focus_owner():
+			print("Player: Casting Kältekegel")
+			NetworkManager.cast_spell("Kältekegel", "")
+			get_viewport().set_input_as_handled()
+			
+	# Eisbarriere (Action cast_4)
+	if event.is_action_pressed("cast_4"):
 		if not get_viewport().gui_get_focus_owner():
 			NetworkManager.cast_spell("Eisbarriere", "")
 			get_viewport().set_input_as_handled()
@@ -461,16 +458,26 @@ func _physics_process(delta):
 			set_target(null)
 			
 	# Add the gravity.
-	if not is_on_floor():
-		velocity.y -= gravity * delta
-
-	# Handle jump.
-	if Input.is_action_just_pressed("jump") and is_on_floor() and not get_viewport().gui_get_focus_owner():
-		velocity.y = JUMP_VELOCITY
-		if anim_tree:
-			anim_tree.set("parameters/conditions/jump", true)
+	if gravity_enabled:
+		if not is_on_floor():
+			velocity.y -= gravity * delta
 	else:
-		if anim_tree:
+		# In zero gravity, velocity.y decays less or we handle it via input
+		velocity.y = move_toward(velocity.y, 0, delta * 5.0)
+
+	# Handle jump / fly up.
+	if Input.is_action_pressed("jump") and not get_viewport().gui_get_focus_owner():
+		if gravity_enabled:
+			if is_on_floor():
+				velocity.y = JUMP_VELOCITY
+				if anim_tree:
+					anim_tree.set("parameters/conditions/jump", true)
+		else:
+			# Flying up
+			velocity.y = JUMP_VELOCITY
+	
+	if gravity_enabled and anim_tree:
+		if not Input.is_action_pressed("jump"):
 			anim_tree.set("parameters/conditions/jump", false)
 
 	# Get the input direction and handle the movement/deceleration.
@@ -506,7 +513,7 @@ func _physics_process(delta):
 	var direction = (transform.basis * Vector3(input_dir.x, 0, input_dir.y)).normalized()
 	
 	if direction:
-		var current_speed = SPEED
+		var current_speed = SPEED * speed_multiplier
 		if input_dir.y > 0: # Rückwärts laufen
 			current_speed *= 0.5
 			

@@ -1,0 +1,23 @@
+[gd_scene format=3 uid="uid://d1h6hoj1epf4k"]
+
+[ext_resource type="Shader" uid="uid://bajogws5x28d4" path="res://Maps/diablo_portal.gdshader" id="1_1x7oq"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_diablo"]
+render_priority = 0
+shader = ExtResource("1_1x7oq")
+shader_parameter/portal_color = Color(0, 0.4, 1, 1)
+shader_parameter/core_color = Color(0.5, 0.9, 1, 1)
+shader_parameter/transparency = 0.1
+shader_parameter/rim_power = 3.0
+shader_parameter/glow_intensity = 4.0
+
+[sub_resource type="SphereMesh" id="SphereMesh_portal"]
+radius = 2.0
+height = 6.0
+
+[node name="DiabloPortal" type="Node3D" unique_id=1961164638]
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="." unique_id=1866430636]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 0)
+material_override = SubResource("ShaderMaterial_diablo")
+mesh = SubResource("SphereMesh_portal")

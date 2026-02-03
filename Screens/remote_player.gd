@@ -46,11 +46,17 @@ func _ready():
 
 func start_casting(spell_id: String):
 	is_casting = true
+	if anim_tree:
+		anim_tree.set("parameters/conditions/is_casting", true)
+		anim_tree.set("parameters/conditions/not_casting", false)
 	if casting_aura and spell_id != "Frostblitz": 
 		casting_aura.show()
 
 func stop_casting():
 	is_casting = false
+	if anim_tree:
+		anim_tree.set("parameters/conditions/is_casting", false)
+		anim_tree.set("parameters/conditions/not_casting", true)
 	if casting_aura: casting_aura.hide()
 
 func initialise_class(new_class: String):
@@ -134,16 +140,23 @@ func _physics_process(delta):
 	if anim_tree:
 		var blend_y = -1.0 if move_dist > 0.05 else 0.0
 		anim_tree.set("parameters/IWS/blend_position", Vector2(0, blend_y))
+		
+		# Falls nicht gecastet wird, sicherstellen dass wir in IWS sind
+		if not is_casting:
+			anim_tree.set("parameters/conditions/is_casting", false)
+			anim_tree.set("parameters/conditions/not_casting", true)
 
 func _setup_animations():
-	var anim_player = find_child("AnimationPlayer", true)
+	var anim_player = null
+	if visuals:
+		anim_player = visuals.find_child("AnimationPlayer", true)
+	
 	if not anim_player:
 		if visuals:
-			anim_player = visuals.find_child("AnimationPlayer", true)
-			if not anim_player:
-				anim_player = AnimationPlayer.new()
-				anim_player.name = "AnimationPlayer"
-				visuals.add_child(anim_player)
+			anim_player = AnimationPlayer.new()
+			anim_player.name = "AnimationPlayer"
+			visuals.add_child(anim_player)
+			print("RemotePlayerAnims: Created new AnimationPlayer")
 	
 	if not anim_player.has_animation_library(""):
 		anim_player.add_animation_library("", AnimationLibrary.new())
@@ -158,59 +171,51 @@ func _setup_animations():
 		"Walking Backwards": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
 		"Left Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
 		"Right Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
-		"Jump": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Jump_Start", "loop": false}
+		"Jump": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Jump_Start", "loop": false},
+		"Casting": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_General.fbx", "source": "Attack_Staff", "loop": true}
 	}
 
 	for target_name in anim_mapping:
 		var data = anim_mapping[target_name]
-		var path = data.file
-		var source_name = data.source
-		
-		if ResourceLoader.exists(path):
-			var res = load(path)
+		if ResourceLoader.exists(data.file):
+			var res = load(data.file)
 			if res:
 				var scene = res.instantiate()
 				var source_player = scene.find_child("AnimationPlayer")
-				if source_player and source_player.has_animation(source_name):
-					var source_anim = source_player.get_animation(source_name)
-					var anim = source_anim.duplicate()
+				if source_player:
+					var real_source_name = ""
+					for a_name in source_player.get_animation_list():
+						if a_name.ends_with(data.source) or a_name.ends_with("/" + data.source):
+							real_source_name = a_name
+							break
 					
-					# Retargeting: Dynamic Skeleton Path
-					var target_skeleton: Skeleton3D = null
-					if visuals:
-						target_skeleton = _find_skeleton_recursive(visuals)
-					
-					var target_skeleton_path = "Skeleton3D"
-					if target_skeleton and anim_player:
-						target_skeleton_path = str(anim_player.get_path_to(target_skeleton))
-					
-					var track_count = anim.get_track_count()
-					for i in range(track_count):
-						var np = anim.track_get_path(i)
-						var subname = np.get_concatenated_subnames()
+					if real_source_name != "":
+						var source_anim = source_player.get_animation(real_source_name)
+						var anim = source_anim.duplicate()
 						
-						if target_skeleton:
-							var final_bone_name = subname
-							if target_skeleton.find_bone(final_bone_name) == -1:
-								var pascal = final_bone_name.substr(0,1).to_upper() + final_bone_name.substr(1)
-								if target_skeleton.find_bone(pascal) != -1:
-									final_bone_name = pascal
-								elif target_skeleton.find_bone(final_bone_name.to_lower()) != -1:
-									final_bone_name = final_bone_name.to_lower()
+						var target_skeleton: Skeleton3D = _find_skeleton_recursive(visuals) if visuals else null
+						var target_skeleton_path = str(anim_player.get_path_to(target_skeleton)) if target_skeleton else "Skeleton3D"
+						
+						for i in range(anim.get_track_count()):
+							var np = anim.track_get_path(i)
+							var bone_name = np.get_concatenated_subnames()
+							
+							if target_skeleton:
+								var final_bone = bone_name
+								if target_skeleton.find_bone(final_bone) == -1:
+									var pascal = final_bone.substr(0,1).to_upper() + final_bone.substr(1)
+									if target_skeleton.find_bone(pascal) != -1: final_bone = pascal
+									elif target_skeleton.find_bone(final_bone.to_lower()) != -1: final_bone = final_bone.to_lower()
+									elif target_skeleton.find_bone("mixamorig:" + final_bone) != -1: final_bone = "mixamorig:" + final_bone
 								
-								if final_bone_name != subname:
-									var new_full_path = target_skeleton_path + ":" + final_bone_name
-									anim.track_set_path(i, new_full_path)
-									continue
-									
-						anim.track_set_path(i, target_skeleton_path + ":" + subname)
-					
-					if data.loop:
-						anim.loop_mode = Animation.LOOP_LINEAR
-					else:
-						anim.loop_mode = Animation.LOOP_NONE
+								anim.track_set_path(i, target_skeleton_path + ":" + final_bone)
+							else:
+								anim.track_set_path(i, target_skeleton_path + ":" + bone_name)
 						
-					lib.add_animation(target_name, anim)
+						anim.loop_mode = Animation.LOOP_LINEAR if data.loop else Animation.LOOP_NONE
+						lib.add_animation(target_name, anim)
+					else:
+						print("RemotePlayerAnims: Source anim '", data.source, "' not found in ", data.file)
 				scene.queue_free()
 
 func _find_skeleton_recursive(node: Node) -> Skeleton3D:

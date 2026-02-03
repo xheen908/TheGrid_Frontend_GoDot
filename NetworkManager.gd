@@ -99,6 +99,11 @@ func _on_ws_message(message: String):
 	match data.get("type"):
 		"authenticated":
 			print("WS erfolgreich authentifiziert!")
+			if current_player_data:
+				current_player_data["is_gm"] = data.get("is_gm", false)
+				if data.has("username"):
+					current_player_data["username"] = data.get("username")
+					print("NetworkManager: Username stored: ", current_player_data["username"])
 			is_authenticating = false
 			ws_authenticated.emit()
 		"player_moved":

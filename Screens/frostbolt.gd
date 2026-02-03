@@ -9,8 +9,14 @@ func setup(p_target):
 	if target_node:
 		target_pos = target_node.global_position + Vector3(0, 1.0, 0)
 	
-	# Initial schau auf Ziel
-	look_at(target_pos)
+	# Initial look at target
+	if target_pos.distance_to(global_position) > 0.1:
+		look_at(target_pos)
+
+	# Start VFX if VFXController exists
+	var vfx = get_node_or_null("VFX")
+	if vfx and vfx.has_method("play"):
+		vfx.play()
 
 func _process(delta):
 	# Update target pos if node is valid
@@ -22,17 +28,15 @@ func _process(delta):
 		_impact()
 		return
 	
-	# Bewege zum Ziel
+	# Move to target
 	global_position += dir * speed * delta
 	
-	# Schau zum Ziel (sanft)
+	# Smoothly look at target
 	if dir != Vector3.ZERO:
-		# Wir schauen in Richtung 'dir', aber Godot look_at schaut nach -Z.
-		# Da unser Mesh durch die Kapsel-Rotation (X-Achse 90) nun entlang Z liegt,
-		# nutzen wir eine korrigierte Basis.
 		var target_pos_eye = global_position + dir
 		look_at(target_pos_eye)
 
 func _impact():
-	# Später: Partikel Effekt
+	# For now, just remove the bolt. 
+	# The VFX child could trigger a hit animation, but queue_free is safer for now.
 	queue_free()

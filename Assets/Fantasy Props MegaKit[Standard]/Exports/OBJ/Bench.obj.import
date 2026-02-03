@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://ccree0ewq07v1"
+path="res://.godot/imported/Bench.obj-20f5ef1762b86df11be4e1aeaf1e61ee.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Bench.obj-20f5ef1762b86df11be4e1aeaf1e61ee.mesh"]
+
+source_file="res://Assets/Fantasy Props MegaKit[Standard]/Exports/OBJ/Bench.obj"
+dest_files=["res://.godot/imported/Bench.obj-20f5ef1762b86df11be4e1aeaf1e61ee.mesh", "res://.godot/imported/Bench.obj-20f5ef1762b86df11be4e1aeaf1e61ee.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

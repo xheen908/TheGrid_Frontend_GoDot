@@ -2,7 +2,12 @@
 extends Area3D
 
 @export var editor_placeholder: bool = false
-@export var target_map: String = "WorldMap0"
+@export var target_map: String = "WorldMap0":
+	set(value):
+		target_map = value
+		_auto_load_preview()
+		if Engine.is_editor_hint():
+			update_visuals()
 @export var spawn_position: Vector3 = Vector3.ZERO
 @export var spawn_rotation_y: float = 0.0
 @export var portal_color: Color = Color.CYAN:
@@ -10,8 +15,19 @@ extends Area3D
 		portal_color = value
 		if Engine.is_editor_hint():
 			update_visuals()
+@export var preview_texture: Texture2D:
+	set(value):
+		preview_texture = value
+		if Engine.is_editor_hint():
+			update_visuals()
 
 var is_active = true
+
+func _auto_load_preview():
+	if target_map:
+		var path = "res://Maps/Previews/" + target_map + ".png"
+		if FileAccess.file_exists(path):
+			preview_texture = load(path)
 
 func setup_dynamic(data: Dictionary):
 	print("Portal setup_dynamic: ", data)
@@ -54,6 +70,8 @@ func update_visuals():
 			mat = mat.duplicate()
 			if mat is ShaderMaterial:
 				mat.set_shader_parameter("portal_color", portal_color)
+				if preview_texture:
+					mat.set_shader_parameter("target_preview", preview_texture)
 			horizon_mesh.material_override = mat
 
 func _on_body_entered(body):

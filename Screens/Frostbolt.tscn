@@ -1,38 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://cx6m0r3b7u2jd"]
+[gd_scene load_steps=3 format=3 uid="uid://cx6m0r3b7u2jd"]
 
 [ext_resource type="Script" path="res://Screens/frostbolt.gd" id="1_script"]
-
-[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_frost"]
-albedo_color = Color(0, 0.6, 1, 1)
-emission_enabled = true
-emission = Color(0, 0.8, 1, 1)
-emission_energy_multiplier = 8.0
-transparency = 1
-blend_mode = 1
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_bolt"]
-radius = 0.08
-height = 1.5
-radial_segments = 8
-rings = 4
-
-[sub_resource type="BoxMesh" id="BoxMesh_glint"]
-size = Vector3(0.5, 0.05, 0.05)
+[ext_resource type="PackedScene" uid="uid://bbrua2kwcecpu" path="res://Assets/BinbunVFX/magic_projectiles/effects/mprojectile_javelin/mprojectile_javelin_vfx_02.tscn" id="2_vfx"]
 
 [node name="Frostbolt" type="Node3D"]
 script = ExtResource("1_script")
 
-[node name="Core" type="MeshInstance3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, 0)
-material_override = SubResource("StandardMaterial3D_frost")
-mesh = SubResource("CapsuleMesh_bolt")
-
-[node name="Glint" type="MeshInstance3D" parent="Core"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
-material_override = SubResource("StandardMaterial3D_frost")
-mesh = SubResource("BoxMesh_glint")
-
-[node name="OmniLight3D" type="OmniLight3D" parent="."]
-light_color = Color(0, 0.9, 1, 1)
-light_energy = 3.0
-omni_range = 5.0
+[node name="VFX" parent="." instance=ExtResource("2_vfx")]
+transform = Transform3D(2.62268e-07, 0, 6, 0, 6, 0, -6, 0, 2.62268e-07, 0, 0, -6)

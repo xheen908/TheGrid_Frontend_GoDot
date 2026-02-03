@@ -1,6 +1,86 @@
 [gd_scene format=3 uid="uid://c7bstas1qixst"]
 
 [ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
+[ext_resource type="Shader" uid="uid://bkuskplnncuna" path="res://Maps/electric.gdshader" id="2_b1m3s"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_s0sdi"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/grid_size = 50.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
+size = Vector2(100, 100)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_83mus"]
+render_priority = 0
+shader = ExtResource("2_b1m3s")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/line_freq = 100.0
+shader_parameter/height = 0.6
+shader_parameter/speed = 0.8
+shader_parameter/scale = Vector2(2, 16)
+shader_parameter/emission_strength = 2.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_wall"]
+size = Vector3(100, 10, 2)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
+size = Vector3(100, 10, 2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_bgv03"]
+render_priority = 0
+shader = ExtResource("2_b1m3s")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/line_freq = 100.0
+shader_parameter/height = 0.6
+shader_parameter/speed = 0.8
+shader_parameter/scale = Vector2(2, 16)
+shader_parameter/emission_strength = 2.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_1a76k"]
+render_priority = 0
+shader = ExtResource("2_b1m3s")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/line_freq = 100.345
+shader_parameter/height = 0.6
+shader_parameter/speed = 0.8
+shader_parameter/scale = Vector2(2, 16)
+shader_parameter/emission_strength = 2.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3qovq"]
+render_priority = 0
+shader = ExtResource("2_b1m3s")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/line_freq = 100.0
+shader_parameter/height = 0.6
+shader_parameter/speed = 0.8
+shader_parameter/scale = Vector2(2, 16)
+shader_parameter/emission_strength = 2.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ssuss"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.1, 0, 0.05, 1)
+shader_parameter/line_color = Color(0, 1, 0, 1)
+shader_parameter/grid_size = 50.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="BoxMesh" id="BoxMesh_plateau"]
+size = Vector3(20, 3, 20)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_plateau"]
+size = Vector3(20, 3, 20)
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_arena2"]
 render_priority = 0
@@ -10,23 +90,6 @@ shader_parameter/line_color = Color(0, 1, 0, 1)
 shader_parameter/grid_size = 3.0
 shader_parameter/line_width = 1.0
 shader_parameter/glow_strength = 4.0
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_floor"]
-size = Vector2(100, 100)
-
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_wall"]
-size = Vector3(100, 10, 2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
-size = Vector3(100, 10, 2)
-
-[sub_resource type="BoxMesh" id="BoxMesh_plateau"]
-size = Vector3(20, 3, 20)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_plateau"]
-size = Vector3(20, 3, 20)
 
 [sub_resource type="BoxMesh" id="BoxMesh_ramp"]
 size = Vector3(10, 0.5, 4)
@@ -52,7 +115,7 @@ glow_enabled = true
 [node name="Arena2" type="Node3D" unique_id=45234889]
 
 [node name="Floor" type="MeshInstance3D" parent="." unique_id=1907988444]
-material_override = SubResource("ShaderMaterial_arena2")
+material_override = SubResource("ShaderMaterial_s0sdi")
 mesh = SubResource("PlaneMesh_floor")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Floor" unique_id=1342115840]
@@ -66,7 +129,7 @@ shape = SubResource("WorldBoundaryShape3D_floor")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, -50)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_N" unique_id=1441967178]
-material_override = SubResource("ShaderMaterial_arena2")
+material_override = SubResource("ShaderMaterial_83mus")
 mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_N" unique_id=828533486]
@@ -76,7 +139,7 @@ shape = SubResource("BoxShape3D_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 5, 50)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_S" unique_id=766160403]
-material_override = SubResource("ShaderMaterial_arena2")
+material_override = SubResource("ShaderMaterial_bgv03")
 mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_S" unique_id=1315010583]
@@ -86,7 +149,7 @@ shape = SubResource("BoxShape3D_wall")
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 50, 5, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_E" unique_id=703755117]
-material_override = SubResource("ShaderMaterial_arena2")
+material_override = SubResource("ShaderMaterial_1a76k")
 mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_E" unique_id=1951333558]
@@ -96,7 +159,7 @@ shape = SubResource("BoxShape3D_wall")
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -50, 5, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall_W" unique_id=1385222454]
-material_override = SubResource("ShaderMaterial_arena2")
+material_override = SubResource("ShaderMaterial_3qovq")
 mesh = SubResource("BoxMesh_wall")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall_W" unique_id=929964269]
@@ -106,7 +169,7 @@ shape = SubResource("BoxShape3D_wall")
 transform = Transform3D(4, 0, 0, 0, 1, 0, 0, 0, 4, 0, 1, 0)
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="Plateau" unique_id=499783146]
-material_override = SubResource("ShaderMaterial_arena2")
+material_override = SubResource("ShaderMaterial_ssuss")
 mesh = SubResource("BoxMesh_plateau")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Plateau" unique_id=1346460772]

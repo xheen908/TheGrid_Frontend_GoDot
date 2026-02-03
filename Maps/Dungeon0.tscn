@@ -1,21 +1,29 @@
-[gd_scene load_steps=13 format=3 uid="uid://deq54xo41tj5t"]
+[gd_scene format=3 uid="uid://deq54xo41tj5t"]
 
 [ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
-[ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_ebywj"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0, 0.1, 1)
+shader_parameter/line_color = Color(0.6, 0, 1, 1)
+shader_parameter/grid_size = 100.36
+shader_parameter/line_width = 1.44
+shader_parameter/glow_strength = 2.685
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_dungeon"]
+size = Vector2(150, 150)
+
+[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_dungeon"]
 render_priority = 0
 shader = ExtResource("1_shader")
 shader_parameter/background_color = Color(0.05, 0, 0.1, 1)
 shader_parameter/line_color = Color(0.6, 0, 1, 1)
-shader_parameter/grid_size = 3.0
-shader_parameter/line_width = 1.2
-shader_parameter/glow_strength = 3.5
-
-[sub_resource type="PlaneMesh" id="PlaneMesh_dungeon"]
-size = Vector2(150, 150)
-
-[sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
+shader_parameter/grid_size = 10.825
+shader_parameter/line_width = 1.44
+shader_parameter/glow_strength = 2.685
 
 [sub_resource type="BoxMesh" id="BoxMesh_block"]
 size = Vector3(10, 2, 10)
@@ -57,80 +65,79 @@ fog_enabled = true
 fog_light_color = Color(0.05, 0.05, 0.1, 1)
 fog_sky_affect = 0.5
 
-[node name="Dungeon0" type="Node3D"]
+[node name="Dungeon0" type="Node3D" unique_id=1981209718]
 
-[node name="Floor" type="MeshInstance3D" parent="."]
-material_override = SubResource("ShaderMaterial_dungeon")
+[node name="Floor" type="MeshInstance3D" parent="." unique_id=1213406516]
+material_override = SubResource("ShaderMaterial_ebywj")
 mesh = SubResource("PlaneMesh_dungeon")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor" unique_id=669590489]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D" unique_id=944694718]
 shape = SubResource("WorldBoundaryShape3D_floor")
 
-[node name="BridgeComplex" type="Node3D" parent="."]
+[node name="BridgeComplex" type="Node3D" parent="." unique_id=961882880]
 
-[node name="MainBridge" type="StaticBody3D" parent="BridgeComplex"]
+[node name="MainBridge" type="StaticBody3D" parent="BridgeComplex" unique_id=677994746]
 transform = Transform3D(3.6, 0, 0, 0, 0.25, 0, 0, 0, 1.2, 0, 5.85, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/MainBridge"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/MainBridge" unique_id=2029357611]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, -4, 0)
 material_override = SubResource("ShaderMaterial_dungeon")
 mesh = SubResource("BoxMesh_block")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BridgeComplex/MainBridge"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BridgeComplex/MainBridge" unique_id=1157957694]
 transform = Transform3D(0.99999994, 0, 0, 0, 1, 0, 0, 0, 0.99999994, 0, -4, 0)
 shape = SubResource("BoxShape3D_block")
 
-[node name="RampRight" type="StaticBody3D" parent="BridgeComplex"]
+[node name="RampRight" type="StaticBody3D" parent="BridgeComplex" unique_id=2107262018]
 transform = Transform3D(0.98032546, 1.1294328, 0, -0.56599116, 1.9562349, 0, 0, 0, 1.2, 22.4, 2.25, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/RampRight"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/RampRight" unique_id=958729841]
 transform = Transform3D(1, 2.9802322e-08, 0, 0, 0.9999998, 0, 0, 0, 0.9999998, 0.3465004, -0.868206, 0)
 material_override = SubResource("ShaderMaterial_dungeon")
 mesh = SubResource("BoxMesh_block")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BridgeComplex/RampRight"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BridgeComplex/RampRight" unique_id=1274577904]
 transform = Transform3D(1, 2.9802322e-08, 0, 0, 0.9999999, 0, 0, 0, 0.99999994, 0.3465004, -0.86820626, 0)
 shape = SubResource("BoxShape3D_block")
 
-[node name="RampLeft" type="StaticBody3D" parent="BridgeComplex"]
+[node name="RampLeft" type="StaticBody3D" parent="BridgeComplex" unique_id=1099721187]
 transform = Transform3D(0.98032546, -1.1294328, 0, 0.56599116, 1.9562349, 0, 0, 0, 1.2, -22.1, 1.25, 0)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/RampLeft"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="BridgeComplex/RampLeft" unique_id=1749961384]
 transform = Transform3D(1, -2.9802322e-08, 0, 0, 0.9999999, 0, 0, 0, 0.99999994, -0.1732502, -0.43410325, 0)
 material_override = SubResource("ShaderMaterial_dungeon")
 mesh = SubResource("BoxMesh_block")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="BridgeComplex/RampLeft"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="BridgeComplex/RampLeft" unique_id=1407192818]
 transform = Transform3D(1, -2.9802322e-08, 0, 0, 0.9999999, 0, 0, 0, 0.99999994, -0.1732502, -0.434103, 0)
 shape = SubResource("BoxShape3D_block")
 
-[node name="Pillar" type="StaticBody3D" parent="."]
+[node name="Pillar" type="StaticBody3D" parent="." unique_id=1819305320]
 transform = Transform3D(2, 0, 0, 0, 0.45, 0, 0, 0, 2, -1, 2.5, 12)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillar"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillar" unique_id=909107127]
 material_override = SubResource("ShaderMaterial_dungeon")
 mesh = SubResource("CylinderMesh_pillar")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar" unique_id=1230994549]
 shape = SubResource("CylinderShape3D_pillar")
 
-[node name="Pillar2" type="StaticBody3D" parent="."]
+[node name="Pillar2" type="StaticBody3D" parent="." unique_id=1302262250]
 transform = Transform3D(2, 0, 0, 0, 0.45, 0, 0, 0, 2, -1, 2.5, -12)
 
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillar2"]
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Pillar2" unique_id=1435845025]
 material_override = SubResource("ShaderMaterial_dungeon")
 mesh = SubResource("CylinderMesh_pillar")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar2"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Pillar2" unique_id=957722901]
 shape = SubResource("CylinderShape3D_pillar")
 
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=554403242]
 environment = SubResource("Environment_night")
 
-[node name="Moon" type="DirectionalLight3D" parent="."]
+[node name="Moon" type="DirectionalLight3D" parent="." unique_id=1065554329]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 20, 0)
 light_color = Color(0.7, 0.8, 1, 1)
 light_energy = 0.3

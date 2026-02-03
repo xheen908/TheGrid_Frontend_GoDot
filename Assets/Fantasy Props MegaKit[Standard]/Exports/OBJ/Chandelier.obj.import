@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://5217333r8et4"
+path="res://.godot/imported/Chandelier.obj-57b571683eec997429f59674f434982c.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Chandelier.obj-57b571683eec997429f59674f434982c.mesh"]
+
+source_file="res://Assets/Fantasy Props MegaKit[Standard]/Exports/OBJ/Chandelier.obj"
+dest_files=["res://.godot/imported/Chandelier.obj-57b571683eec997429f59674f434982c.mesh", "res://.godot/imported/Chandelier.obj-57b571683eec997429f59674f434982c.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

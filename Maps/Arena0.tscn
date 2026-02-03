@@ -1,14 +1,13 @@
-[gd_scene load_steps=11 format=3 uid="uid://cejaxdjw40qad"]
+[gd_scene format=3 uid="uid://cejaxdjw40qad"]
 
 [ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
-[ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_arena"]
 render_priority = 0
 shader = ExtResource("1_shader")
 shader_parameter/background_color = Color(0.1, 0.05, 0, 1)
 shader_parameter/line_color = Color(1, 0.4, 0, 1)
-shader_parameter/grid_size = 3.0
+shader_parameter/grid_size = 130.075
 shader_parameter/line_width = 1.0
 shader_parameter/glow_strength = 4.0
 
@@ -16,12 +15,6 @@ shader_parameter/glow_strength = 4.0
 size = Vector2(80, 80)
 
 [sub_resource type="WorldBoundaryShape3D" id="WorldBoundaryShape3D_floor"]
-
-[sub_resource type="BoxMesh" id="BoxMesh_wall"]
-size = Vector3(80, 5, 2)
-
-[sub_resource type="BoxShape3D" id="BoxShape3D_wall"]
-size = Vector3(80, 5, 2)
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_night"]
 sky_top_color = Color(0.02, 0.02, 0.05, 1)
@@ -48,65 +41,23 @@ fog_enabled = true
 fog_light_color = Color(0.05, 0.05, 0.1, 1)
 fog_sky_affect = 0.5
 
-[node name="Arena0" type="Node3D"]
+[node name="Arena0" type="Node3D" unique_id=1474530176]
 
-[node name="Floor" type="MeshInstance3D" parent="."]
+[node name="Floor" type="MeshInstance3D" parent="." unique_id=928561145]
+transform = Transform3D(11, 0, 0, 0, 11, 0, 0, 0, 11, 0, 0, 0)
 material_override = SubResource("ShaderMaterial_arena")
 mesh = SubResource("PlaneMesh_arena")
 
-[node name="StaticBody3D" type="StaticBody3D" parent="Floor"]
+[node name="StaticBody3D" type="StaticBody3D" parent="Floor" unique_id=698289015]
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D"]
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Floor/StaticBody3D" unique_id=1166768396]
 shape = SubResource("WorldBoundaryShape3D_floor")
 
-[node name="Walls" type="Node3D" parent="."]
-
-[node name="Wall1" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, 40)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall1"]
-material_override = SubResource("ShaderMaterial_arena")
-mesh = SubResource("BoxMesh_wall")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall1"]
-shape = SubResource("BoxShape3D_wall")
-
-[node name="Wall2" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.5, -40)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall2"]
-material_override = SubResource("ShaderMaterial_arena")
-mesh = SubResource("BoxMesh_wall")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall2"]
-shape = SubResource("BoxShape3D_wall")
-
-[node name="Wall3" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 40, 2.5, 0)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall3"]
-material_override = SubResource("ShaderMaterial_arena")
-mesh = SubResource("BoxMesh_wall")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall3"]
-shape = SubResource("BoxShape3D_wall")
-
-[node name="Wall4" type="StaticBody3D" parent="Walls"]
-transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, -40, 2.5, 0)
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="Walls/Wall4"]
-material_override = SubResource("ShaderMaterial_arena")
-mesh = SubResource("BoxMesh_wall")
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="Walls/Wall4"]
-shape = SubResource("BoxShape3D_wall")
-
-
-[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=725958637]
 environment = SubResource("Environment_night")
 
-[node name="Moon" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 20, 0)
+[node name="Moon" type="DirectionalLight3D" parent="." unique_id=709645772]
+transform = Transform3D(0.8660253, -0.4330129, 0.2500001, 0, 0.49999994, 0.86602545, -0.50000024, -0.74999994, 0.43301257, 0, 87.77752, 0)
 light_color = Color(0.7, 0.8, 1, 1)
 light_energy = 0.3
 shadow_enabled = true

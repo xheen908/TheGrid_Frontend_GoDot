@@ -1,14 +1,14 @@
 [gd_scene format=3 uid="uid://cd8gb2nj03epb"]
 
 [ext_resource type="Shader" uid="uid://d1tread0pc742" path="res://Maps/tron_grid.gdshader" id="1_shader"]
-[ext_resource type="PackedScene" uid="uid://bpd57r06uwyx5" path="res://Maps/Portal.tscn" id="2_portal"]
+[ext_resource type="Shader" uid="uid://bkuskplnncuna" path="res://Maps/electric.gdshader" id="3_electric_shader"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_wall"]
 render_priority = 0
 shader = ExtResource("1_shader")
 shader_parameter/background_color = Color(0, 0.05, 0.1, 1)
-shader_parameter/line_color = Color(0, 0.8, 1, 1)
-shader_parameter/grid_size = 3.0
+shader_parameter/line_color = Color(1, 0.8, 0, 1)
+shader_parameter/grid_size = 125.0
 shader_parameter/line_width = 1.1
 shader_parameter/glow_strength = 4.5
 
@@ -38,11 +38,69 @@ fog_enabled = true
 fog_light_color = Color(0.05, 0.05, 0.1, 1)
 fog_sky_affect = 0.5
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_electric_yellow"]
+render_priority = 0
+shader = ExtResource("3_electric_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/line_freq = 12.0
+shader_parameter/height = 0.6
+shader_parameter/speed = 0.8
+shader_parameter/scale = Vector2(8, 16)
+shader_parameter/emission_strength = 3.0
+
 [sub_resource type="BoxMesh" id="BoxMesh_wall_large"]
 size = Vector3(31, 8, 2)
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_wall_large"]
 size = Vector3(31, 8, 2)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_j1p3o"]
+render_priority = 0
+shader = ExtResource("3_electric_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/line_freq = 12.0
+shader_parameter/height = 0.6
+shader_parameter/speed = 0.8
+shader_parameter/scale = Vector2(8, 16)
+shader_parameter/emission_strength = 2.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_hs8n3"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/grid_size = 25.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_xye2p"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/grid_size = 25.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_up2ud"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/grid_size = 25.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_3s2hx"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/grid_size = 25.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
 
 [sub_resource type="BoxMesh" id="BoxMesh_corridor_wall"]
 size = Vector3(30, 8, 2)
@@ -56,11 +114,30 @@ size = Vector3(12, 8, 2)
 [sub_resource type="BoxShape3D" id="BoxShape3D_room_wall"]
 size = Vector3(12, 8, 2)
 
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_sgjat"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/grid_size = 20.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_jgsgm"]
+render_priority = 0
+shader = ExtResource("1_shader")
+shader_parameter/background_color = Color(0.05, 0.04, 0, 1)
+shader_parameter/line_color = Color(1, 0.9, 0, 1)
+shader_parameter/grid_size = 30.0
+shader_parameter/line_width = 1.0
+shader_parameter/glow_strength = 4.0
+
 [node name="WorldMap0" type="Node3D" unique_id=753575848]
 
 [node name="Environment" type="Node3D" parent="." unique_id=933879437]
 
 [node name="Floor" type="MeshInstance3D" parent="Environment" unique_id=1390772374]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1, 0.1566186, 4)
 material_override = SubResource("ShaderMaterial_wall")
 mesh = SubResource("PlaneMesh_floor")
 
@@ -74,7 +151,7 @@ environment = SubResource("Environment_night")
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="Environment" unique_id=96946046]
 transform = Transform3D(0.866025, -0.433013, 0.25, 0, 0.5, 0.866025, -0.5, -0.75, 0.433013, 0, 20, 0)
-light_color = Color(0.8, 0.9, 1, 1)
+light_color = Color(1, 0.95, 0.8, 1)
 light_energy = 0.5
 shadow_enabled = true
 
@@ -84,7 +161,7 @@ shadow_enabled = true
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4, 29.449291)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall1_N" unique_id=2052164654]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall1_N" unique_id=405437982]
@@ -94,7 +171,7 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(-4.37114e-08, 0, 1, 0, 1, 0, -1, 0, -4.37114e-08, 29.141357, 4, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall3_E" unique_id=1117966526]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_j1p3o")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall3_E" unique_id=694657592]
@@ -104,37 +181,18 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 4, -29.531864)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S" unique_id=1947261315]
-material_override = SubResource("ShaderMaterial_wall")
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14421462, -0.0062885284, -0.1794281)
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S" unique_id=1537553174]
-shape = SubResource("BoxShape3D_wall_large")
-
-[node name="Wall5_S2" type="StaticBody3D" parent="Architecture" unique_id=257389885]
-transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 0.25084066, -0.013333589)
-
-[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S2" unique_id=1062067155]
-material_override = SubResource("ShaderMaterial_wall")
-mesh = SubResource("BoxMesh_wall_large")
-
-[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S2" unique_id=1683786672]
-shape = SubResource("BoxShape3D_wall_large")
-
-[node name="Wall5_S7" type="StaticBody3D" parent="Architecture" unique_id=417434822]
-transform = Transform3D(-0.735, 0, -1.9478457e-06, 0, 0.2, 0, 1.10981915e-07, 0, -12.9, 0.49, 1.2383294, -0.013333589)
-
-[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S7" unique_id=557508735]
-material_override = SubResource("ShaderMaterial_wall")
-mesh = SubResource("BoxMesh_wall_large")
-
-[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S7" unique_id=1451006272]
 shape = SubResource("BoxShape3D_wall_large")
 
 [node name="Wall5_S3" type="StaticBody3D" parent="Architecture" unique_id=87928269]
 transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 19.233158, 57.11188)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S3" unique_id=2130409111]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_hs8n3")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S3" unique_id=1179664520]
@@ -144,7 +202,7 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 19.233158, -60.24104)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S4" unique_id=384468786]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_xye2p")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S4" unique_id=1300205379]
@@ -154,7 +212,7 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, -51.65938, 19.233158, 0.7319069)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S6" unique_id=873334799]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_up2ud")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S6" unique_id=1479044029]
@@ -164,7 +222,7 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 46.708595, 19.233158, -0.273098)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S5" unique_id=489971615]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_3s2hx")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S5" unique_id=219543291]
@@ -174,7 +232,7 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(1.19249e-08, 0, -1, 0, 1, 0, 1, 0, 1.19249e-08, -29.1458, 4, 0)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall7_W" unique_id=1125343421]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall7_W" unique_id=250379320]
@@ -184,7 +242,7 @@ shape = SubResource("BoxShape3D_wall_large")
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 26, 4, -40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NE_L" unique_id=1738107801]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NE_L" unique_id=1969468152]
@@ -194,7 +252,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, 40, 4, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NE_R" unique_id=22113128]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NE_R" unique_id=95904861]
@@ -204,7 +262,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, 40, 4, 26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SE_L" unique_id=1645919597]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SE_L" unique_id=1163823541]
@@ -214,7 +272,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, 26, 4, 40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SE_R" unique_id=1329022208]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SE_R" unique_id=1717374970]
@@ -224,7 +282,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -26, 4, 40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SW_L" unique_id=1535252621]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SW_L" unique_id=1681910450]
@@ -234,7 +292,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, 0.707107, -40, 4, 26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_SW_R" unique_id=1746665053]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_SW_R" unique_id=1888622881]
@@ -244,7 +302,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -40, 4, -26)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NW_L" unique_id=2037396313]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NW_L" unique_id=1321124048]
@@ -254,7 +312,7 @@ shape = SubResource("BoxShape3D_corridor_wall")
 transform = Transform3D(-0.707107, 0, 0.707107, 0, 1, 0, -0.707107, 0, -0.707107, -26, 4, -40)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Corridor_NW_R" unique_id=578898172]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_corridor_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Corridor_NW_R" unique_id=1807944961]
@@ -267,7 +325,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, -55)
 transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, -6.997555, 4, 6.6455345)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NE/Back" unique_id=1802697020]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NE/Back" unique_id=390675403]
@@ -277,7 +335,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.997555, 4, 3.6455345)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NE/Side1" unique_id=114619466]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NE/Side1" unique_id=1450487221]
@@ -287,7 +345,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, -3.9975548, 4, 13.6455345)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NE/Side2" unique_id=249035055]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NE/Side2" unique_id=1814500663]
@@ -300,7 +358,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 55, 0, 55)
 transform = Transform3D(0.707, 0, 0.707, 0, 1, 0, -0.707, 0, 0.707, -6.808178, 4, -6.24712)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SE/Back" unique_id=1898371989]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SE/Back" unique_id=1715633496]
@@ -310,7 +368,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -13.808178, 4, -3.24712)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SE/Side1" unique_id=592042063]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SE/Side1" unique_id=1362991390]
@@ -320,7 +378,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, -3.808178, 4, -13.24712)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SE/Side2" unique_id=1679384785]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SE/Side2" unique_id=2039579292]
@@ -333,7 +391,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 0, 55)
 transform = Transform3D(0.707, 0, -0.707, 0, 1, 0, 0.707, 0, 0.707, 6.2932854, 4, -6.523201)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SW/Back" unique_id=1192943485]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SW/Back" unique_id=1318566639]
@@ -343,7 +401,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13.293285, 4, -3.523201)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SW/Side1" unique_id=572934324]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SW/Side1" unique_id=596382704]
@@ -353,7 +411,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, 3.2932854, 4, -13.523201)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_SW/Side2" unique_id=900358875]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_SW/Side2" unique_id=418446262]
@@ -366,7 +424,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -55, 0, -55)
 transform = Transform3D(0.707, 0, 0.707, 0, 1, 0, -0.707, 0, 0.707, 7.0723953, 4, 6.985527)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NW/Back" unique_id=652658996]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NW/Back" unique_id=255808731]
@@ -376,7 +434,7 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 14.072395, 4, 3.985527)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NW/Side1" unique_id=904059766]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NW/Side1" unique_id=81637382]
@@ -386,10 +444,31 @@ shape = SubResource("BoxShape3D_room_wall")
 transform = Transform3D(-4.37e-08, 0, 1, 0, 1, 0, -1, 0, -4.37e-08, 4.0723953, 4, 13.985527)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/SmallRoom_NW/Side2" unique_id=869768107]
-material_override = SubResource("ShaderMaterial_wall")
+material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_room_wall")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/SmallRoom_NW/Side2" unique_id=199629965]
 shape = SubResource("BoxShape3D_room_wall")
 
+[node name="Podest Architektur" type="Node3D" parent="." unique_id=1441855587]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -0.31100082, 0)
 
+[node name="PodestB" type="StaticBody3D" parent="Podest Architektur" unique_id=257389885]
+transform = Transform3D(-0.935, 0, -2.2498375e-06, 0, 0.2, 0, 1.4118108e-07, 0, -14.9, 0.49, 0.89276266, -0.013333589)
+
+[node name="Mesh" type="MeshInstance3D" parent="Podest Architektur/PodestB" unique_id=1062067155]
+material_override = SubResource("ShaderMaterial_sgjat")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Podest Architektur/PodestB" unique_id=1683786672]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="PodestA" type="StaticBody3D" parent="Podest Architektur" unique_id=417434822]
+transform = Transform3D(-0.735, 0, -1.9478457e-06, 0, 0.2, 0, 1.10981915e-07, 0, -12.9, 0.49, 1.8802514, -0.013333589)
+
+[node name="Mesh" type="MeshInstance3D" parent="Podest Architektur/PodestA" unique_id=557508735]
+material_override = SubResource("ShaderMaterial_jgsgm")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Podest Architektur/PodestA" unique_id=1451006272]
+shape = SubResource("BoxShape3D_wall_large")

@@ -15,6 +15,7 @@ var remote_player_scene = preload("res://Screens/RemotePlayer.tscn")
 var enemy_scene = preload("res://Screens/Enemy.tscn")
 var frostbolt_scene = preload("res://Screens/Frostbolt.tscn")
 var frostnova_scene = preload("res://Assets/Effects/FrostNova.tscn")
+var conecold_scene = preload("res://Assets/Effects/ConeOfCold.tscn")
 var levelup_effect_scene = preload("res://Assets/Effects/LevelUpEffect.tscn")
 var portal_scene = preload("res://Maps/Portal.tscn")
 
@@ -71,6 +72,10 @@ func _on_remote_player_status_updated(data: Dictionary):
 		if "max_hp" in data: current_player.max_hp = data["max_hp"]
 		if "shield" in data: current_player.shield = data["shield"]
 		if "buffs" in data: current_player.buffs = data["buffs"]
+		if "gravity_enabled" in data: current_player.gravity_enabled = data["gravity_enabled"]
+		if "speed_multiplier" in data: current_player.speed_multiplier = data["speed_multiplier"]
+		if "is_gm" in data and current_player.has_method("update_gm_status"):
+			current_player.update_gm_status(data["is_gm"])
 
 func _on_player_leveled_up(uname: String):
 	var my_name = ""
@@ -259,25 +264,35 @@ func _on_remote_player_moved(data: Dictionary):
 
 func _on_spell_cast_started(caster: String, spell_id: String, _duration: float):
 	var my_name = ""
+	var my_uname = ""
 	if NetworkManager and NetworkManager.current_player_data:
 		my_name = str(NetworkManager.current_player_data.get("char_name", "")).strip_edges().to_lower()
+		my_uname = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
 
-	if caster.strip_edges().to_lower() == my_name:
+	var caster_clean = caster.strip_edges().to_lower()
+	if caster_clean == my_name or caster_clean == my_uname:
 		if current_player and current_player.has_method("start_casting"):
 			current_player.start_casting(spell_id)
 	elif remote_players.has(caster):
 		var rp = remote_players[caster]
 		if rp.has_method("start_casting"):
 			rp.start_casting(spell_id)
+	elif remote_players.has(caster_clean):
+		var rp = remote_players[caster_clean]
+		if rp.has_method("start_casting"):
+			rp.start_casting(spell_id)
 
 func _on_spell_cast_finished(caster: String, target_id: String, spell_id: String, extra_data: Dictionary):
 	var my_name = ""
+	var my_uname = ""
 	if NetworkManager and NetworkManager.current_player_data:
 		my_name = str(NetworkManager.current_player_data.get("char_name", "")).strip_edges().to_lower()
+		my_uname = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
 	
 	var caster_node = null
+	var caster_clean = caster.strip_edges().to_lower()
 	
-	if caster.strip_edges().to_lower() == my_name:
+	if caster_clean == my_name or caster_clean == my_uname:
 		caster_node = current_player
 		if current_player and current_player.has_method("stop_casting"):
 			current_player.stop_casting()
@@ -286,37 +301,50 @@ func _on_spell_cast_finished(caster: String, target_id: String, spell_id: String
 					current_player.show_message("Unterbrochen!")
 	elif remote_players.has(caster):
 		caster_node = remote_players[caster]
-		if caster_node.has_method("stop_casting"):
-			caster_node.stop_casting()
+	
+	# Fallback: Suche in remote_players nochmal mit Clean-Name falls nicht gefunden
+	if not caster_node and remote_players.has(caster_clean):
+		caster_node = remote_players[caster_clean]
+		
+	if not caster_node: return # Wenn wir den Caster nicht kennen, können wir nichts spawnen
 
 	if spell_id == "Eisbarriere":
-		# AoE Spawnen (Optional falls Eisbarriere auch ein AoE-Effekt hat, hier eher Schild-Logik)
-		if caster_node:
-			caster_node.shield = 2666 # Sofortiger visueller Trigger
-			if "buffs" in caster_node:
-				# Temporären Buff hinzufügen bis das nächste Status-Update vom Server kommt
-				var found = false
-				for b in caster_node.buffs:
-					if b.get("type") == "Eisbarriere":
-						found = true
-						break
-				if not found:
-					caster_node.buffs.append({"type": "Eisbarriere", "remaining": 30})
+		# ... (Eisbarriere Logik) ...
+		caster_node.shield = 2666 
+		if "buffs" in caster_node:
+			var found = false
+			for b in caster_node.buffs:
+				if b.get("type") == "Eisbarriere":
+					found = true
+					break
+			if not found:
+				caster_node.buffs.append({"type": "Eisbarriere", "remaining": 30})
 	
 	if spell_id == "Frost Nova":
-		# AoE Spawnen
 		var pos_dict = extra_data.get("pos", {})
 		var spawn_pos = Vector3(pos_dict.get("x", 0), pos_dict.get("y", 0), pos_dict.get("z", 0))
-		if caster_node and spawn_pos == Vector3.ZERO:
-			spawn_pos = caster_node.global_position
+		if spawn_pos == Vector3.ZERO: spawn_pos = caster_node.global_position
 			
 		var nova = frostnova_scene.instantiate()
 		add_child(nova)
 		nova.global_position = spawn_pos + Vector3(0, 0.1, 0)
+	elif spell_id == "Kältekegel":
+		# Kegel spawnen
+		var cone = conecold_scene.instantiate()
+		add_child(cone)
+		cone.global_position = caster_node.global_position + Vector3(0, 0.1, 0)
+		cone.rotation.y = caster_node.rotation.y + PI
 	elif spell_id == "Frostblitz":
-		# Projektil spawnen
-		if caster_node and mobs.has(target_id):
-			var target_node = mobs[target_id]
+		# Projektil spawnen: Ziel suchen (Mob oder Spieler)
+		var target_node = null
+		if mobs.has(target_id):
+			target_node = mobs[target_id]
+		elif remote_players.has(target_id):
+			target_node = remote_players[target_id]
+		elif target_id == "player":
+			target_node = current_player
+		
+		if target_node:
 			var bolt = frostbolt_scene.instantiate()
 			add_child(bolt)
 			bolt.global_position = caster_node.global_position + Vector3(0, 1.5, 0)

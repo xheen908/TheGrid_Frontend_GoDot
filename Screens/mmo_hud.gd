@@ -101,6 +101,7 @@ func _ready():
 	%ActionSlot1.pressed.connect(func(): _on_action_slot_pressed(1))
 	%ActionSlot2.pressed.connect(func(): _on_action_slot_pressed(2))
 	%ActionSlot3.pressed.connect(func(): _on_action_slot_pressed(3))
+	%ActionSlot4.pressed.connect(func(): _on_action_slot_pressed(4))
 	
 	# Chat Signale
 	chat_input.text_submitted.connect(_on_chat_submitted)
@@ -130,6 +131,8 @@ func _ready():
 	%TargetContextMenu.id_pressed.connect(_on_target_context_menu_id_pressed)
 	%PartyInvitePopup.confirmed.connect(func(): NetworkManager.send_party_response(party_invite_sender, true))
 	%PartyInvitePopup.canceled.connect(func(): NetworkManager.send_party_response(party_invite_sender, false))
+	
+	if cast_bar: cast_bar.hide()
 
 func _input(event):
 	if is_rebinding:
@@ -193,6 +196,50 @@ func _on_chat_submitted(text: String):
 	text = text.strip_edges()
 	
 	if text != "":
+		# --- QUICK TELEPORT COMMAND (tele map) ---
+		if text.to_lower().begins_with("tele "):
+			to_send = "/" + text
+			
+		# --- GM COMMAND INTERCEPTION ---
+		var is_gm = false
+		if player_ref and "is_gm_flagged" in player_ref and player_ref.is_gm_flagged:
+			is_gm = true
+		elif NetworkManager and NetworkManager.current_player_data and NetworkManager.current_player_data.get("is_gm", false):
+			is_gm = true
+			
+		if is_gm and text.begins_with("/"):
+			var parts = text.split(" ", false)
+			var cmd = parts[0].to_lower()
+			
+			if cmd == "/gravity":
+				if parts.size() > 1:
+					var sub = parts[1].to_lower()
+					if sub == "off":
+						player_ref.gravity_enabled = false
+						_on_chat_received({"mode": "system", "message": "Gravitation deaktiviert (Fly-Mode AN)."})
+						chat_input.text = ""
+						chat_input.release_focus()
+						Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+						return
+					elif sub == "on":
+						player_ref.gravity_enabled = true
+						_on_chat_received({"mode": "system", "message": "Gravitation aktiviert."})
+						chat_input.text = ""
+						chat_input.release_focus()
+						Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+						return
+			
+			elif cmd == "/speed":
+				if parts.size() > 1:
+					var val = parts[1].to_float()
+					if val > 0:
+						player_ref.speed_multiplier = val
+						_on_chat_received({"mode": "system", "message": "Geschwindigkeit auf %.1f gesetzt." % val})
+						chat_input.text = ""
+						chat_input.release_focus()
+						Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+						return
+
 		# Wenn ein Channel-Label aktiv ist, Nachricht davor hängen (AUẞER es ist selbst ein Befehl mit /)
 		if %ChannelLabel.visible and not text.begins_with("/"):
 			if %ChannelLabel.text == "[Gruppe]":
@@ -305,23 +352,36 @@ func _process(delta):
 		if cast_bar:
 			cast_bar.value = (casting_timer / casting_duration) * 100.0
 
+
+
 func _on_spell_cast_started(caster: String, spell_id: String, duration: float):
-	var my_name = NetworkManager.current_player_data.get("char_name", "")
-	if caster == my_name:
+	var my_name = ""
+	var my_username = ""
+	if NetworkManager and NetworkManager.current_player_data:
+		my_name = str(NetworkManager.current_player_data.get("char_name", "")).strip_edges().to_lower()
+		my_username = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
+	
+	var caster_clean = caster.strip_edges().to_lower()
+	print("MMO_Hud: Spell started by ", caster, " (MyName: ", my_name, " / ", my_username, ") duration: ", duration)
+	
+	if caster_clean == my_name or caster_clean == my_username:
 		is_casting = true
 		casting_timer = 0.0
 		casting_duration = duration
 		cast_label.text = spell_id.to_upper()
 		cast_bar.value = 0
 		cast_bar.show()
-		
-		# GCD starten
-		if spell_id != "Frostblitz":
-			active_cooldowns["GCD"] = {"current": 1.5, "total": 1.5}
+		print("MMO_Hud: CastBar showing for ", spell_id)
 
 func _on_spell_cast_finished(caster: String, _target_id: String, spell_id: String, _extra: Dictionary):
-	var my_name = NetworkManager.current_player_data.get("char_name", "")
-	if caster == my_name:
+	var my_name = ""
+	var my_username = ""
+	if NetworkManager and NetworkManager.current_player_data:
+		my_name = str(NetworkManager.current_player_data.get("char_name", "")).strip_edges().to_lower()
+		my_username = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
+		
+	var caster_clean = caster.strip_edges().to_lower()
+	if caster_clean == my_name or caster_clean == my_username:
 		is_casting = false
 		cast_bar.hide()
 		
@@ -332,6 +392,9 @@ func _on_spell_cast_finished(caster: String, _target_id: String, spell_id: Strin
 		elif spell_id == "Eisbarriere":
 			active_cooldowns["Eisbarriere"] = {"current": 30.0, "total": 30.0}
 			active_cooldowns["GCD"] = {"current": 1.5, "total": 1.5}
+		elif spell_id == "Kältekegel":
+			active_cooldowns["Kältekegel"] = {"current": 10.0, "total": 10.0}
+			active_cooldowns["GCD"] = {"current": 1.5, "total": 1.5}
 
 func _on_player_target_changed(_new_target):
 	_update_target_frames()
@@ -341,10 +404,14 @@ func _on_action_slot_pressed(slot):
 		match slot:
 			1: # Frostblitz
 				if player_ref.current_target:
-					NetworkManager.cast_spell("Frostblitz", player_ref.current_target.mob_id if "mob_id" in player_ref.current_target else "")
+					var target = player_ref.current_target
+					var tid = target.mob_id if "mob_id" in target else target.get("username", "")
+					NetworkManager.cast_spell("Frostblitz", tid)
 			2: # Frost Nova
 				NetworkManager.cast_spell("Frost Nova", "")
-			3: # Eisbarriere
+			3: # Kältekegel
+				NetworkManager.cast_spell("Kältekegel", "")
+			4: # Eisbarriere
 				NetworkManager.cast_spell("Eisbarriere", "")
 	
 	# Fokus sofort freigeben, damit die Tastatur wieder das Spiel steuert
@@ -358,27 +425,32 @@ func _setup_action_slots():
 	if has_node("%Slot1CDLabel"): %Slot1CDLabel.hide()
 	if has_node("%Slot2CDLabel"): %Slot2CDLabel.hide()
 	if has_node("%Slot3CDLabel"): %Slot3CDLabel.hide()
+	if has_node("%Slot4CDLabel"): %Slot4CDLabel.hide()
 	
 	if has_node("%Slot1Sweep"): %Slot1Sweep.value = 0
 	if has_node("%Slot2Sweep"): %Slot2Sweep.value = 0
 	if has_node("%Slot3Sweep"): %Slot3Sweep.value = 0
+	if has_node("%Slot4Sweep"): %Slot4Sweep.value = 0
 	
 	# Icon Labels mit Fehlerprüfung
 	var slots = {
 		"%ActionSlot1": "res://Assets/UI/spell_frostblitz.jpg",
 		"%ActionSlot2": "res://Assets/UI/spell_frost_nova.jpg",
-		"%ActionSlot3": "res://Assets/UI/spell_ice_barrier.jpg"
+		"%ActionSlot3": "res://Assets/UI/spell_cone_of_cold.jpg",
+		"%ActionSlot4": "res://Assets/UI/spell_ice_barrier.jpg"
 	}
 	
 	for slot_name in slots:
 		if has_node(slot_name):
 			var slot = get_node(slot_name)
-			slot.focus_mode = Control.FOCUS_NONE # Verhindert, dass der Button aktiv bleibt
+			print("MMO_Hud: Slot found: ", slot_name)
+			slot.focus_mode = Control.FOCUS_NONE
 			var icon_node = slot.get_node_or_null("Icon")
 			if icon_node:
 				var tex_path = slots[slot_name]
 				if ResourceLoader.exists(tex_path):
 					icon_node.texture = load(tex_path)
+					print("MMO_Hud: Texture loaded for ", slot_name, ": ", tex_path)
 				else:
 					print("MMO_Hud: Textur fehlt: ", tex_path)
 			else:
@@ -415,14 +487,14 @@ func _update_action_bar_ui():
 		if has_node("%Slot2CDLabel"): %Slot2CDLabel.hide()
 		if has_node("%ActionSlot2"): %ActionSlot2.disabled = false
 		
-	# Slot 3: Eisbarriere
-	if active_cooldowns.has("Eisbarriere") and has_node("%Slot3Sweep") and has_node("%Slot3CDLabel"):
-		var eb = active_cooldowns["Eisbarriere"]
-		var total = eb.get("total", 30.0)
+	# Slot 3: Kältekegel
+	if active_cooldowns.has("Kältekegel") and has_node("%Slot3Sweep") and has_node("%Slot3CDLabel"):
+		var kc = active_cooldowns["Kältekegel"]
+		var total = kc.get("total", 10.0)
 		if total > 0:
-			%Slot3Sweep.value = (eb["current"] / total) * 100.0
+			%Slot3Sweep.value = (kc["current"] / total) * 100.0
 			%Slot3Sweep.show()
-		%Slot3CDLabel.text = str(ceil(eb["current"]))
+		%Slot3CDLabel.text = str(ceil(kc["current"]))
 		%Slot3CDLabel.show()
 		if has_node("%ActionSlot3"): %ActionSlot3.disabled = true
 	elif active_cooldowns.has("GCD") and has_node("%Slot3Sweep"):
@@ -437,13 +509,37 @@ func _update_action_bar_ui():
 		if has_node("%Slot3Sweep"): %Slot3Sweep.hide()
 		if has_node("%Slot3CDLabel"): %Slot3CDLabel.hide()
 		if has_node("%ActionSlot3"): %ActionSlot3.disabled = false
+		
+	# Slot 4: Eisbarriere
+	if active_cooldowns.has("Eisbarriere") and has_node("%Slot4Sweep") and has_node("%Slot4CDLabel"):
+		var eb = active_cooldowns["Eisbarriere"]
+		var total = eb.get("total", 30.0)
+		if total > 0:
+			%Slot4Sweep.value = (eb["current"] / total) * 100.0
+			%Slot4Sweep.show()
+		%Slot4CDLabel.text = str(ceil(eb["current"]))
+		%Slot4CDLabel.show()
+		if has_node("%ActionSlot4"): %ActionSlot4.disabled = true
+	elif active_cooldowns.has("GCD") and has_node("%Slot4Sweep"):
+		var gcd = active_cooldowns["GCD"]
+		var total = gcd.get("total", 1.5)
+		if total > 0:
+			%Slot4Sweep.value = (gcd["current"] / total) * 100.0
+			%Slot4Sweep.show()
+		if has_node("%Slot4CDLabel"): %Slot4CDLabel.hide()
+		if has_node("%ActionSlot4"): %ActionSlot4.disabled = true
+	else:
+		if has_node("%Slot4Sweep"): %Slot4Sweep.hide()
+		if has_node("%Slot4CDLabel"): %Slot4CDLabel.hide()
+		if has_node("%ActionSlot4"): %ActionSlot4.disabled = false
 
 func _on_player_status_updated(data: Dictionary):
 	if not NetworkManager or not NetworkManager.current_player_data: return
-	var uname = data.get("username", "")
-	var my_name = NetworkManager.current_player_data.get("char_name", "")
+	var uname_clean = data.get("username", "").strip_edges().to_lower()
+	var my_name = NetworkManager.current_player_data.get("char_name", "").strip_edges().to_lower()
+	var my_username = NetworkManager.current_player_data.get("username", "").strip_edges().to_lower()
 	
-	if uname == my_name:
+	if uname_clean == my_name or uname_clean == my_username:
 		var current_hp = data.get("hp", 100)
 		var mhp = data.get("max_hp", 100)
 		hp_bar.max_value = mhp
@@ -637,6 +733,8 @@ func _populate_bindings():
 		"jump": "Springen",
 		"cast_1": "Zauber 1",
 		"cast_2": "Zauber 2",
+		"cast_3": "Kältekegel",
+		"cast_4": "Eisbarriere",
 		"target_cycle": "Ziel wechseln",
 		"camera_left": "Kamera Links",
 		"camera_right": "Kamera Rechts",
@@ -698,7 +796,7 @@ func _update_action_binding(action, slot, new_event):
 
 func _save_input_settings():
 	var config = ConfigFile.new()
-	var actions = ["move_forward", "move_backward", "move_left", "move_right", "strafe_left", "strafe_right", "jump", "cast_1", "cast_2", "target_cycle", "camera_left", "camera_right", "camera_up", "camera_down"]
+	var actions = ["move_forward", "move_backward", "move_left", "move_right", "strafe_left", "strafe_right", "jump", "cast_1", "cast_2", "cast_3", "cast_4", "target_cycle", "camera_left", "camera_right", "camera_up", "camera_down"]
 	for action in actions:
 		var events = InputMap.action_get_events(action)
 		config.set_value("Input", action, events)

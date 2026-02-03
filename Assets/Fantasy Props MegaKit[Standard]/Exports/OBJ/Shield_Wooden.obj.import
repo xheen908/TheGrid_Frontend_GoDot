@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bm1b6b4jh2tli"
+path="res://.godot/imported/Shield_Wooden.obj-d62c3e26e908d0b726d5e8fd58fbbc15.mesh"
+
+[deps]
+
+files=["res://.godot/imported/Shield_Wooden.obj-d62c3e26e908d0b726d5e8fd58fbbc15.mesh"]
+
+source_file="res://Assets/Fantasy Props MegaKit[Standard]/Exports/OBJ/Shield_Wooden.obj"
+dest_files=["res://.godot/imported/Shield_Wooden.obj-d62c3e26e908d0b726d5e8fd58fbbc15.mesh", "res://.godot/imported/Shield_Wooden.obj-d62c3e26e908d0b726d5e8fd58fbbc15.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
