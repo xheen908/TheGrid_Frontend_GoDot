@@ -119,6 +119,8 @@ func _ready():
 		NetworkManager.party_invite_received.connect(_on_party_invite_received)
 		NetworkManager.party_updated.connect(_on_party_updated)
 	
+	%InventoryWindow.gm_menu_requested.connect(func(): %GMCommandMenu.visible = !%GMCommandMenu.visible)
+	
 	%TargetFrame.gui_input.connect(_on_target_frame_input)
 	%PlayerFrame.gui_input.connect(_on_player_frame_input)
 	
@@ -144,12 +146,27 @@ func _input(event):
 	if event.is_action_pressed("ui_cancel"):
 		if %BindingsMenu.visible:
 			_on_close_bindings_pressed()
+		elif %InventoryWindow.visible:
+			%InventoryWindow.hide()
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		elif %GMCommandMenu.visible:
+			%GMCommandMenu.hide()
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		else:
 			toggle_esc_menu()
 	
+	if event.is_action_pressed("toggle_inventory"):
+		if %InventoryWindow.visible:
+			%InventoryWindow.hide()
+			if not esc_menu.visible and not %GMCommandMenu.visible:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		else:
+			%InventoryWindow.show()
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+	
 	# Enter öffnet Chat (Präzise auf Enter-Taste prüfen, um Space/Leertaste für Sprung frei zu halten)
-	if event is InputEventKey and event.pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER):
-		if not chat_input.has_focus() and not esc_menu.visible:
+	if event.is_action_pressed("ui_accept") and not chat_input.has_focus() and not %BindingsMenu.visible and not %InventoryWindow.visible and not %GMCommandMenu.visible:
+		if not esc_menu.visible:
 			chat_input.grab_focus()
 			
 			# Letzten Chat-Modus visualisieren

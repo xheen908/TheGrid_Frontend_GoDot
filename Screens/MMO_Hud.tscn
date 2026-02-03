@@ -5,6 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://x6y726ar2u0g" path="res://Assets/UI/spell_frost_nova.jpg" id="3_nova"]
 [ext_resource type="Texture2D" uid="uid://pc4yxxver8ie" path="res://Assets/UI/spell_ice_barrier.jpg" id="4_barrier"]
 [ext_resource type="Texture2D" uid="uid://dmh8m7n4v1b2x_cone" path="res://Assets/UI/spell_cone_of_cold.jpg" id="5_cone"]
+[ext_resource type="PackedScene" uid="uid://dpmm2n5fhl4o5" path="res://Screens/InventoryWindow.tscn" id="6_inv"]
+[ext_resource type="PackedScene" uid="uid://c8n3p2q5r6s7t" path="res://Screens/GMCommandMenu.tscn" id="7_gm"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -721,3 +723,11 @@ item_0/text = "Einladen"
 item_0/id = 0
 item_1/text = "Flüstern"
 item_1/id = 1
+
+[node name="InventoryWindow" parent="." instance=ExtResource("6_inv")]
+unique_name_in_owner = true
+visible = false
+
+[node name="GMCommandMenu" parent="." instance=ExtResource("7_gm")]
+unique_name_in_owner = true
+visible = false
