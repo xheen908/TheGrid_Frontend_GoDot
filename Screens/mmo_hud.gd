@@ -58,11 +58,28 @@ const INPUT_CONFIG_PATH = "user://input_settings.cfg"
 
 # Cooldown Tracking
 var active_cooldowns = {} # "spell_name": { "current": float, "total": float }
+# Node Caching
+@onready var action_slot_1 = %ActionSlot1
+@onready var action_slot_2 = %ActionSlot2
+@onready var action_slot_3 = %ActionSlot3
+@onready var action_slot_4 = %ActionSlot4
+@onready var slot_1_sweep = %Slot1Sweep
+@onready var slot_2_sweep = %Slot2Sweep
+@onready var slot_3_sweep = %Slot3Sweep
+@onready var slot_4_sweep = %Slot4Sweep
+@onready var slot_1_cd_label = %Slot1CDLabel
+@onready var slot_2_cd_label = %Slot2CDLabel
+@onready var slot_3_cd_label = %Slot3CDLabel
+@onready var slot_4_cd_label = %Slot4CDLabel
+@onready var channel_label = %ChannelLabel
 var target_buff_timer = 0.0
 var party_invite_sender = ""
 var game_screen_ref = null # Wird von game_screen gesetzt
 var last_party_members = []
 var last_chat_mode = "" # Merkt sich z.B. "/p " oder "/1 "
+var debuff_update_timer = 0.0
+var is_refreshing_ui = false
+var should_update_target = false
 
 func _ready():
 	# Initialer Status
@@ -164,8 +181,9 @@ func _input(event):
 			%InventoryWindow.show()
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 	
-	# Enter öffnet Chat (Präzise auf Enter-Taste prüfen, um Space/Leertaste für Sprung frei zu halten)
-	if event.is_action_pressed("ui_accept") and not chat_input.has_focus() and not %BindingsMenu.visible and not %InventoryWindow.visible and not %GMCommandMenu.visible:
+	# Enter öffnet Chat (Nur echte Enter-Tasten, damit Space frei zum Springen bleibt)
+	var is_enter = event is InputEventKey and event.pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)
+	if is_enter and not chat_input.has_focus() and not %BindingsMenu.visible and not %InventoryWindow.visible and not %GMCommandMenu.visible:
 		if not esc_menu.visible:
 			chat_input.grab_focus()
 			
@@ -329,6 +347,12 @@ func _on_chat_received(data: Dictionary):
 			bbcode = "[color=#FFA500][Combat][/color] %s" % message
 	
 	chat_log.append_text("\n" + bbcode)
+	
+	# Begrenze Chat-Log auf 100 Einträge um Performance-Einbruch zu verhindern
+	if chat_log.get_content_height() > 5000:
+		var raw = chat_log.text
+		if raw.length() > 5000:
+			chat_log.text = raw.right(2500)
 
 func toggle_esc_menu():
 	if esc_menu.visible:
@@ -349,7 +373,13 @@ func _process(delta):
 		var pos = player_ref.global_position
 		if minimap_camera:
 			minimap_camera.global_position = Vector3(pos.x, 50, pos.z)
-		_update_target_frames()
+		
+		# Limit UI refresh frequency to avoid stutters (10 Hz instead of 60 Hz)
+		debuff_update_timer += delta
+		if (debuff_update_timer >= 0.1 or should_update_target) and not is_refreshing_ui:
+			debuff_update_timer = 0.0
+			should_update_target = false
+			_update_target_frames()
 
 	# Update Cooldowns
 	var keys = active_cooldowns.keys()
@@ -379,7 +409,6 @@ func _on_spell_cast_started(caster: String, spell_id: String, duration: float):
 		my_username = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
 	
 	var caster_clean = caster.strip_edges().to_lower()
-	print("MMO_Hud: Spell started by ", caster, " (MyName: ", my_name, " / ", my_username, ") duration: ", duration)
 	
 	if caster_clean == my_name or caster_clean == my_username:
 		is_casting = true
@@ -388,7 +417,6 @@ func _on_spell_cast_started(caster: String, spell_id: String, duration: float):
 		cast_label.text = spell_id.to_upper()
 		cast_bar.value = 0
 		cast_bar.show()
-		print("MMO_Hud: CastBar showing for ", spell_id)
 
 func _on_spell_cast_finished(caster: String, _target_id: String, spell_id: String, _extra: Dictionary):
 	var my_name = ""
@@ -478,77 +506,77 @@ func _setup_action_slots():
 
 func _update_action_bar_ui():
 	# Slot 1
-	if has_node("%Slot1Sweep"): %Slot1Sweep.hide()
-	if has_node("%ActionSlot1"): %ActionSlot1.disabled = false
+	if slot_1_sweep: slot_1_sweep.hide()
+	if action_slot_1: action_slot_1.disabled = false
 	
 	# Slot 2: Frost Nova
-	if active_cooldowns.has("Frost Nova") and has_node("%Slot2Sweep") and has_node("%Slot2CDLabel"):
+	if active_cooldowns.has("Frost Nova") and slot_2_sweep and slot_2_cd_label:
 		var fn = active_cooldowns["Frost Nova"]
 		var total = fn.get("total", 25.0)
 		if total > 0:
-			%Slot2Sweep.value = (fn["current"] / total) * 100.0
-			%Slot2Sweep.show()
-		%Slot2CDLabel.text = str(ceil(fn["current"]))
-		%Slot2CDLabel.show()
-		if has_node("%ActionSlot2"): %ActionSlot2.disabled = true
-	elif active_cooldowns.has("GCD") and has_node("%Slot2Sweep"):
+			slot_2_sweep.value = (fn["current"] / total) * 100.0
+			slot_2_sweep.show()
+		slot_2_cd_label.text = str(ceil(fn["current"]))
+		slot_2_cd_label.show()
+		if action_slot_2: action_slot_2.disabled = true
+	elif active_cooldowns.has("GCD") and slot_2_sweep:
 		var gcd = active_cooldowns["GCD"]
 		var total = gcd.get("total", 1.5)
 		if total > 0:
-			%Slot2Sweep.value = (gcd["current"] / total) * 100.0
-			%Slot2Sweep.show()
-		if has_node("%Slot2CDLabel"): %Slot2CDLabel.hide()
-		if has_node("%ActionSlot2"): %ActionSlot2.disabled = true
+			slot_2_sweep.value = (gcd["current"] / total) * 100.0
+			slot_2_sweep.show()
+		if slot_2_cd_label: slot_2_cd_label.hide()
+		if action_slot_2: action_slot_2.disabled = true
 	else:
-		if has_node("%Slot2Sweep"): %Slot2Sweep.hide()
-		if has_node("%Slot2CDLabel"): %Slot2CDLabel.hide()
-		if has_node("%ActionSlot2"): %ActionSlot2.disabled = false
+		if slot_2_sweep: slot_2_sweep.hide()
+		if slot_2_cd_label: slot_2_cd_label.hide()
+		if action_slot_2: action_slot_2.disabled = false
 		
 	# Slot 3: Kältekegel
-	if active_cooldowns.has("Kältekegel") and has_node("%Slot3Sweep") and has_node("%Slot3CDLabel"):
+	if active_cooldowns.has("Kältekegel") and slot_3_sweep and slot_3_cd_label:
 		var kc = active_cooldowns["Kältekegel"]
 		var total = kc.get("total", 10.0)
 		if total > 0:
-			%Slot3Sweep.value = (kc["current"] / total) * 100.0
-			%Slot3Sweep.show()
-		%Slot3CDLabel.text = str(ceil(kc["current"]))
-		%Slot3CDLabel.show()
-		if has_node("%ActionSlot3"): %ActionSlot3.disabled = true
-	elif active_cooldowns.has("GCD") and has_node("%Slot3Sweep"):
+			slot_3_sweep.value = (kc["current"] / total) * 100.0
+			slot_3_sweep.show()
+		slot_3_cd_label.text = str(ceil(kc["current"]))
+		slot_3_cd_label.show()
+		if action_slot_3: action_slot_3.disabled = true
+	elif active_cooldowns.has("GCD") and slot_3_sweep:
 		var gcd = active_cooldowns["GCD"]
 		var total = gcd.get("total", 1.5)
 		if total > 0:
-			%Slot3Sweep.value = (gcd["current"] / total) * 100.0
-			%Slot3Sweep.show()
-		if has_node("%Slot3CDLabel"): %Slot3CDLabel.hide()
-		if has_node("%ActionSlot3"): %ActionSlot3.disabled = true
+			slot_3_sweep.value = (gcd["current"] / total) * 100.0
+			slot_3_sweep.show()
+		if slot_3_cd_label: slot_3_cd_label.hide()
+		if action_slot_3: action_slot_3.disabled = true
 	else:
-		if has_node("%Slot3Sweep"): %Slot3Sweep.hide()
-		if has_node("%Slot3CDLabel"): %Slot3CDLabel.hide()
-		if has_node("%ActionSlot3"): %ActionSlot3.disabled = false
+		if slot_3_sweep: slot_3_sweep.hide()
+		if slot_3_cd_label: slot_3_cd_label.hide()
+		if action_slot_3: action_slot_3.disabled = false
 		
 	# Slot 4: Eisbarriere
-	if active_cooldowns.has("Eisbarriere") and has_node("%Slot4Sweep") and has_node("%Slot4CDLabel"):
+	if active_cooldowns.has("Eisbarriere") and slot_4_sweep and slot_4_cd_label:
 		var eb = active_cooldowns["Eisbarriere"]
 		var total = eb.get("total", 30.0)
 		if total > 0:
-			%Slot4Sweep.value = (eb["current"] / total) * 100.0
-			%Slot4Sweep.show()
-		%Slot4CDLabel.text = str(ceil(eb["current"]))
-		%Slot4CDLabel.show()
-		if has_node("%ActionSlot4"): %ActionSlot4.disabled = true
-	elif active_cooldowns.has("GCD") and has_node("%Slot4Sweep"):
+			slot_4_sweep.value = (eb["current"] / total) * 100.0
+			slot_4_sweep.show()
+		slot_4_cd_label.text = str(ceil(eb["current"]))
+		slot_4_cd_label.show()
+		if action_slot_4: action_slot_4.disabled = true
+	elif active_cooldowns.has("GCD") and slot_4_sweep:
 		var gcd = active_cooldowns["GCD"]
 		var total = gcd.get("total", 1.5)
 		if total > 0:
-			%Slot4Sweep.value = (gcd["current"] / total) * 100.0
-			%Slot4Sweep.show()
-		if has_node("%Slot4CDLabel"): %Slot4CDLabel.hide()
-		if has_node("%ActionSlot4"): %ActionSlot4.disabled = true
+			slot_4_sweep.value = (gcd["current"] / total) * 100.0
+			slot_4_sweep.show()
+		if slot_4_cd_label: slot_4_cd_label.hide()
+		if action_slot_4: action_slot_4.disabled = true
 	else:
-		if has_node("%Slot4Sweep"): %Slot4Sweep.hide()
-		if has_node("%Slot4CDLabel"): %Slot4CDLabel.hide()
-		if has_node("%ActionSlot4"): %ActionSlot4.disabled = false
+		if slot_4_sweep: slot_4_sweep.hide()
+		if slot_4_cd_label: slot_4_cd_label.hide()
+		if action_slot_4: action_slot_4.disabled = false
 
 func _on_player_status_updated(data: Dictionary):
 	if not NetworkManager or not NetworkManager.current_player_data: return
@@ -582,82 +610,43 @@ func _on_player_status_updated(data: Dictionary):
 			var perc = (float(xp) / max_xp) * 100.0
 			xp_label.text = "%d / %d (%d%%)" % [xp, max_xp, int(perc)]
 		
-		# Buffs anzeigen
-		if player_buff_container:
-			for child in player_buff_container.get_children(): child.queue_free()
-			var buffs = data.get("buffs", [])
-			for b in buffs:
-				var icon = debuff_icon_scene.instantiate()
-				player_buff_container.add_child(icon)
-				var rect = icon.get_node("%IconRect")
-				var b_type = b.get("type", "")
-				if b_type == "Eisbarriere": rect.texture = icon_ice_barrier
-				elif b_type == "Frozen": rect.texture = icon_frost_nova
-				elif b_type == "Chill": rect.texture = icon_frostblitz
-				else: rect.texture = null
-				
-				# Rahmenfarbe für Buffs (Gold)
-				var style = icon.get_theme_stylebox("panel").duplicate()
-				style.border_color = Color(1.0, 0.8, 0.0)
-				icon.add_theme_stylebox_override("panel", style)
-				
-				icon.get_node("%TimeLabel").text = str(b.remaining)
+	# Player Buff rendering moved to _update_target_frames periodic call to save CPU
 	
-	_update_target_frames()
+	# ONLY refresh target if THIS packet belongs to our target
+	if is_instance_valid(player_ref) and is_instance_valid(player_ref.current_target):
+		var target = player_ref.current_target
+		var target_id = target.get("mob_id") if "mob_id" in target else target.get("username", "")
+		if target_id == uname_clean or target_id == data.get("username", ""):
+			should_update_target = true # Flag setzen, _process macht den Rest gedrosselt
 
 func _update_target_frames():
-	if not is_instance_valid(player_ref): return
+	if not is_instance_valid(player_ref) or is_refreshing_ui: return
+	is_refreshing_ui = true
 	
 	var target = player_ref.current_target
 	if not is_instance_valid(target):
 		target_frame.hide()
 		tot_frame.hide()
+		is_refreshing_ui = false
 		return
 		
 	# Target Frame Daten
 	target_frame.show()
 	target_name_label.text = _get_display_name(target)
 	
-	# Debuffs & Buffs anzeigen (Icons statt Text)
-	target_buff_timer += get_process_delta_time()
-	if target_buff_timer >= 0.2:
-		target_buff_timer = 0.0
-		for child in debuff_container.get_children(): child.queue_free()
-		
-		var all_effects = []
-		if "debuffs" in target and target.debuffs is Array:
-			for d in target.debuffs: all_effects.append({"data": d, "is_buff": false})
-		if "buffs" in target and target.buffs is Array:
-			for b in target.buffs: all_effects.append({"data": b, "is_buff": true})
-
-		for effect in all_effects:
-			var d = effect.data
-			if d is Dictionary:
-				var icon = debuff_icon_scene.instantiate()
-				debuff_container.add_child(icon)
-				
-				var d_type = d.get("type", "Unknown")
-				var d_rem = d.get("remaining", 0)
-				
-				# Icon und Zeit setzen
-				var rect = icon.get_node("%IconRect")
-				var style = icon.get_theme_stylebox("panel").duplicate()
-				
-				if d_type == "Eisbarriere": rect.texture = icon_ice_barrier
-				elif d_type == "Frozen": rect.texture = icon_frost_nova
-				elif d_type == "Chill": rect.texture = icon_frostblitz
-				else: rect.texture = null
-				
-				if effect.is_buff:
-					style.border_color = Color(1.0, 0.8, 0) # Gold für Buffs
-				else:
-					if d_type == "Frozen" or d_type == "Chill":
-						style.border_color = Color(0.3, 0.7, 1.0) # Blau für Debuffs
-					else:
-						style.border_color = Color(1.0, 0.2, 0.2) # Rot für schädliches
-				
-				icon.add_theme_stylebox_override("panel", style)
-				icon.get_node("%TimeLabel").text = str(d_rem)
+	# --- OPTIMIZED PLAYER BUFFS (REUSE NODES) ---
+	if player_buff_container and NetworkManager.current_player_data:
+		var my_buffs = NetworkManager.current_player_data.get("buffs", [])
+		_sync_buff_icons(player_buff_container, my_buffs, true)
+	
+	# --- TARGET BUFFS (REUSE NODES) ---
+	var all_effects = []
+	if "debuffs" in target and target.debuffs is Array:
+		for d in target.debuffs: all_effects.append({"data": d, "is_buff": false})
+	if "buffs" in target and target.buffs is Array:
+		for b in target.buffs: all_effects.append({"data": b, "is_buff": true})
+	
+	_sync_buff_icons(debuff_container, all_effects, false)
 	
 	# Stats mit korrekter Skalierung (wichtig für Bosse!)
 	var current_hp = target.get("hp") if "hp" in target else 100
@@ -698,6 +687,8 @@ func _update_target_frames():
 		tot_mana_bar.value = 100
 	else:
 		tot_frame.hide()
+	
+	is_refreshing_ui = false
 
 func _get_display_name(node) -> String:
 	if not node: return "Unknown"
@@ -709,12 +700,50 @@ func _get_display_name(node) -> String:
 				uname = "<GM> " + uname
 		return uname
 	
-	# Falls es ein Mob ist, hat er ein NameLabel
-	var label = node.find_child("NameLabel", true)
-	if label and "text" in label:
-		return label.text
+	if "name_label" in node and is_instance_valid(node.name_label):
+		return node.name_label.text
 		
 	return node.name
+
+func _sync_buff_icons(container: Control, effects_data: Array, is_player_data: bool):
+	# Bestehende Icons verstecken statt löschen
+	var existing_icons = container.get_children()
+	for i in range(existing_icons.size()):
+		existing_icons[i].hide()
+	
+	for i in range(effects_data.size()):
+		var data = effects_data[i]
+		var effect_dict = data.get("data") if data.has("data") else data
+		var is_buff_type = data.get("is_buff", true) if data.has("is_buff") else true
+		
+		var icon = null
+		if i < existing_icons.size():
+			icon = existing_icons[i]
+		else:
+			icon = debuff_icon_scene.instantiate()
+			container.add_child(icon)
+		
+		icon.show()
+		var d_type = effect_dict.get("type", "Unknown")
+		var d_rem = effect_dict.get("remaining", 0)
+		
+		var rect = icon.get_node("%IconRect")
+		if d_type == "Eisbarriere": rect.texture = icon_ice_barrier
+		elif d_type == "Frozen": rect.texture = icon_frost_nova
+		elif d_type == "Chill": rect.texture = icon_frostblitz
+		else: rect.texture = null
+		
+		var style = icon.get_theme_stylebox("panel").duplicate()
+		if is_buff_type:
+			style.border_color = Color(1.0, 0.8, 0) # Gold
+		else:
+			if d_type == "Frozen" or d_type == "Chill":
+				style.border_color = Color(0.3, 0.7, 1) # Blau
+			else:
+				style.border_color = Color(1, 0.2, 0.2) # Rot
+		
+		icon.add_theme_stylebox_override("panel", style)
+		icon.get_node("%TimeLabel").text = str(d_rem)
 
 func _on_resume_pressed():
 	esc_menu.hide()

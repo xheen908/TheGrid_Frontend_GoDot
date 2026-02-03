@@ -92,8 +92,9 @@ func setup(p_username: String, start_pos: Vector3, p_is_gm: bool = false):
 func update_remote_data(pos: Vector3, rot: Vector3, p_is_gm: bool = false):
 	target_position = pos
 	target_rotation = rot
-	self.is_gm = p_is_gm
-	_update_name_label(p_is_gm)
+	if self.is_gm != p_is_gm:
+		self.is_gm = p_is_gm
+		_update_name_label(p_is_gm)
 
 func _update_name_label(is_gm: bool):
 	if name_label:

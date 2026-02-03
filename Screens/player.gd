@@ -261,11 +261,10 @@ func _unhandled_input(event):
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_held = event.pressed
 		
-		# Update Mouse Mode: Only capture if we clicked in the world (unhandled)
-		if is_left_mouse_held or is_right_mouse_held:
-			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		else:
-			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		# Update Mouse Mode: Only change if needed to avoid stutters
+		var target_mode = Input.MOUSE_MODE_CAPTURED if (is_left_mouse_held or is_right_mouse_held) else Input.MOUSE_MODE_VISIBLE
+		if Input.mouse_mode != target_mode:
+			Input.mouse_mode = target_mode
 			
 		# Handle Zoom
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP and event.pressed:
@@ -415,7 +414,7 @@ func set_target(new_target):
 	if current_target != new_target:
 		current_target = new_target
 		target_changed.emit(current_target)
-		print("Neues Ziel: ", current_target.name if current_target else "Keins")
+		# print("Neues Ziel: ", current_target.name if current_target else "Keins")
 	
 	# ABER: Wir synchronisieren IMMER mit dem Server, wenn diese Funktion aufgerufen wird
 	# (z.B. durch Klick), um sicherzustellen, dass der Server-State stimmt.
@@ -431,8 +430,7 @@ func set_target(new_target):
 	
 	if NetworkManager:
 		NetworkManager.send_target_update(target_id)
-		# Optional: Debug-Text im lokalen Log
-		print("Server-Ziel-Update gesendet: ", target_id)
+		# print("Server-Ziel-Update gesendet: ", target_id)
 
 var last_sent_pos = Vector3.ZERO
 var last_sent_rot = Vector3.ZERO

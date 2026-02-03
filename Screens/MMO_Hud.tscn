@@ -4,7 +4,7 @@
 [ext_resource type="Texture2D" uid="uid://66jle3l3c13s" path="res://Assets/UI/spell_frostblitz.jpg" id="2_purge"]
 [ext_resource type="Texture2D" uid="uid://x6y726ar2u0g" path="res://Assets/UI/spell_frost_nova.jpg" id="3_nova"]
 [ext_resource type="Texture2D" uid="uid://pc4yxxver8ie" path="res://Assets/UI/spell_ice_barrier.jpg" id="4_barrier"]
-[ext_resource type="Texture2D" uid="uid://dmh8m7n4v1b2x_cone" path="res://Assets/UI/spell_cone_of_cold.jpg" id="5_cone"]
+[ext_resource type="Texture2D" uid="uid://du1k77q3hnocw" path="res://Assets/UI/spell_cone_of_cold.jpg" id="5_cone"]
 [ext_resource type="PackedScene" uid="uid://dpmm2n5fhl4o5" path="res://Screens/InventoryWindow.tscn" id="6_inv"]
 [ext_resource type="PackedScene" uid="uid://c8n3p2q5r6s7t" path="res://Screens/GMCommandMenu.tscn" id="7_gm"]
 
@@ -48,6 +48,20 @@ corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tooltip"]
+bg_color = Color(0.02, 0.02, 0.05, 0.9)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.6, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+shadow_color = Color(0, 0, 0, 0.5)
+shadow_size = 8
 
 [node name="MMO_Hud" type="CanvasLayer" unique_id=811803260]
 script = ExtResource("1_script")
@@ -672,10 +686,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -140.0
-offset_right = 200.0
-offset_bottom = -115.0
+offset_left = -92.0
+offset_top = -75.0
+offset_right = 105.0
+offset_bottom = -59.0
 grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/background = SubResource("StyleBoxFlat_bg")
@@ -724,10 +738,61 @@ item_0/id = 0
 item_1/text = "Flüstern"
 item_1/id = 1
 
-[node name="InventoryWindow" parent="." instance=ExtResource("6_inv")]
+[node name="InventoryWindow" parent="." unique_id=137085733 instance=ExtResource("6_inv")]
 unique_name_in_owner = true
 visible = false
 
-[node name="GMCommandMenu" parent="." instance=ExtResource("7_gm")]
+[node name="GMCommandMenu" parent="." unique_id=2110881799 instance=ExtResource("7_gm")]
 unique_name_in_owner = true
 visible = false
+[node name="Tooltip" type="Panel" parent="." unique_id=302322026]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(250, 100)
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -280.0
+offset_top = -250.0
+offset_right = -30.0
+offset_bottom = -150.0
+grow_horizontal = 0
+grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBoxFlat_tooltip")
+
+[node name="VBox" type="VBoxContainer" parent="Tooltip" unique_id=302322027]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 5
+
+[node name="TooltipTitle" type="Label" parent="Tooltip/VBox" unique_id=302322028]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Name"
+autowrap_mode = 3
+
+[node name="TooltipType" type="Label" parent="Tooltip/VBox" unique_id=302322029]
+unique_name_in_owner = true
+layout_mode = 2
+modulate = Color(0.7, 0.7, 0.7, 1)
+theme_override_font_sizes/font_size = 14
+text = "Type"
+
+[node name="TooltipDescription" type="RichTextLabel" parent="Tooltip/VBox" unique_id=302322030]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+text = "Description..."
+fit_content = true

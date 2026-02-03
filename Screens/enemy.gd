@@ -14,9 +14,10 @@ var target_name = null # Name vom Server
 
 var casting_aura_scene = preload("res://Assets/Effects/CastingAura.tscn")
 var casting_aura = null
-var neon_shader = preload("res://Assets/Shaders/neon_wireframe.gdshader")
+static var neon_shader = preload("res://Assets/Shaders/neon_wireframe.gdshader")
 
 var is_geometric = false
+var current_geo_name = ""
 var geo_mesh_instance: MeshInstance3D = null
 var floating_time = 0.0
 var geo_base_color = Color(0, 1, 1)
@@ -36,10 +37,15 @@ func setup(data: Dictionary):
 	global_position = target_position
 
 func update_data(data: Dictionary):
-	hp = data.hp
-	max_hp = data.maxHp
+	var new_hp = data.hp
+	var new_max_hp = data.maxHp
 	var lvl = data.get("level", 1)
-	name_label.text = "[L" + str(lvl) + "] " + data.get("name", "Unknown")
+	var new_name = data.get("name", "Unknown")
+	
+	if hp != new_hp or max_hp != new_max_hp:
+		hp = new_hp
+		max_hp = new_max_hp
+		name_label.text = "[L" + str(lvl) + "] " + new_name
 	
 	var trans = data.transform
 	target_position = Vector3(trans.x, trans.y, trans.z)
@@ -47,6 +53,8 @@ func update_data(data: Dictionary):
 	target_name = data.get("target_name")
 	
 	# Debuffs prüfen
+	var old_frozen = is_frozen
+	var old_chilled = is_chilled
 	debuffs = data.get("debuffs", [])
 	is_frozen = false
 	is_chilled = false
@@ -54,7 +62,8 @@ func update_data(data: Dictionary):
 		if d.type == "Frozen": is_frozen = true
 		if d.type == "Chill": is_chilled = true
 			
-	_update_visuals()
+	if is_frozen != old_frozen or is_chilled != old_chilled:
+		_update_visuals()
 	
 	if hp <= 0:
 		if visible and (not $CollisionShape3D.disabled or (geo_mesh_instance and is_geometric)):
@@ -64,6 +73,9 @@ func update_data(data: Dictionary):
 			_respawn()
 
 func _check_geometric_mesh(enemy_name: String):
+	if enemy_name == current_geo_name: return
+	current_geo_name = enemy_name
+	
 	var lower_name = enemy_name.to_lower()
 	var mesh: Mesh = null
 	var color = Color(0, 1, 1) # Cyan default

@@ -142,10 +142,10 @@ func _on_map_changed(map_name: String, pos: Vector3, ry: float):
 
 func _on_mobs_synchronized(mob_data_list: Array):
 	# Bestehende Mobs updaten oder neue spawnen
-	var current_ids = []
+	var current_ids_set = {}
 	for data in mob_data_list:
 		var mid = data.id
-		current_ids.append(mid)
+		current_ids_set[mid] = true
 		
 		if mobs.has(mid):
 			mobs[mid].update_data(data)
@@ -154,12 +154,11 @@ func _on_mobs_synchronized(mob_data_list: Array):
 			add_child(m)
 			m.setup(data)
 			mobs[mid] = m
-			print("Mob gespawnt: ", data.name)
 	
 	# Mobs löschen, die nicht mehr in der Liste sind
 	var to_remove = []
 	for mid in mobs.keys():
-		if not mid in current_ids:
+		if not current_ids_set.has(mid):
 			to_remove.append(mid)
 	
 	for mid in to_remove:
@@ -167,12 +166,11 @@ func _on_mobs_synchronized(mob_data_list: Array):
 		mobs.erase(mid)
 
 func _on_game_objects_received(object_data_list: Array):
-	print("Game Objects empfangen: ", object_data_list.size())
 	# Ähnlich wie bei Mobs: Neue spawnen, ID-basierte Verwaltung
-	var current_ids = []
+	var current_ids_set = {}
 	for data in object_data_list:
 		var oid = data.get("id", 0)
-		current_ids.append(oid)
+		current_ids_set[oid] = true
 		
 		if game_objects.has(oid):
 			# Update falls nötig (Position etc.)
@@ -192,7 +190,6 @@ func _on_game_objects_received(object_data_list: Array):
 					if obj.has_method("setup_dynamic"):
 						obj.setup_dynamic(extra)
 					else:
-						# Fallback falls das Script noch nicht angepasst ist
 						if "target_map" in extra: obj.target_map = extra.target_map
 						if "spawn_pos" in extra: 
 							var sp = extra.spawn_pos
@@ -204,18 +201,16 @@ func _on_game_objects_received(object_data_list: Array):
 			
 			if obj:
 				add_child(obj)
-					
 				var pos_dict = data.get("position", {"x":0, "y":0, "z":0})
 				obj.global_position = Vector3(pos_dict.x, pos_dict.y, pos_dict.z)
 				var rot_dict = data.get("rotation", {"x":0, "y":0, "z":0})
 				obj.rotation = Vector3(rot_dict.x, rot_dict.y, rot_dict.z)
 				game_objects[oid] = obj
-				print("Objekt gespawnt: ", type, " ID: ", oid, " Position: ", obj.global_position)
 	
 	# Aufräumen
 	var to_remove = []
 	for oid in game_objects.keys():
-		if not oid in current_ids:
+		if not current_ids_set.has(oid):
 			to_remove.append(oid)
 	
 	for oid in to_remove:

@@ -51,9 +51,11 @@ func _process(_delta):
 			is_connected_to_ws = true
 			ws_connected.emit()
 			
-		while socket.get_available_packet_count() > 0:
+		var packets_processed = 0
+		while socket.get_available_packet_count() > 0 and packets_processed < 25:
 			var packet = socket.get_packet()
 			_on_ws_message(packet.get_string_from_utf8())
+			packets_processed += 1
 	elif state == WebSocketPeer.STATE_CLOSED:
 		var code = socket.get_close_code()
 		var reason = socket.get_close_reason()
