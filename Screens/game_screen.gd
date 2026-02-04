@@ -262,7 +262,7 @@ func _on_remote_player_moved(data: Dictionary):
 		remote_players[uname] = rp
 		print("Remote Player verbunden: ", cname, " (ID: ", uname, ")")
 
-func _on_spell_cast_started(caster: String, spell_id: String, _duration: float):
+func _on_spell_cast_started(caster: String, spell_id: String, duration: float):
 	var my_name = ""
 	var my_uname = ""
 	if NetworkManager and NetworkManager.current_player_data:
@@ -270,17 +270,22 @@ func _on_spell_cast_started(caster: String, spell_id: String, _duration: float):
 		my_uname = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
 
 	var caster_clean = caster.strip_edges().to_lower()
-	if caster_clean == my_name or caster_clean == my_uname:
+	print("[GAME] Spell started by ", caster, " (clean: ", caster_clean, ") - Me: ", my_name, "/", my_uname, " Duration: ", duration)
+	
+	if caster_clean == my_name or caster_clean == my_uname or caster == my_name or caster == my_uname:
 		if current_player and current_player.has_method("start_casting"):
-			current_player.start_casting(spell_id)
+			print("[GAME] Calling start_casting on local player")
+			current_player.start_casting(spell_id, duration)
 	elif remote_players.has(caster):
 		var rp = remote_players[caster]
 		if rp.has_method("start_casting"):
-			rp.start_casting(spell_id)
+			rp.start_casting(spell_id, duration)
 	elif remote_players.has(caster_clean):
 		var rp = remote_players[caster_clean]
 		if rp.has_method("start_casting"):
-			rp.start_casting(spell_id)
+			rp.start_casting(spell_id, duration)
+	else:
+		print("[GAME] Caster not found in local or remote players: ", caster)
 
 func _on_spell_cast_finished(caster: String, target_id: String, spell_id: String, extra_data: Dictionary):
 	var my_name = ""

@@ -19,6 +19,7 @@ var current_target: Node3D = null
 var shield = 0
 var is_casting = false
 var buffs = []
+var anim_player_ref: AnimationPlayer = null
 
 var casting_aura_scene = preload("res://Assets/Effects/CastingAura.tscn")
 var casting_aura = null
@@ -45,11 +46,30 @@ func _ready():
 	add_child(casting_aura)
 	casting_aura.hide()
 
-func start_casting(spell_id: String):
+func start_casting(spell_id: String, duration: float = 0.0):
+	if is_casting: return # Verhindert Mehrfach-Triggern
 	is_casting = true
+	
 	if anim_tree:
+		# Spezielle Animation für Frostblitz
+		var state_machine = anim_tree.tree_root as AnimationNodeStateMachine
+		if state_machine:
+			var casting_node = state_machine.get_node("Casting") as AnimationNodeAnimation
+			if casting_node:
+				var target_anim = "Frostblitz_Casting" if spell_id == "Frostblitz" else "Casting"
+				casting_node.animation = target_anim
+				
+				# Speed exakt anpassen
+				if anim_player_ref and anim_player_ref.has_animation(target_anim) and duration > 0:
+					var anim_len = anim_player_ref.get_animation(target_anim).length
+					anim_player_ref.speed_scale = anim_len / duration
+		
 		anim_tree.set("parameters/conditions/is_casting", true)
 		anim_tree.set("parameters/conditions/not_casting", false)
+		var playback = anim_tree.get("parameters/playback")
+		if playback:
+			playback.travel("Casting")
+	
 	if casting_aura and spell_id != "Frostblitz": 
 		casting_aura.show()
 
@@ -58,6 +78,12 @@ func stop_casting():
 	if anim_tree:
 		anim_tree.set("parameters/conditions/is_casting", false)
 		anim_tree.set("parameters/conditions/not_casting", true)
+		var playback = anim_tree.get("parameters/playback")
+		if playback:
+			playback.travel("IWS")
+		
+		if anim_player_ref:
+			anim_player_ref.speed_scale = 1.0
 	if casting_aura: casting_aura.hide()
 
 func initialise_class(new_class: String):
@@ -162,6 +188,8 @@ func _setup_animations():
 			visuals.add_child(anim_player)
 			print("RemotePlayerAnims: Created new AnimationPlayer")
 	
+	anim_player_ref = anim_player
+	
 	if not anim_player.has_animation_library(""):
 		anim_player.add_animation_library("", AnimationLibrary.new())
 	var lib = anim_player.get_animation_library("")
@@ -176,7 +204,8 @@ func _setup_animations():
 		"Left Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
 		"Right Strafe Walking": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Walking_A", "loop": true},
 		"Jump": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_MovementBasic.fbx", "source": "Jump_Start", "loop": false},
-		"Casting": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_General.fbx", "source": "Attack_Staff", "loop": true}
+		"Casting": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_General.fbx", "source": "Attack_Staff", "loop": true},
+		"Frostblitz_Casting": {"file": "res://Assets/models/KayKit_Adventurers_2.0_FREE/Animations/fbx/Rig_Medium/Rig_Medium_CombatRanged.fbx", "source": "Ranged_Magic_Spellcasting_Long", "loop": true}
 	}
 
 	for target_name in anim_mapping:
@@ -197,9 +226,14 @@ func _setup_animations():
 						var source_anim = source_player.get_animation(real_source_name)
 						var anim = source_anim.duplicate()
 						
+						# Retargeting logic: Wir setzen den Root des Players auf den Parent (Modell-Root)
+						# Das ist Godot-Standard für FBX.
+						anim_player.root_node = NodePath("..")
+						var anim_root = anim_player.get_node(anim_player.root_node)
 						var target_skeleton: Skeleton3D = _find_skeleton_recursive(visuals) if visuals else null
-						var target_skeleton_path = str(anim_player.get_path_to(target_skeleton)) if target_skeleton else "Skeleton3D"
+						var target_skeleton_path = str(anim_root.get_path_to(target_skeleton)) if target_skeleton and anim_root else "Skeleton3D"
 						
+						var matched_tracks = 0
 						for i in range(anim.get_track_count()):
 							var np = anim.track_get_path(i)
 							var bone_name = np.get_concatenated_subnames()
@@ -207,11 +241,26 @@ func _setup_animations():
 							if target_skeleton:
 								var final_bone = bone_name
 								if target_skeleton.find_bone(final_bone) == -1:
-									var pascal = final_bone.substr(0,1).to_upper() + final_bone.substr(1)
-									if target_skeleton.find_bone(pascal) != -1: final_bone = pascal
-									elif target_skeleton.find_bone(final_bone.to_lower()) != -1: final_bone = final_bone.to_lower()
-									elif target_skeleton.find_bone("mixamorig:" + final_bone) != -1: final_bone = "mixamorig:" + final_bone
+									# Handle "Mannequin_" or "Skeleton_" prefixes
+									var parts = final_bone.split("_")
+									var base_bone = parts[-1]
+									
+									var found = false
+									for b_idx in target_skeleton.get_bone_count():
+										var t_name = target_skeleton.get_bone_name(b_idx)
+										if t_name == base_bone or t_name.ends_with("_" + base_bone) or t_name.ends_with(":" + base_bone):
+											final_bone = t_name
+											found = true
+											break
+									
+									if not found:
+										var pascal = final_bone.substr(0,1).to_upper() + final_bone.substr(1)
+										if target_skeleton.find_bone(pascal) != -1: final_bone = pascal
+										elif target_skeleton.find_bone(final_bone.to_lower()) != -1: final_bone = final_bone.to_lower()
+										elif target_skeleton.find_bone("mixamorig:" + final_bone) != -1: final_bone = "mixamorig:" + final_bone
 								
+								if target_skeleton.find_bone(final_bone) != -1:
+									matched_tracks += 1
 								anim.track_set_path(i, target_skeleton_path + ":" + final_bone)
 							else:
 								anim.track_set_path(i, target_skeleton_path + ":" + bone_name)

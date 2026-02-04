@@ -151,8 +151,10 @@ func _on_ws_message(message: String):
 		"mob_sync":
 			mobs_synchronized.emit(data.get("mobs", []))
 		"spell_cast_start":
+			print("[NET] Spell cast start: ", data)
 			spell_cast_started.emit(data.get("caster", ""), data.get("spell", ""), data.get("duration", 0.0))
 		"spell_cast_finish":
+			print("[NET] Spell cast finish: ", data)
 			spell_cast_finished.emit(data.get("caster", ""), data.get("target_id", ""), data.get("spell", ""), data)
 		"player_status":
 			var tech_uname = data.get("username", "")

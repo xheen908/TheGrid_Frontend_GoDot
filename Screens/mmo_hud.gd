@@ -521,7 +521,10 @@ func _on_spell_cast_finished(caster: String, _target_id: String, spell_id: Strin
 	var caster_clean = caster.strip_edges().to_lower()
 	if caster_clean == my_name or caster_clean == my_username:
 		is_casting = false
-		cast_bar.hide()
+		if cast_bar:
+			cast_bar.value = 100.0 # Snap to 100% so shader/effects trigger
+			# Kleiner Delay zum Anzeigen des fertigen Balkens
+			get_tree().create_timer(0.15).timeout.connect(func(): if not is_casting: cast_bar.hide())
 		
 		# Spezifische Cooldowns setzen
 		if spell_id == "Frost Nova":

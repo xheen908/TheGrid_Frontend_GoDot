@@ -38,6 +38,17 @@ blend_point_4/pos = Vector2(1, 0)
 [sub_resource type="AnimationNodeAnimation" id="AnimationNodeAnimation_jump"]
 animation = &"Jump"
 
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_start_iws"]
+advance_mode = 2
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_iws_casting"]
+advance_mode = 2
+advance_condition = &"is_casting"
+
+[sub_resource type="AnimationNodeStateMachineTransition" id="AnimationNodeStateMachineTransition_casting_iws"]
+advance_mode = 2
+advance_condition = &"not_casting"
+
 [sub_resource type="AnimationNodeStateMachine" id="AnimationNodeStateMachine_main"]
 states/Casting/node = SubResource("AnimationNodeAnimation_casting")
 states/Casting/position = Vector2(350, -20)
@@ -45,6 +56,7 @@ states/IWS/node = SubResource("AnimationNodeBlendSpace2D_iws")
 states/IWS/position = Vector2(350, 100)
 states/Jump/node = SubResource("AnimationNodeAnimation_jump")
 states/Jump/position = Vector2(550, 100)
+transitions = [SubResource("AnimationNodeStateMachineTransition_start_iws"), "Start", "IWS", SubResource("AnimationNodeStateMachineTransition_iws_casting"), "IWS", "Casting", SubResource("AnimationNodeStateMachineTransition_casting_iws"), "Casting", "IWS"]
 
 [node name="CharacterBody3D" type="CharacterBody3D" unique_id=1894609249]
 collision_layer = 2
