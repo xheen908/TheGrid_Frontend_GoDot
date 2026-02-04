@@ -86,6 +86,9 @@ var debuff_update_timer = 0.0
 var is_refreshing_ui = false
 var should_update_target = false
 
+var destroy_dialog: ConfirmationDialog
+var destroy_pending_slot: int = -1
+
 func _ready():
 	# Initialer Status
 	if NetworkManager and NetworkManager.current_player_data:
@@ -128,6 +131,11 @@ func _ready():
 	# Chat Signale
 	chat_input.text_submitted.connect(_on_chat_submitted)
 	chat_log.meta_clicked.connect(_on_chat_meta_clicked)
+	chat_log.meta_hover_started.connect(_on_chat_meta_hover.bind(true))
+	chat_log.meta_hover_ended.connect(_on_chat_meta_hover.bind(false))
+	chat_log.meta_underlined = true
+	chat_log.mouse_filter = Control.MOUSE_FILTER_STOP
+	print("[UI] ChatLog initialized. Mouse filter: ", chat_log.mouse_filter)
 	
 	# NetworkManager Signale
 	if NetworkManager:
@@ -139,6 +147,8 @@ func _ready():
 		NetworkManager.spell_cast_finished.connect(_on_spell_cast_finished)
 		NetworkManager.player_status_updated.connect(_on_player_status_updated)
 		NetworkManager.party_invite_received.connect(_on_party_invite_received)
+		NetworkManager.trade_invited.connect(_on_trade_invited)
+		NetworkManager.trade_started.connect(_on_trade_started)
 		NetworkManager.party_updated.connect(_on_party_updated)
 	
 	%InventoryWindow.gm_menu_requested.connect(func(): %GMCommandMenu.visible = !%GMCommandMenu.visible)
@@ -164,7 +174,57 @@ func _ready():
 	%PartyInvitePopup.confirmed.connect(func(): NetworkManager.send_party_response(party_invite_sender, true))
 	%PartyInvitePopup.canceled.connect(func(): NetworkManager.send_party_response(party_invite_sender, false))
 	
+	if has_node("%TradeWindow"):
+		print("[INIT] TradeWindow found.")
+	else:
+		push_error("[INIT] TradeWindow NOT found!")
+		
+	if has_node("%TradeInvitePopup"):
+		print("[INIT] TradeInvitePopup found.")
+		%TradeInvitePopup.confirmed.connect(_on_trade_invite_accepted)
+		%TradeInvitePopup.canceled.connect(_on_trade_invite_declined)
+	else:
+		push_error("[INIT] TradeInvitePopup NOT found!")
+
 	if cast_bar: cast_bar.hide()
+	
+	_setup_destruction_logic()
+
+func _setup_destruction_logic():
+	# Create the drop zone (Full screen)
+	var drop_zone = Control.new()
+	drop_zone.name = "ScreenDropZone"
+	drop_zone.set_anchors_preset(Control.PRESET_FULL_RECT)
+	drop_zone.mouse_filter = Control.MOUSE_FILTER_PASS
+	add_child(drop_zone)
+	move_child(drop_zone, 0) # Place it at the back (but it's a CanvasLayer, so it's over the 3D world anyway)
+	
+	drop_zone.set_script(load("res://Screens/screen_drop_zone.gd"))
+	drop_zone.item_dropped_on_screen.connect(_on_item_dropped_on_screen)
+
+	# Create confirmation dialog
+	destroy_dialog = ConfirmationDialog.new()
+	destroy_dialog.title = "Gegenstand zerstören"
+	destroy_dialog.dialog_text = "Möchtest du diesen Gegenstand wirklich unwiderruflich zerstören?"
+	destroy_dialog.ok_button_text = "Ja, Zerstören"
+	destroy_dialog.cancel_button_text = "Abbrechen"
+	add_child(destroy_dialog)
+	destroy_dialog.confirmed.connect(_on_destroy_confirmed)
+
+func _on_item_dropped_on_screen(data: Dictionary):
+	var item = data.get("item", {})
+	destroy_pending_slot = data.get("from_slot", -1)
+	
+	if destroy_pending_slot != -1:
+		var item_name = item.get("name", "Unbekannter Gegenstand")
+		destroy_dialog.dialog_text = "Möchtest du \"%s\" wirklich unwiderruflich zerstören?" % item_name
+		destroy_dialog.popup_centered()
+
+func _on_destroy_confirmed():
+	if destroy_pending_slot != -1:
+		print("[UI] Zerstöre Item in Slot: ", destroy_pending_slot)
+		NetworkManager.send_destroy_item(destroy_pending_slot)
+		destroy_pending_slot = -1
 
 func _input(event):
 	if is_rebinding:
@@ -234,6 +294,24 @@ func _start_whisper(uname: String):
 	chat_input.text = "/w " + uname + " "
 	chat_input.caret_column = chat_input.text.length()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+
+func _on_chat_meta_hover(meta, entered: bool):
+	if not entered:
+		hide_tooltip()
+		return
+		
+	var s_meta = str(meta)
+	print("[UI] Chat Hover: ", s_meta)
+	if s_meta.begins_with("item:"):
+		var item_id = s_meta.split(":")[1]
+		if NetworkManager.item_template_cache.has(item_id):
+			var item_data = NetworkManager.item_template_cache[item_id]
+			print("[UI] Showing tooltip from cache for item: ", item_id)
+			_on_inventory_item_hovered(item_data, true)
+		else:
+			print("[UI] Item not in cache: ", item_id, ". Cache size: ", NetworkManager.item_template_cache.size())
+			# Fallback if not cached
+			show_tooltip({"title": "Gegenstand", "description": "ID: " + item_id, "type": "Unbekannt", "color": Color.WHITE})
 
 func _on_chat_meta_clicked(meta):
 	# meta ist der Name des Spielers aus dem [url]-Tag
@@ -576,6 +654,7 @@ func _on_player_status_updated(data: Dictionary):
 			hp_label.text = "%d%s / %d" % [current_hp, s_text, mhp]
 		
 		if unit_level_label: unit_level_label.text = "L" + str(data.get("level", 1))
+		if player_ref: player_ref.level = data.get("level", 1)
 		if unit_name_label and NetworkManager.current_player_data: 
 			unit_name_label.text = NetworkManager.current_player_data.get("char_name", "Player")
 		
@@ -673,14 +752,29 @@ func _update_target_frames():
 func _get_display_name(node) -> String:
 	if not node: return "Unknown"
 	
-	if "username" in node and node.username != "":
-		var uname = node.username
-		var gm_flag = node.is_gm_flagged if "is_gm_flagged" in node else false
-		var gm_status = node.is_gm if "is_gm" in node else false
-		if gm_flag == true or gm_status == true:
-			if not uname.begins_with("<GM>"):
-				uname = "<GM> " + uname
-		return uname
+	var d_name = ""
+	
+	# Priority 1: Properties
+	if node.get("char_name") and str(node.get("char_name")) != "":
+		d_name = str(node.get("char_name"))
+	elif node.get("username") and str(node.get("username")) != "":
+		d_name = str(node.get("username"))
+	elif node.get("mob_name") and str(node.get("mob_name")) != "":
+		d_name = str(node.get("mob_name"))
+	elif node.get("name") and str(node.get("name")) != "" and not str(node.get("name")).begins_with("@") and str(node.get("name")) != "CharacterBody3D":
+		d_name = str(node.get("name"))
+	
+	# Final Fallback
+	if d_name == "":
+		d_name = "Unbekannt"
+		
+	# GM logic
+	var is_gm = node.get("is_gm") if node.has_method("get") else false
+	if is_gm:
+		if not d_name.begins_with("<GM>"):
+			d_name = "<GM> " + d_name
+			
+	return d_name
 	
 	if "name_label" in node and is_instance_valid(node.name_label):
 		return node.name_label.text
@@ -890,8 +984,25 @@ func _format_map_name(raw: String) -> String:
 
 func _on_party_invite_received(from: String):
 	party_invite_sender = from
-	%PartyInvitePopup.dialog_text = "Spieler %s lädt dich in eine Gruppe ein." % from
-	%PartyInvitePopup.show()
+	%PartyInvitePopup.dialog_text = "%s lädt dich in eine Gruppe ein." % from
+	%PartyInvitePopup.popup_centered()
+
+var trade_invite_sender_username = ""
+func _on_trade_invited(from_user: String, from_char: String):
+	trade_invite_sender_username = from_user
+	%TradeInvitePopup.dialog_text = "%s möchte mit dir handeln." % from_char
+	%TradeInvitePopup.popup_centered()
+
+func _on_trade_invite_accepted():
+	NetworkManager.send_trade_response(trade_invite_sender_username, true)
+
+func _on_trade_invite_declined():
+	NetworkManager.send_trade_response(trade_invite_sender_username, false)
+
+func _on_trade_started(partner: String):
+	%TradeWindow.open(partner)
+	if %InventoryWindow:
+		%InventoryWindow.show() # Automatically show inventory when trading
 
 func _on_party_updated(members: Array):
 	last_party_members = members
@@ -997,19 +1108,19 @@ func _on_party_updated(members: Array):
 
 func _on_player_frame_input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
-		var my_name = ""
+		var my_tech_id = ""
 		if NetworkManager and NetworkManager.current_player_data:
-			my_name = NetworkManager.current_player_data.get("char_name", "")
-		if my_name != "":
-			_show_target_context_menu(my_name)
+			my_tech_id = NetworkManager.current_player_data.get("username", "")
+		if my_tech_id != "":
+			_show_target_context_menu(my_tech_id)
 
 func _on_target_frame_input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
 		var target = player_ref.current_target if player_ref else null
 		if target:
-			var t_name = target.get("username") if "username" in target else ""
-			if t_name != "":
-				_show_target_context_menu(t_name)
+			var tech_id = target.get("username") if target.has_method("get") and "username" in target else (target.username if "username" in target else "")
+			if tech_id != "":
+				_show_target_context_menu(tech_id)
 
 func _show_target_context_menu(t_name: String):
 	%TargetContextMenu.clear()
@@ -1020,24 +1131,27 @@ func _show_target_context_menu(t_name: String):
 	var is_in_party = false
 	var am_leader = false
 	var my_name = ""
+	var my_tech_id = ""
 	if NetworkManager and NetworkManager.current_player_data:
 		my_name = NetworkManager.current_player_data.get("char_name", "")
+		my_tech_id = NetworkManager.current_player_data.get("username", "")
 		
 	for m in last_party_members:
-		if m.get("name") == t_name:
+		if m.get("username") == t_name:
 			is_in_party = true
-		if m.get("name") == my_name and m.get("is_leader"):
+		if m.get("username") == my_tech_id and m.get("is_leader"):
 			am_leader = true
 			
+	if t_name != my_tech_id:
+		%TargetContextMenu.add_item("Handeln", 4)
+
 	if is_in_party:
-		if am_leader and t_name != my_name:
+		if am_leader and t_name != my_tech_id:
 			%TargetContextMenu.add_item("Aus Gruppe entfernen", 2)
-		
-		# JEDER in einer Gruppe kann die Gruppe verlassen (über das eigene Menü)
-		if t_name == my_name:
+		if t_name == my_tech_id:
 			%TargetContextMenu.add_item("Gruppe verlassen", 3)
 	else:
-		if t_name != my_name:
+		if t_name != my_tech_id:
 			%TargetContextMenu.add_item("Einladen", 0)
 		
 	%TargetContextMenu.position = get_viewport().get_mouse_position()
@@ -1062,6 +1176,8 @@ func _on_target_context_menu_id_pressed(id: int):
 			NetworkManager.send_party_kick(target_name)
 		3: # Verlassen
 			NetworkManager.send_party_leave()
+		4: # Handeln
+			NetworkManager.send_trade_request(target_name)
 	
 	# Reset meta so it doesn't accidentally trigger on another target frame click
 	%TargetContextMenu.set_meta("context_name", "")
@@ -1111,7 +1227,16 @@ func _update_3d_mouseover():
 		hide_tooltip()
 
 func _is_mouse_over_ui() -> bool:
-	var panels = [target_frame, %PlayerFrame, %ChatContainer, %ActionBars, %MinimapContainer, %PartyContainer]
+	var panels = []
+	if has_node("%TargetFrame"): panels.append(%TargetFrame)
+	if has_node("%PlayerFrame"): panels.append(%PlayerFrame)
+	if has_node("%ChatContainer"): panels.append(%ChatContainer)
+	if has_node("%ActionBars"): panels.append(%ActionBars)
+	if has_node("%MinimapContainer"): panels.append(%MinimapContainer)
+	if has_node("%PartyContainer"): panels.append(%PartyContainer)
+	if has_node("%GMCommandMenu"): panels.append(%GMCommandMenu)
+	if has_node("%TradeWindow"): panels.append(%TradeWindow)
+	
 	var m_pos = get_viewport().get_mouse_position()
 	for p in panels:
 		if is_instance_valid(p) and p.visible and p.get_global_rect().has_point(m_pos):
@@ -1121,7 +1246,7 @@ func _is_mouse_over_ui() -> bool:
 func _show_node_tooltip(node):
 	if not is_instance_valid(node): return
 	var data = {
-		"title": node.get("username") if "username" in node else node.name,
+		"title": _get_display_name(node),
 		"type": "Stufe " + str(node.get("level") if node.has_method("get") and node.get("level") != null else 1),
 		"color": Color.WHITE
 	}
@@ -1154,10 +1279,13 @@ func show_tooltip(data: Dictionary):
 	style.border_color = main_color
 	tooltip.add_theme_stylebox_override("panel", style)
 	
+	print("[UI] show_tooltip: ", data.get("title"))
 	tooltip.show()
 
 func hide_tooltip():
-	if tooltip: tooltip.hide()
+	if tooltip and tooltip.visible:
+		print("[UI] hide_tooltip")
+		tooltip.hide()
 
 func _on_unit_frame_hover(node, entered):
 	if entered and is_instance_valid(node):
@@ -1238,6 +1366,12 @@ func _setup_action_slots():
 	if target_frame:
 		target_frame.mouse_entered.connect(func(): if is_instance_valid(player_ref) and player_ref.current_target: _on_unit_frame_hover(player_ref.current_target, true))
 		target_frame.mouse_exited.connect(func(): _on_unit_frame_hover(null, false))
+	if tot_frame:
+		tot_frame.mouse_entered.connect(func(): 
+			if is_instance_valid(player_ref) and player_ref.current_target and "current_target" in player_ref.current_target:
+				var tot = player_ref.current_target.current_target
+				if is_instance_valid(tot): _on_unit_frame_hover(tot, true))
+		tot_frame.mouse_exited.connect(func(): _on_unit_frame_hover(null, false))
 
 func _on_inventory_item_hovered(item_data: Dictionary, entered: bool):
 	if entered:

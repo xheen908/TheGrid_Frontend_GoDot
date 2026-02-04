@@ -7,6 +7,7 @@
 [ext_resource type="Texture2D" uid="uid://du1k77q3hnocw" path="res://Assets/UI/spell_cone_of_cold.jpg" id="5_cone"]
 [ext_resource type="PackedScene" uid="uid://dpmm2n5fhl4o5" path="res://Screens/InventoryWindow.tscn" id="6_inv"]
 [ext_resource type="PackedScene" uid="uid://c8n3p2q5r6s7t" path="res://Screens/GMCommandMenu.tscn" id="7_gm"]
+[ext_resource type="PackedScene" uid="uid://d1g2h3j4k5l6m" path="res://Screens/TradeWindow.tscn" id="8_trade"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -485,6 +486,7 @@ horizontal_alignment = 1
 vertical_alignment = 1
 
 [node name="MinimapContainer" type="SubViewportContainer" parent="." unique_id=78675797]
+unique_name_in_owner = true
 anchors_preset = 1
 anchor_left = 1.0
 anchor_right = 1.0
@@ -640,44 +642,6 @@ theme_override_font_sizes/font_size = 28
 text = "Logout in 10s..."
 horizontal_alignment = 1
 
-[node name="ChatContainer" type="VBoxContainer" parent="." unique_id=1748535117]
-unique_name_in_owner = true
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_left = 5.0
-offset_top = -184.0
-offset_right = 405.0
-offset_bottom = 46.0
-grow_vertical = 0
-scale = Vector2(0.75, 0.75)
-theme_override_constants/separation = 5
-
-[node name="ChatLog" type="RichTextLabel" parent="ChatContainer" unique_id=1161278401]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_vertical = 3
-theme_override_styles/normal = SubResource("StyleBoxFlat_bg")
-bbcode_enabled = true
-text = "[color=yellow][System][/color] Willkommen im Grid. Tippe /w name für Flüstern."
-scroll_following = true
-
-[node name="ChatInputLine" type="HBoxContainer" parent="ChatContainer" unique_id=540799744]
-layout_mode = 2
-
-[node name="ChannelLabel" type="Label" parent="ChatContainer/ChatInputLine" unique_id=1574894036]
-unique_name_in_owner = true
-visible = false
-layout_mode = 2
-theme_override_colors/font_color = Color(0, 1, 0, 1)
-text = "[Gruppe]"
-
-[node name="ChatInput" type="LineEdit" parent="ChatContainer/ChatInputLine" unique_id=451186810]
-unique_name_in_owner = true
-layout_mode = 2
-size_flags_horizontal = 3
-placeholder_text = "Nachricht senden... (Enter)"
-context_menu_enabled = false
 
 [node name="CastBar" type="ProgressBar" parent="." unique_id=1322804223]
 unique_name_in_owner = true
@@ -746,8 +710,64 @@ visible = false
 unique_name_in_owner = true
 visible = false
 
+[node name="TradeWindow" parent="." unique_id=31337 instance=ExtResource("8_trade")]
+unique_name_in_owner = true
+visible = false
+
+[node name="TradeInvitePopup" type="ConfirmationDialog" parent="." unique_id=31338]
+unique_name_in_owner = true
+title = "Handelsanfrage"
+initial_position = 2
+size = Vector2i(300, 100)
+ok_button_text = "Annehmen"
+dialog_text = "Spieler X möchte mit dir handeln."
+cancel_button_text = "Ablehnen"
+
+[node name="ChatContainer" type="VBoxContainer" parent="." unique_id=1748535117]
+unique_name_in_owner = true
+layout_mode = 3
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_left = 5.0
+offset_top = -250.0
+offset_right = 405.0
+offset_bottom = -10.0
+grow_vertical = 0
+scale = Vector2(0.75, 0.75)
+theme_override_constants/separation = 5
+
+[node name="ChatLog" type="RichTextLabel" parent="ChatContainer" unique_id=1161278401]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/normal = SubResource("StyleBoxFlat_bg")
+mouse_filter = 0
+bbcode_enabled = true
+text = "[color=yellow][System][/color] Willkommen im Grid. Tippe /w name für Flüstern."
+meta_underlined = true
+scroll_following = true
+
+[node name="ChatInputLine" type="HBoxContainer" parent="ChatContainer" unique_id=540799744]
+layout_mode = 2
+
+[node name="ChannelLabel" type="Label" parent="ChatContainer/ChatInputLine" unique_id=1574894036]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "[Gruppe]"
+
+[node name="ChatInput" type="LineEdit" parent="ChatContainer/ChatInputLine" unique_id=451186810]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+placeholder_text = "Nachricht senden... (Enter)"
+context_menu_enabled = false
+
 [node name="Tooltip" type="PanelContainer" parent="." unique_id=302322026]
 unique_name_in_owner = true
+mouse_filter = 2
 custom_minimum_size = Vector2(200, 0)
 anchors_preset = 3
 anchor_left = 1.0

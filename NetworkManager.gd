@@ -10,6 +10,7 @@ var socket = WebSocketPeer.new()
 var is_connected_to_ws = false
 var is_authenticating = false
 var teleport_locked = false
+var item_template_cache = {} # id -> {name, description, rarity, extra_data}
 
 signal ws_connected
 signal ws_connection_failed(reason: String)
@@ -33,6 +34,11 @@ signal player_status_updated(data: Dictionary)
 signal combat_text_received(data: Dictionary)
 signal party_invite_received(from: String)
 signal party_updated(members: Array)
+signal trade_invited(from_username: String, from_charname: String)
+signal trade_started(partner_name: String)
+signal trade_updated(my_items: Array, partner_items: Array, my_ready: bool, partner_ready: bool)
+signal trade_completed()
+signal trade_canceled()
 signal player_leveled_up(username: String)
 signal game_objects_received(objects: Array)
 signal inventory_updated(items: Array)
@@ -149,8 +155,8 @@ func _on_ws_message(message: String):
 		"spell_cast_finish":
 			spell_cast_finished.emit(data.get("caster", ""), data.get("target_id", ""), data.get("spell", ""), data)
 		"player_status":
-			var uname = data.get("username", "")
-			if current_player_data.get("char_name") == uname:
+			var tech_uname = data.get("username", "")
+			if current_player_data and current_player_data.get("username") == tech_uname:
 				# Merge data
 				for key in data:
 					current_player_data[key] = data[key]
@@ -161,6 +167,21 @@ func _on_ws_message(message: String):
 			party_invite_received.emit(data.get("from", "Unbekannt"))
 		"party_update":
 			party_updated.emit(data.get("members", []))
+		"trade_invited":
+			trade_invited.emit(data.get("from_user", ""), data.get("from_char", ""))
+		"trade_started":
+			trade_started.emit(data.get("partner", ""))
+		"trade_update":
+			trade_updated.emit(
+				data.get("my_items", []),
+				data.get("partner_items", []),
+				data.get("my_ready", false),
+				data.get("partner_ready", false)
+			)
+		"trade_complete":
+			trade_completed.emit()
+		"trade_canceled":
+			trade_canceled.emit()
 		"level_up":
 			player_leveled_up.emit(data.get("username", ""))
 		"game_objects_init":
@@ -172,6 +193,19 @@ func _on_ws_message(message: String):
 			if current_player_data:
 				current_player_data["inventory"] = items
 				print("[NET] current_player_data['inventory'] updated. First item id: ", items[0].get("item_id") if items.size() > 0 else "none")
+			
+			# Cache templates for tooltips (e.g. from chat)
+			print("[NET] Updating Template Cache. Items: ", items.size())
+			for item in items:
+				var iid = str(item.get("item_id", ""))
+				if iid != "" and not item_template_cache.has(iid):
+					item_template_cache[iid] = {
+						"name": item.get("name"),
+						"description": item.get("description"),
+						"rarity": item.get("rarity"),
+						"extra_data": item.get("extra_data", {})
+					}
+			
 			inventory_updated.emit(items)
 		"error":
 			print("WS Server Fehler: ", data.get("message"))
@@ -219,6 +253,53 @@ func use_item(slot_index: int):
 	_send_ws({
 		"type": "use_item",
 		"slot_index": slot_index
+	})
+
+func send_destroy_item(slot_index: int):
+	_send_ws({
+		"type": "destroy_item",
+		"slot_index": slot_index
+	})
+
+func send_trade_request(target_name: String):
+	_send_ws({
+		"type": "trade_request",
+		"target": target_name
+	})
+
+func send_trade_response(partner_name: String, accepted: bool):
+	_send_ws({
+		"type": "trade_response",
+		"partner": partner_name,
+		"accepted": accepted
+	})
+
+func send_trade_add_item(slot_index: int):
+	_send_ws({
+		"type": "trade_add_item",
+		"slot_index": slot_index
+	})
+
+func send_trade_remove_item(trade_slot_index: int):
+	_send_ws({
+		"type": "trade_remove_item",
+		"trade_slot": trade_slot_index
+	})
+
+func send_trade_ready(is_ready: bool):
+	_send_ws({
+		"type": "trade_ready",
+		"ready": is_ready
+	})
+
+func send_trade_confirm():
+	_send_ws({
+		"type": "trade_confirm"
+	})
+
+func send_trade_cancel():
+	_send_ws({
+		"type": "trade_cancel"
 	})
 
 func request_map_change(map_name: String, position: Vector3, rotation_y: float = 0.0):

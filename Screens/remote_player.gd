@@ -10,6 +10,7 @@ var bubble_timer: SceneTreeTimer = null
 var target_position = Vector3.ZERO
 var target_rotation = Vector3.ZERO
 var username = "Unknown"
+var char_name = ""
 var hp = 100
 var max_hp = 100
 var level = 1
@@ -82,8 +83,9 @@ func initialise_class(new_class: String):
 				var new_anim_player = visuals.find_child("AnimationPlayer", true)
 				if new_anim_player:
 					anim_tree.anim_player = new_anim_player.get_path()
-func setup(p_username: String, start_pos: Vector3, p_is_gm: bool = false):
+func setup(p_username: String, p_char_name: String, start_pos: Vector3, p_is_gm: bool = false):
 	username = p_username
+	char_name = p_char_name
 	global_position = start_pos
 	target_position = start_pos
 	self.is_gm = p_is_gm
@@ -98,11 +100,12 @@ func update_remote_data(pos: Vector3, rot: Vector3, p_is_gm: bool = false):
 
 func _update_name_label(is_gm: bool):
 	if name_label:
+		var display_name = char_name if char_name != "" else username
 		if is_gm:
-			name_label.text = "<GM> " + username
+			name_label.text = "<GM> " + display_name
 			name_label.modulate = Color.YELLOW
 		else:
-			name_label.text = username
+			name_label.text = display_name
 			name_label.modulate = Color.WHITE
 
 func show_message(text: String):

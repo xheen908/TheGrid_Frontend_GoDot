@@ -26,6 +26,8 @@ var was_moving_last_frame = false
 
 signal target_changed(new_target: Node3D)
 var username = ""
+var char_name = ""
+var level = 1
 var is_gm_flagged = false
 var current_target: Node3D = null
 var hp = 100
@@ -76,8 +78,9 @@ func _ready():
 	casting_aura.hide()
 
 func update_gm_status(is_gm: bool):
-	var uname = NetworkManager.current_player_data.get("char_name", "Local GM") if NetworkManager and NetworkManager.current_player_data else "GM"
-	username = ("<GM> " + uname) if is_gm else uname
+	var uname = NetworkManager.current_player_data.get("char_name", "Local Player") if NetworkManager and NetworkManager.current_player_data else "Local Player"
+	# TECHNICAL username stays as is (e.g. from NetworkManager data)
+	# We only change the visual representation
 	is_gm_flagged = is_gm
 	
 	if name_label:
@@ -86,6 +89,7 @@ func update_gm_status(is_gm: bool):
 			name_label.modulate = Color.YELLOW
 			name_label.show()
 		else:
+			name_label.text = uname
 			name_label.hide()
 
 func start_casting(spell_id: String):
@@ -261,8 +265,9 @@ func _unhandled_input(event):
 		elif event.button_index == MOUSE_BUTTON_RIGHT:
 			is_right_mouse_held = event.pressed
 		
-		# Update Mouse Mode: Only change if needed to avoid stutters
-		var target_mode = Input.MOUSE_MODE_CAPTURED if (is_left_mouse_held or is_right_mouse_held) else Input.MOUSE_MODE_VISIBLE
+		# Update Mouse Mode: Only capture on Right Mouse (Steering)
+		# Left Mouse (Selection/Orbit) stays visible to avoid the jump-to-center on simple clicks.
+		var target_mode = Input.MOUSE_MODE_CAPTURED if is_right_mouse_held else Input.MOUSE_MODE_VISIBLE
 		if Input.mouse_mode != target_mode:
 			Input.mouse_mode = target_mode
 			
@@ -353,6 +358,7 @@ func _pick_target():
 	var space_state = get_world_3d().direct_space_state
 	var mouse_pos = get_viewport().get_mouse_position()
 	
+	print("[RAY] Starting pick_target from camera: ", mouse_pos)
 	var ray_origin = camera.project_ray_origin(mouse_pos)
 	var ray_end = ray_origin + camera.project_ray_normal(mouse_pos) * 100.0
 	
@@ -363,12 +369,16 @@ func _pick_target():
 	
 	if result:
 		var collider = result.collider
+		print("[RAY] Hit collider: ", collider.name, " Groups: ", collider.get_groups())
 		var target_hp = collider.get("hp") if "hp" in collider else 1 # Default 1 if no hp var
 		if collider.is_in_group("targetable") and target_hp > 0:
+			print("[RAY] Targeting valid: ", collider.name)
 			set_target(collider)
 		else:
+			print("[RAY] Hit but not targetable or dead.")
 			set_target(null) # Deselect
 	else:
+		print("[RAY] No hit.")
 		set_target(null)
 
 func _cycle_targets():
@@ -429,8 +439,8 @@ func set_target(new_target):
 			target_name = target_id
 	
 	if NetworkManager:
+		print("[UI] Sending target update to server: ", target_id)
 		NetworkManager.send_target_update(target_id)
-		# print("Server-Ziel-Update gesendet: ", target_id)
 
 var last_sent_pos = Vector3.ZERO
 var last_sent_rot = Vector3.ZERO

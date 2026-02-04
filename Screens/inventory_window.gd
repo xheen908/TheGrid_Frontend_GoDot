@@ -12,6 +12,34 @@ var icon_armor = preload("res://Assets/UI/item_mythic_chest.jpg")
 var icon_gm_kodex = preload("res://Assets/UI/item_gm_kodex.jpg")
 var fallback_icon = preload("res://Assets/UI/spell_ice_barrier.jpg")
 
+# New Icons
+var icon_broadsword = preload("res://Assets/UI/item_broadsword.jpg")
+var icon_magic_staff = preload("res://Assets/UI/item_magic_staff.jpg")
+var icon_sneaky_dagger = preload("res://Assets/UI/item_sneaky_dagger.jpg")
+var icon_divine_barricade = preload("res://Assets/UI/item_divine_barricade.jpg")
+var icon_mana_potion = preload("res://Assets/UI/item_mana_potion.jpg")
+var icon_speed_potion = preload("res://Assets/UI/item_speed_potion.jpg")
+var icon_strength_potion = preload("res://Assets/UI/item_strength_potion.jpg")
+var icon_intellect_potion = preload("res://Assets/UI/item_intellect_potion.jpg")
+var icon_luck_potion = preload("res://Assets/UI/item_luck_potion.jpg")
+
+func get_item_icon(slug: String) -> Texture:
+	match slug:
+		"1": return icon_gm_kodex
+		"2": return icon_potion
+		"3": return icon_sword
+		"4": return icon_armor
+		"6": return icon_broadsword
+		"7": return icon_magic_staff
+		"8": return icon_sneaky_dagger
+		"9": return icon_divine_barricade
+		"10": return icon_mana_potion
+		"11": return icon_speed_potion
+		"12": return icon_strength_potion
+		"13": return icon_intellect_potion
+		"14": return icon_luck_potion
+	return fallback_icon
+
 func _ready():
 	print("[UI] InventoryWindow: Script ready and alive.")
 	NetworkManager.inventory_updated.connect(_on_inventory_updated)
@@ -63,13 +91,22 @@ func _setup_slot(slot, item):
 	var qty_label = slot.get_node("%QuantityLabel")
 	
 	# Icon Mapping - Check item_id
-	var slug = item.get("item_id", "")
+	var slug = str(item.get("item_id", ""))
 	var tex = null
 	
 	if slug == "1": tex = icon_gm_kodex
 	elif slug == "2": tex = icon_potion
 	elif slug == "3": tex = icon_sword
 	elif slug == "4": tex = icon_armor
+	elif slug == "6": tex = icon_broadsword
+	elif slug == "7": tex = icon_magic_staff
+	elif slug == "8": tex = icon_sneaky_dagger
+	elif slug == "9": tex = icon_divine_barricade
+	elif slug == "10": tex = icon_mana_potion
+	elif slug == "11": tex = icon_speed_potion
+	elif slug == "12": tex = icon_strength_potion
+	elif slug == "13": tex = icon_intellect_potion
+	elif slug == "14": tex = icon_luck_potion
 	
 	if tex:
 		if tex.get_width() > 0:

@@ -37,7 +37,22 @@ import_script/path=""
 materials/extract=0
 materials/extract_format=0
 materials/extract_path=""
-_subresources={}
+_subresources={
+"nodes": {
+"PATH:wall_straight_gate": {
+"generate/physics": true,
+"physics/shape_type": 2
+},
+"PATH:wall_straight_gate/wall_straight_gate_door_left": {
+"generate/physics": true,
+"physics/shape_type": 2
+},
+"PATH:wall_straight_gate/wall_straight_gate_door_right": {
+"generate/physics": true,
+"physics/shape_type": 2
+}
+}
+}
 fbx/importer=0
 fbx/allow_geometry_helper_nodes=false
 fbx/embedded_image_handling=1

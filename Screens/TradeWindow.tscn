@@ -1,0 +1,122 @@
+[gd_scene load_steps=3 format=3 uid="uid://d1g2h3j4k5l6m"]
+
+[ext_resource type="Script" path="res://Screens/trade_window.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="1"]
+bg_color = Color(0.12, 0.12, 0.12, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.4, 0.4, 0.4, 1)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[node name="TradeWindow" type="PanelContainer"]
+custom_minimum_size = Vector2(450, 350)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -225.0
+offset_top = -175.0
+offset_right = 225.0
+offset_bottom = 175.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("1")
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="."]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Title" type="Label" parent="VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+theme_override_colors/font_color = Color(1, 0.8, 0, 1)
+text = "Handeln"
+horizontal_alignment = 1
+
+[node name="HBoxSides" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="MySide" type="VBoxContainer" parent="VBox/HBoxSides"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="Label" type="Label" parent="VBox/HBoxSides/MySide"]
+layout_mode = 2
+text = "Dein Angebot"
+horizontal_alignment = 1
+
+[node name="MyGrid" type="GridContainer" parent="VBox/HBoxSides/MySide"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 4
+
+[node name="ReadyCheck" type="CheckBox" parent="VBox/HBoxSides/MySide"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Bereit"
+
+[node name="PartnerSide" type="VBoxContainer" parent="VBox/HBoxSides"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PartnerLabel" type="Label" parent="VBox/HBoxSides/PartnerSide"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Partner"
+horizontal_alignment = 1
+
+[node name="PartnerGrid" type="GridContainer" parent="VBox/HBoxSides/PartnerSide"]
+unique_name_in_owner = true
+layout_mode = 2
+columns = 4
+
+[node name="PartnerReadyBox" type="ColorRect" parent="VBox/HBoxSides/PartnerSide"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+color = Color(0.8, 0, 0, 1)
+
+[node name="Label" type="Label" parent="VBox/HBoxSides/PartnerSide/PartnerReadyBox"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_font_sizes/font_size = 12
+text = "NICHT BEREIT"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Buttons" type="HBoxContainer" parent="VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1
+
+[node name="ConfirmButton" type="Button" parent="VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+text = "Handeln"
+
+[node name="CancelButton" type="Button" parent="VBox/Buttons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 40)
+layout_mode = 2
+text = "Abbrechen"
+
+[connection signal="toggled" from="VBox/HBoxSides/MySide/ReadyCheck" to="." method="_on_ready_check_toggled"]
+[connection signal="pressed" from="VBox/Buttons/ConfirmButton" to="." method="_on_confirm_button_pressed"]
+[connection signal="pressed" from="VBox/Buttons/CancelButton" to="." method="_on_cancel_button_pressed"]

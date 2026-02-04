@@ -74,6 +74,7 @@ func _on_remote_player_status_updated(data: Dictionary):
 		if "buffs" in data: current_player.buffs = data["buffs"]
 		if "gravity_enabled" in data: current_player.gravity_enabled = data["gravity_enabled"]
 		if "speed_multiplier" in data: current_player.speed_multiplier = data["speed_multiplier"]
+		if "level" in data: current_player.level = data["level"]
 		if "is_gm" in data and current_player.has_method("update_gm_status"):
 			current_player.update_gm_status(data["is_gm"])
 
@@ -218,13 +219,15 @@ func _on_game_objects_received(object_data_list: Array):
 		game_objects.erase(oid)
 
 func _on_remote_player_moved(data: Dictionary):
-	var uname = data.get("username", "")
-	var my_name = ""
-	if NetworkManager and NetworkManager.current_player_data:
-		my_name = str(NetworkManager.current_player_data.get("char_name", "")).strip_edges().to_lower()
+	var uname = data.get("username", "") # Technischer ID (z.B. "admin")
+	var cname = data.get("char_name", uname) # Anzeigename (z.B. "AdminChar")
 	
-	# Sicherheits-Check: Falls uname unser eigener Name ist, ignorieren (verhindert Geister-Models)
-	if uname == "" or uname.strip_edges().to_lower() == my_name:
+	var my_uname = ""
+	if NetworkManager and NetworkManager.current_player_data:
+		my_uname = str(NetworkManager.current_player_data.get("username", "")).strip_edges().to_lower()
+	
+	# Sicherheits-Check: Falls uname unser eigener technischer Name ist, ignorieren
+	if uname == "" or uname.strip_edges().to_lower() == my_uname:
 		if current_player and current_player.has_method("update_gm_status"):
 			current_player.update_gm_status(data.get("is_gm", false))
 		return 
@@ -236,15 +239,17 @@ func _on_remote_player_moved(data: Dictionary):
 	var is_gm = data.get("is_gm", false)
 	
 	if remote_players.has(uname):
-		remote_players[uname].update_remote_data(pos, rot, is_gm)
-		if "char_class" in data: remote_players[uname].initialise_class(data["char_class"])
+		var rp = remote_players[uname]
+		rp.char_name = cname
+		rp.update_remote_data(pos, rot, is_gm)
+		if "char_class" in data: rp.initialise_class(data["char_class"])
 	else:
-		# KRITISCHER CHECK: Prüfen ob bereits ein Knoten für diesen Namen existiert
-		# (Verhindert Duplikate bei schnellen Reconnects oder Sync-Fehlern)
+		# KRITISCHER CHECK: Prüfen ob bereits ein Knoten für diesen technischen Namen existiert
 		for existing_rp in get_tree().get_nodes_in_group("remote_player"):
 			if existing_rp.get("username") == uname:
 				print("Verwaistes Model gefunden für ", uname, ". Re-assigning.")
 				remote_players[uname] = existing_rp
+				existing_rp.char_name = cname
 				existing_rp.update_remote_data(pos, rot, is_gm)
 				if "char_class" in data: existing_rp.initialise_class(data["char_class"])
 				return
@@ -252,10 +257,10 @@ func _on_remote_player_moved(data: Dictionary):
 		# Neuer Spieler!
 		var rp = remote_player_scene.instantiate()
 		add_child(rp)
-		rp.setup(uname, pos, is_gm)
+		rp.setup(uname, cname, pos, is_gm)
 		if "char_class" in data: rp.initialise_class(data["char_class"])
 		remote_players[uname] = rp
-		print("Remote Player verbunden: ", uname)
+		print("Remote Player verbunden: ", cname, " (ID: ", uname, ")")
 
 func _on_spell_cast_started(caster: String, spell_id: String, _duration: float):
 	var my_name = ""
@@ -399,6 +404,8 @@ func spawn_player():
 			print("Erfolg: Player gespawnt an ", player.global_position)
 			
 			# GM Status initial setzen
+			player.username = NetworkManager.current_player_data.get("username", "")
+			player.char_name = NetworkManager.current_player_data.get("char_name", "")
 			var gm_status = NetworkManager.current_player_data.get("gm_status", false)
 			if player.has_method("update_gm_status"):
 				player.update_gm_status(gm_status)
