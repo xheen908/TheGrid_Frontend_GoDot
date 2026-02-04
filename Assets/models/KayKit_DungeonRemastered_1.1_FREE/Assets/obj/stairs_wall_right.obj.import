@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bmo8dpyis7ywx"
+path="res://.godot/imported/stairs_wall_right.obj-e039c31d3c96ad4529f79a9e6df34449.mesh"
+
+[deps]
+
+files=["res://.godot/imported/stairs_wall_right.obj-e039c31d3c96ad4529f79a9e6df34449.mesh"]
+
+source_file="res://Assets/models/KayKit_DungeonRemastered_1.1_FREE/Assets/obj/stairs_wall_right.obj"
+dest_files=["res://.godot/imported/stairs_wall_right.obj-e039c31d3c96ad4529f79a9e6df34449.mesh", "res://.godot/imported/stairs_wall_right.obj-e039c31d3c96ad4529f79a9e6df34449.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

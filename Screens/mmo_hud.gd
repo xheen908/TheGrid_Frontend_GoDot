@@ -72,6 +72,11 @@ var active_cooldowns = {} # "spell_name": { "current": float, "total": float }
 @onready var slot_3_cd_label = %Slot3CDLabel
 @onready var slot_4_cd_label = %Slot4CDLabel
 @onready var channel_label = %ChannelLabel
+@onready var tooltip = %Tooltip
+@onready var tooltip_title = %TooltipTitle
+@onready var tooltip_type = %TooltipType
+@onready var tooltip_description = %TooltipDescription
+var last_mouseover_node = null
 var target_buff_timer = 0.0
 var party_invite_sender = ""
 var game_screen_ref = null # Wird von game_screen gesetzt
@@ -137,6 +142,7 @@ func _ready():
 		NetworkManager.party_updated.connect(_on_party_updated)
 	
 	%InventoryWindow.gm_menu_requested.connect(func(): %GMCommandMenu.visible = !%GMCommandMenu.visible)
+	%InventoryWindow.item_hovered.connect(_on_inventory_item_hovered)
 	
 	%TargetFrame.gui_input.connect(_on_target_frame_input)
 	%PlayerFrame.gui_input.connect(_on_player_frame_input)
@@ -146,6 +152,13 @@ func _ready():
 		if child is Control: child.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	for child in %PlayerFrame.get_children():
 		if child is Control: child.mouse_filter = Control.MOUSE_FILTER_IGNORE
+		
+	# Fix Action Slots Focus Mode (Prevent locking movement on click)
+	var slots = [action_slot_1, action_slot_2, action_slot_3, action_slot_4]
+	for slot in slots:
+		if slot: slot.focus_mode = Control.FOCUS_NONE
+	if has_node("%ActionSlot5"):
+		%ActionSlot5.focus_mode = Control.FOCUS_NONE
 		
 	%TargetContextMenu.id_pressed.connect(_on_target_context_menu_id_pressed)
 	%PartyInvitePopup.confirmed.connect(func(): NetworkManager.send_party_response(party_invite_sender, true))
@@ -380,6 +393,8 @@ func _process(delta):
 			debuff_update_timer = 0.0
 			should_update_target = false
 			_update_target_frames()
+		
+		_update_3d_mouseover()
 
 	# Update Cooldowns
 	var keys = active_cooldowns.keys()
@@ -450,8 +465,11 @@ func _on_action_slot_pressed(slot):
 			1: # Frostblitz
 				if player_ref.current_target:
 					var target = player_ref.current_target
-					var tid = target.mob_id if "mob_id" in target else target.get("username", "")
+					var tid = target.mob_id if "mob_id" in target else (target.username if "username" in target else "")
+					print("[UI] Casting Frostblitz on target: ", tid)
 					NetworkManager.cast_spell("Frostblitz", tid)
+				else:
+					print("[UI] Cannot cast Frostblitz: No target!")
 			2: # Frost Nova
 				NetworkManager.cast_spell("Frost Nova", "")
 			3: # Kältekegel
@@ -459,50 +477,11 @@ func _on_action_slot_pressed(slot):
 			4: # Eisbarriere
 				NetworkManager.cast_spell("Eisbarriere", "")
 	
-	# Fokus sofort freigeben, damit die Tastatur wieder das Spiel steuert
-	var focus_owner = get_viewport().gui_get_focus_owner()
-	if focus_owner:
-		focus_owner.release_focus()
+	# Fokus sicherheitshalber freigeben (obwohl focus_mode=NONE gesetzt ist)
+	if get_viewport().gui_get_focus_owner():
+		get_viewport().gui_get_focus_owner().release_focus()
 
-func _setup_action_slots():
-	print("MMO_Hud: _setup_action_slots() gestartet.")
-	# Nodes sind jetzt im TSCN definiert
-	if has_node("%Slot1CDLabel"): %Slot1CDLabel.hide()
-	if has_node("%Slot2CDLabel"): %Slot2CDLabel.hide()
-	if has_node("%Slot3CDLabel"): %Slot3CDLabel.hide()
-	if has_node("%Slot4CDLabel"): %Slot4CDLabel.hide()
-	
-	if has_node("%Slot1Sweep"): %Slot1Sweep.value = 0
-	if has_node("%Slot2Sweep"): %Slot2Sweep.value = 0
-	if has_node("%Slot3Sweep"): %Slot3Sweep.value = 0
-	if has_node("%Slot4Sweep"): %Slot4Sweep.value = 0
-	
-	# Icon Labels mit Fehlerprüfung
-	var slots = {
-		"%ActionSlot1": "res://Assets/UI/spell_frostblitz.jpg",
-		"%ActionSlot2": "res://Assets/UI/spell_frost_nova.jpg",
-		"%ActionSlot3": "res://Assets/UI/spell_cone_of_cold.jpg",
-		"%ActionSlot4": "res://Assets/UI/spell_ice_barrier.jpg"
-	}
-	
-	for slot_name in slots:
-		if has_node(slot_name):
-			var slot = get_node(slot_name)
-			print("MMO_Hud: Slot found: ", slot_name)
-			slot.focus_mode = Control.FOCUS_NONE
-			var icon_node = slot.get_node_or_null("Icon")
-			if icon_node:
-				var tex_path = slots[slot_name]
-				if ResourceLoader.exists(tex_path):
-					icon_node.texture = load(tex_path)
-					print("MMO_Hud: Texture loaded for ", slot_name, ": ", tex_path)
-				else:
-					print("MMO_Hud: Textur fehlt: ", tex_path)
-			else:
-				print("MMO_Hud: Icon-Knoten fehlt in ", slot_name)
-		else:
-			print("MMO_Hud: Slot fehlt: ", slot_name)
-	print("MMO_Hud: _setup_action_slots() beendet.")
+
 
 func _update_action_bar_ui():
 	# Slot 1
@@ -615,7 +594,7 @@ func _on_player_status_updated(data: Dictionary):
 	# ONLY refresh target if THIS packet belongs to our target
 	if is_instance_valid(player_ref) and is_instance_valid(player_ref.current_target):
 		var target = player_ref.current_target
-		var target_id = target.get("mob_id") if "mob_id" in target else target.get("username", "")
+		var target_id = target.mob_id if "mob_id" in target else (target.username if "username" in target else "")
 		if target_id == uname_clean or target_id == data.get("username", ""):
 			should_update_target = true # Flag setzen, _process macht den Rest gedrosselt
 
@@ -649,12 +628,13 @@ func _update_target_frames():
 	_sync_buff_icons(debuff_container, all_effects, false)
 	
 	# Stats mit korrekter Skalierung (wichtig für Bosse!)
-	var current_hp = target.get("hp") if "hp" in target else 100
-	var current_max_hp = target.get("max_hp") if "max_hp" in target else 100
-	target_hp_bar.max_value = current_max_hp
-	target_hp_bar.value = current_hp
+	var current_hp = target.get("hp") if target.has_method("get") and target.get("hp") != null else 100
+	var current_max_hp = target.get("max_hp") if target.has_method("get") and target.get("max_hp") != null else 100
+	
+	target_hp_bar.max_value = float(current_max_hp)
+	target_hp_bar.value = float(current_hp)
 	if target_hp_label:
-		target_hp_label.text = "%d / %d" % [current_hp, current_max_hp]
+		target_hp_label.text = "%d / %d" % [int(current_hp), int(current_max_hp)]
 	
 	target_mana_bar.value = 100
 	
@@ -675,11 +655,11 @@ func _update_target_frames():
 	elif "current_target" in target:
 		tot = target.current_target
 		
-	if tot and tot.get("hp", 100) > 0:
+	if tot and (tot.hp if "hp" in tot else 100) > 0:
 		tot_frame.show()
 		tot_name_label.text = _get_display_name(tot)
-		var tot_hp = tot.get("hp") if "hp" in tot else 100
-		var tot_max = tot.get("max_hp") if "max_hp" in tot else 100
+		var tot_hp = tot.hp if "hp" in tot else 100
+		var tot_max = tot.max_hp if "max_hp" in tot else 100
 		tot_hp_bar.max_value = tot_max
 		tot_hp_bar.value = tot_hp
 		if tot_hp_label:
@@ -695,7 +675,9 @@ func _get_display_name(node) -> String:
 	
 	if "username" in node and node.username != "":
 		var uname = node.username
-		if node.get("is_gm_flagged") == true or node.get("is_gm") == true:
+		var gm_flag = node.is_gm_flagged if "is_gm_flagged" in node else false
+		var gm_status = node.is_gm if "is_gm" in node else false
+		if gm_flag == true or gm_status == true:
 			if not uname.begins_with("<GM>"):
 				uname = "<GM> " + uname
 		return uname
@@ -744,6 +726,11 @@ func _sync_buff_icons(container: Control, effects_data: Array, is_player_data: b
 		
 		icon.add_theme_stylebox_override("panel", style)
 		icon.get_node("%TimeLabel").text = str(d_rem)
+		
+		# Tooltip Signals
+		if not icon.mouse_entered.is_connected(_on_buff_icon_hover):
+			icon.mouse_entered.connect(_on_buff_icon_hover.bind(data, true, is_buff_type))
+			icon.mouse_exited.connect(_on_buff_icon_hover.bind(data, false, is_buff_type))
 
 func _on_resume_pressed():
 	esc_menu.hide()
@@ -1078,3 +1065,215 @@ func _on_target_context_menu_id_pressed(id: int):
 	
 	# Reset meta so it doesn't accidentally trigger on another target frame click
 	%TargetContextMenu.set_meta("context_name", "")
+
+func _update_3d_mouseover():
+	if not is_instance_valid(game_screen_ref) or not game_screen_ref.is_inside_tree(): return
+	
+	# Only do raycast if mouse is not over UI
+	if _is_mouse_over_ui():
+		if last_mouseover_node:
+			last_mouseover_node = null
+			hide_tooltip()
+		return
+	
+	var mouse_pos = get_viewport().get_mouse_position()
+	var cam = get_viewport().get_camera_3d()
+	if not cam: return
+	
+	var ray_origin = cam.project_ray_origin(mouse_pos)
+	var ray_dir = cam.project_ray_normal(mouse_pos)
+	var ray_length = 50.0
+	
+	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_origin + ray_dir * ray_length)
+	query.collide_with_areas = false
+	query.collision_mask = 1 | 2 # Layer 1 (Default) or 2 (Mobs)
+	
+	var space_state = cam.get_world_3d().direct_space_state
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		var node = result.collider
+		# Traverse up until we find a targetable group node
+		while node and not node.is_in_group("targetable"):
+			node = node.get_parent()
+			
+		if node and node.is_in_group("targetable"):
+			if node != last_mouseover_node:
+				last_mouseover_node = node
+				if node != player_ref:
+					_show_node_tooltip(node)
+				else:
+					hide_tooltip()
+			return
+
+	if last_mouseover_node:
+		last_mouseover_node = null
+		hide_tooltip()
+
+func _is_mouse_over_ui() -> bool:
+	var panels = [target_frame, %PlayerFrame, %ChatContainer, %ActionBars, %MinimapContainer, %PartyContainer]
+	var m_pos = get_viewport().get_mouse_position()
+	for p in panels:
+		if is_instance_valid(p) and p.visible and p.get_global_rect().has_point(m_pos):
+			return true
+	return false
+
+func _show_node_tooltip(node):
+	if not is_instance_valid(node): return
+	var data = {
+		"title": node.get("username") if "username" in node else node.name,
+		"type": "Stufe " + str(node.get("level") if node.has_method("get") and node.get("level") != null else 1),
+		"color": Color.WHITE
+	}
+	
+	var hp_perc = 100
+	if "hp" in node and "max_hp" in node and node.max_hp > 0:
+		hp_perc = int((float(node.hp) / node.max_hp) * 100)
+	
+	if node.is_in_group("mobs"):
+		data["type"] += " (Gegner)"
+		data["color"] = Color.LIGHT_CORAL
+		data["description"] = "[color=red]Gesundheit: %d%%[/color]\nEin gefährliches Wesen." % hp_perc
+	elif node.is_in_group("player") or node.is_in_group("remote_player"):
+		data["type"] += " (Spieler)"
+		data["color"] = Color.AQUAMARINE
+		data["description"] = "[color=green]Gesundheit: %d%%[/color]\nEin Verbündeter des Grids." % hp_perc
+		
+	show_tooltip(data)
+
+func show_tooltip(data: Dictionary):
+	if not tooltip: return
+	var main_color = data.get("color", Color.WHITE)
+	tooltip_title.text = data.get("title", "Unbekannt")
+	tooltip_title.modulate = main_color
+	tooltip_type.text = data.get("type", "")
+	tooltip_description.text = data.get("description", "")
+	
+	# Border Farbe anpassen
+	var style = tooltip.get_theme_stylebox("panel").duplicate()
+	style.border_color = main_color
+	tooltip.add_theme_stylebox_override("panel", style)
+	
+	tooltip.show()
+
+func hide_tooltip():
+	if tooltip: tooltip.hide()
+
+func _on_unit_frame_hover(node, entered):
+	if entered and is_instance_valid(node):
+		_show_node_tooltip(node)
+	else:
+		hide_tooltip()
+
+func _on_spell_hover(spell_id: String, entered: bool):
+	if entered:
+		var data = {"title": spell_id, "type": "Zauber", "color": Color(0.3, 0.7, 1.0)}
+		match spell_id:
+			"Frostblitz": data["description"] = "Schießt Frost auf das Ziel.\n[color=cyan]Verursacht Frost-Schaden.[/color]"
+			"Frost Nova": data["description"] = "Friert alle Gegner in der Nähe ein.\n[color=cyan]Dauer: 8 Sek.[/color]"
+			"Kältekegel": data["description"] = "Schaden und Verlangsamung vor dir.\n[color=cyan]Dauer: 6 Sek.[/color]"
+			"Eisbarriere": data["description"] = "Schützt dich mit einem Eisschild.\n[color=cyan]Absorbiert Schaden.[/color]"
+		show_tooltip(data)
+	else:
+		hide_tooltip()
+
+func _on_buff_icon_hover(buff_data: Dictionary, entered: bool, is_buff: bool):
+	if entered:
+		var b_type = buff_data.get("data", {}).get("type", "Unbekannt") if buff_data.has("data") else buff_data.get("type", "Unbekannt")
+		var b_rem = buff_data.get("data", {}).get("remaining", 0) if buff_data.has("data") else buff_data.get("remaining", 0)
+		
+		var data = {
+			"title": b_type,
+			"type": "Vorteil" if is_buff else "Nachteil",
+			"color": Color.GOLD if is_buff else Color.RED,
+			"description": "Verbleibende Zeit: [color=yellow]%ds[/color]" % b_rem
+		}
+		show_tooltip(data)
+	else:
+		hide_tooltip()
+
+func _setup_action_slots():
+	# Tooltip Signals verbinden
+	if action_slot_1:
+		action_slot_1.mouse_entered.connect(_on_spell_hover.bind("Frostblitz", true))
+		action_slot_1.mouse_exited.connect(_on_spell_hover.bind("Frostblitz", false))
+	if action_slot_2:
+		action_slot_2.mouse_entered.connect(_on_spell_hover.bind("Frost Nova", true))
+		action_slot_2.mouse_exited.connect(_on_spell_hover.bind("Frost Nova", false))
+	if action_slot_3:
+		action_slot_3.mouse_entered.connect(_on_spell_hover.bind("Kältekegel", true))
+		action_slot_3.mouse_exited.connect(_on_spell_hover.bind("Kältekegel", false))
+	if action_slot_4:
+		action_slot_4.mouse_entered.connect(_on_spell_hover.bind("Eisbarriere", true))
+		action_slot_4.mouse_exited.connect(_on_spell_hover.bind("Eisbarriere", false))
+	
+	# Icon Mapping (Fixing swap: 3 is Cone of Cold, 4 is Ice Barrier)
+	var slots = {
+		"%ActionBar1Icon": "res://Assets/UI/spell_frostblitz.jpg",
+		"%ActionBar2Icon": "res://Assets/UI/spell_frost_nova.jpg",
+		"%ActionBar3Icon": "res://Assets/UI/spell_cone_of_cold.jpg",
+		"%ActionBar4Icon": "res://Assets/UI/spell_ice_barrier.jpg"
+	}
+	
+	# Compatibility check for direct node access
+	var icon_slots = {
+		"%ActionSlot1": "res://Assets/UI/spell_frostblitz.jpg",
+		"%ActionSlot2": "res://Assets/UI/spell_frost_nova.jpg",
+		"%ActionSlot3": "res://Assets/UI/spell_cone_of_cold.jpg",
+		"%ActionSlot4": "res://Assets/UI/spell_ice_barrier.jpg"
+	}
+	
+	for slot_name in icon_slots:
+		if has_node(slot_name):
+			var slot = get_node(slot_name)
+			var icon_node = slot.get_node_or_null("Icon")
+			if icon_node:
+				var tex_path = icon_slots[slot_name]
+				if ResourceLoader.exists(tex_path):
+					icon_node.texture = load(tex_path)
+	
+	if %PlayerFrame:
+		%PlayerFrame.mouse_entered.connect(func(): if is_instance_valid(player_ref): _on_unit_frame_hover(player_ref, true))
+		%PlayerFrame.mouse_exited.connect(func(): _on_unit_frame_hover(null, false))
+	if target_frame:
+		target_frame.mouse_entered.connect(func(): if is_instance_valid(player_ref) and player_ref.current_target: _on_unit_frame_hover(player_ref.current_target, true))
+		target_frame.mouse_exited.connect(func(): _on_unit_frame_hover(null, false))
+
+func _on_inventory_item_hovered(item_data: Dictionary, entered: bool):
+	if entered:
+		var name = item_data.get("name", "Unbekannt")
+		var description = item_data.get("description", "")
+		var rarity = item_data.get("rarity", "Common")
+		var extra_data = item_data.get("extra_data", {})
+		
+		var data = {
+			"title": name,
+			"type": "Gegenstand",
+			"color": Color.WHITE
+		}
+		
+		# Rarity Mapping
+		match rarity:
+			"Common":
+				data["color"] = Color.WHITE
+				data["type"] = "Normal"
+			"Rare":
+				data["color"] = Color.YELLOW
+				data["type"] = "Rar"
+			"Epic":
+				data["color"] = Color.ROYAL_BLUE
+				data["type"] = "Episch"
+			"Legendary":
+				data["color"] = Color.RED
+				data["type"] = "Legendär"
+		
+		# Build description with yellow text from component data if present
+		var full_desc = description
+		if extra_data and extra_data is Dictionary and extra_data.has("yellow_text"):
+			if full_desc != "": full_desc += "\n"
+			full_desc += "[color=yellow]" + str(extra_data.get("yellow_text")) + "[/color]"
+			
+		data["description"] = full_desc
+		show_tooltip(data)
+	else:
+		hide_tooltip()

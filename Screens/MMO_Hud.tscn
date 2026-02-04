@@ -50,6 +50,10 @@ corner_radius_bottom_right = 10
 corner_radius_bottom_left = 10
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tooltip"]
+content_margin_left = 12.0
+content_margin_top = 10.0
+content_margin_right = 12.0
+content_margin_bottom = 10.0
 bg_color = Color(0.02, 0.02, 0.05, 0.9)
 border_width_left = 2
 border_width_top = 2
@@ -319,7 +323,6 @@ grow_vertical = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 20
-text = "25"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -361,7 +364,6 @@ grow_vertical = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 20
-text = "25"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -403,7 +405,6 @@ grow_vertical = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 20
-text = "30"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -445,7 +446,6 @@ grow_vertical = 2
 theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
 theme_override_constants/shadow_outline_size = 4
 theme_override_font_sizes/font_size = 20
-text = "10"
 horizontal_alignment = 1
 vertical_alignment = 1
 
@@ -745,54 +745,45 @@ visible = false
 [node name="GMCommandMenu" parent="." unique_id=2110881799 instance=ExtResource("7_gm")]
 unique_name_in_owner = true
 visible = false
-[node name="Tooltip" type="Panel" parent="." unique_id=302322026]
+
+[node name="Tooltip" type="PanelContainer" parent="." unique_id=302322026]
 unique_name_in_owner = true
-visible = false
-custom_minimum_size = Vector2(250, 100)
+custom_minimum_size = Vector2(200, 0)
 anchors_preset = 3
 anchor_left = 1.0
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = -280.0
-offset_top = -250.0
-offset_right = -30.0
-offset_bottom = -150.0
+offset_left = -222.0
+offset_top = -117.0
+offset_right = -22.0
+offset_bottom = -33.0
 grow_horizontal = 0
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_tooltip")
 
 [node name="VBox" type="VBoxContainer" parent="Tooltip" unique_id=302322027]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-offset_left = 15.0
-offset_top = 15.0
-offset_right = -15.0
-offset_bottom = -15.0
-grow_horizontal = 2
-grow_vertical = 2
-theme_override_constants/separation = 5
+layout_mode = 2
+theme_override_constants/separation = 4
 
 [node name="TooltipTitle" type="Label" parent="Tooltip/VBox" unique_id=302322028]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "Name"
 autowrap_mode = 3
 
 [node name="TooltipType" type="Label" parent="Tooltip/VBox" unique_id=302322029]
 unique_name_in_owner = true
-layout_mode = 2
 modulate = Color(0.7, 0.7, 0.7, 1)
-theme_override_font_sizes/font_size = 14
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
 text = "Type"
 
 [node name="TooltipDescription" type="RichTextLabel" parent="Tooltip/VBox" unique_id=302322030]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
+theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
 text = "Description..."
 fit_content = true

@@ -7,6 +7,7 @@ var target_position = Vector3.ZERO
 var target_rotation = 0.0
 var hp = 100
 var max_hp = 100
+var level = 1
 var is_frozen = false
 var is_chilled = false
 var debuffs = []
@@ -37,15 +38,12 @@ func setup(data: Dictionary):
 	global_position = target_position
 
 func update_data(data: Dictionary):
-	var new_hp = data.hp
-	var new_max_hp = data.maxHp
-	var lvl = data.get("level", 1)
+	hp = data.get("hp", 100)
+	max_hp = data.get("maxHp", 100)
+	level = data.get("level", 1)
 	var new_name = data.get("name", "Unknown")
 	
-	if hp != new_hp or max_hp != new_max_hp:
-		hp = new_hp
-		max_hp = new_max_hp
-		name_label.text = "[L" + str(lvl) + "] " + new_name
+	name_label.text = "[L" + str(level) + "] " + new_name
 	
 	var trans = data.transform
 	target_position = Vector3(trans.x, trans.y, trans.z)

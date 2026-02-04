@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://bgaqyy5kqjw20"
+path="res://.godot/imported/coffin_lid.obj-1265ce462505150c0cb87b7fa0d644bb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/coffin_lid.obj-1265ce462505150c0cb87b7fa0d644bb.mesh"]
+
+source_file="res://Assets/models/KayKit_HalloweenBits_1.0_FREE/Assets/obj/coffin_lid.obj"
+dest_files=["res://.godot/imported/coffin_lid.obj-1265ce462505150c0cb87b7fa0d644bb.mesh", "res://.godot/imported/coffin_lid.obj-1265ce462505150c0cb87b7fa0d644bb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

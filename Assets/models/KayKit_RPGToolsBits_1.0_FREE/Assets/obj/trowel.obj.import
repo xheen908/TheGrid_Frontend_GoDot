@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://ck444blffpy0n"
+path="res://.godot/imported/trowel.obj-bb2adad41eadd07062566d7564ac88fb.mesh"
+
+[deps]
+
+files=["res://.godot/imported/trowel.obj-bb2adad41eadd07062566d7564ac88fb.mesh"]
+
+source_file="res://Assets/models/KayKit_RPGToolsBits_1.0_FREE/Assets/obj/trowel.obj"
+dest_files=["res://.godot/imported/trowel.obj-bb2adad41eadd07062566d7564ac88fb.mesh", "res://.godot/imported/trowel.obj-bb2adad41eadd07062566d7564ac88fb.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

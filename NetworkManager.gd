@@ -171,7 +171,7 @@ func _on_ws_message(message: String):
 			print("[NET] Received inventory_sync with ", items.size(), " items: ", items)
 			if current_player_data:
 				current_player_data["inventory"] = items
-				print("[NET] current_player_data['inventory'] updated. First item slug: ", items[0].get("slug") if items.size() > 0 else "none")
+				print("[NET] current_player_data['inventory'] updated. First item id: ", items[0].get("item_id") if items.size() > 0 else "none")
 			inventory_updated.emit(items)
 		"error":
 			print("WS Server Fehler: ", data.get("message"))
@@ -213,6 +213,12 @@ func send_move_item(from_slot: int, to_slot: int):
 		"type": "move_item",
 		"from_slot": from_slot,
 		"to_slot": to_slot
+	})
+
+func use_item(slot_index: int):
+	_send_ws({
+		"type": "use_item",
+		"slot_index": slot_index
 	})
 
 func request_map_change(map_name: String, position: Vector3, rotation_y: float = 0.0):

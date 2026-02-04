@@ -34,10 +34,6 @@ window/stretch/aspect="expand"
 
 version_control/autoload_on_startup=true
 
-[editor_plugins]
-
-enabled=PackedStringArray("res://addons/boujie_water_shader/plugin.cfg", "res://addons/terrain_3d/plugin.cfg")
-
 [input]
 
 move_forward={

@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://duo62dwny68aj"
+path="res://.godot/imported/stool.obj-f9faa3a04424df55b808787e5f5abb1b.mesh"
+
+[deps]
+
+files=["res://.godot/imported/stool.obj-f9faa3a04424df55b808787e5f5abb1b.mesh"]
+
+source_file="res://Assets/models/KayKit_DungeonRemastered_1.1_FREE/Assets/obj/stool.obj"
+dest_files=["res://.godot/imported/stool.obj-f9faa3a04424df55b808787e5f5abb1b.mesh", "res://.godot/imported/stool.obj-f9faa3a04424df55b808787e5f5abb1b.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false

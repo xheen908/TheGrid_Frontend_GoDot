@@ -1,0 +1,25 @@
+[remap]
+
+importer="wavefront_obj"
+importer_version=1
+type="Mesh"
+uid="uid://cqenf2ps1ic2j"
+path="res://.godot/imported/hex_grass_bottom.obj-6bcdb7e8dbef0f2f3ce4088dc2cee7cc.mesh"
+
+[deps]
+
+files=["res://.godot/imported/hex_grass_bottom.obj-6bcdb7e8dbef0f2f3ce4088dc2cee7cc.mesh"]
+
+source_file="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/obj/tiles/base/hex_grass_bottom.obj"
+dest_files=["res://.godot/imported/hex_grass_bottom.obj-6bcdb7e8dbef0f2f3ce4088dc2cee7cc.mesh", "res://.godot/imported/hex_grass_bottom.obj-6bcdb7e8dbef0f2f3ce4088dc2cee7cc.mesh"]
+
+[params]
+
+generate_tangents=true
+generate_lods=true
+generate_shadow_mesh=true
+generate_lightmap_uv2=false
+generate_lightmap_uv2_texel_size=0.2
+scale_mesh=Vector3(1, 1, 1)
+offset_mesh=Vector3(0, 0, 0)
+force_disable_mesh_compression=false
