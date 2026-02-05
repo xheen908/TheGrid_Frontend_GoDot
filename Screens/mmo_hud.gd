@@ -254,6 +254,7 @@ func _input(event):
 			toggle_esc_menu()
 	
 	if event.is_action_pressed("toggle_inventory"):
+		if chat_input and chat_input.has_focus(): return
 		if %InventoryWindow.visible: 
 			%InventoryWindow.hide()
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
@@ -263,6 +264,7 @@ func _input(event):
 		get_viewport().set_input_as_handled()
 	
 	if event.is_action_pressed("toggle_questlog"):
+		if chat_input and chat_input.has_focus(): return
 		quest_log.toggle()
 		if quest_log.visible:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
@@ -348,12 +350,15 @@ func _on_chat_submitted(text: String):
 		var is_gm = false
 		if player_ref and "is_gm_flagged" in player_ref and player_ref.is_gm_flagged:
 			is_gm = true
-		elif NetworkManager and NetworkManager.current_player_data and NetworkManager.current_player_data.get("is_gm", false):
+		elif NetworkManager and NetworkManager.current_player_data and (NetworkManager.current_player_data.get("is_gm") == true or str(NetworkManager.current_player_data.get("is_gm")) == "1"):
 			is_gm = true
 			
+		print("[CHAT] Processing message: ", text, " | is_gm: ", is_gm)
+		
 		if is_gm and text.begins_with("/"):
 			var parts = text.split(" ", false)
 			var cmd = parts[0].to_lower()
+			print("[CHAT] GM Command detected: ", cmd)
 			
 			if cmd == "/gravity":
 				if parts.size() > 1:
@@ -376,7 +381,7 @@ func _on_chat_submitted(text: String):
 			elif cmd == "/speed":
 				if parts.size() > 1:
 					var val = parts[1].to_float()
-					if val > 0:
+					if val > 0 and player_ref:
 						player_ref.speed_multiplier = val
 						_on_chat_received({"mode": "system", "message": "Geschwindigkeit auf %.1f gesetzt." % val})
 						chat_input.text = ""
@@ -688,6 +693,14 @@ func _on_player_status_updated(data: Dictionary):
 		if xp_label:
 			var perc = (float(xp) / max_xp) * 100.0
 			xp_label.text = "%d / %d (%d%%)" % [xp, max_xp, int(perc)]
+			
+		# Sync Speed & Gravity if sent by server
+		if data.has("speed_multiplier"):
+			player_ref.speed_multiplier = data["speed_multiplier"]
+		if data.has("gravity_enabled"):
+			player_ref.gravity_enabled = bool(data["gravity_enabled"])
+		if data.has("is_gm"):
+			player_ref.update_gm_status(bool(data["is_gm"]))
 		
 	# Player Buff rendering moved to _update_target_frames periodic call to save CPU
 	
