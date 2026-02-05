@@ -18,6 +18,7 @@ var frostnova_scene = preload("res://Assets/Effects/FrostNova.tscn")
 var conecold_scene = preload("res://Assets/Effects/ConeOfCold.tscn")
 var levelup_effect_scene = preload("res://Assets/Effects/LevelUpEffect.tscn")
 var portal_scene = preload("res://Maps/Portal.tscn")
+var quest_giver_scene = preload("res://Screens/QuestGiver.tscn")
 
 func _ready():
 	load_map()
@@ -183,22 +184,14 @@ func _on_game_objects_received(object_data_list: Array):
 		else:
 			# Neu spawnen
 			var obj = null
-			var type = data.get("type", "")
+			var type = str(data.get("type", "")).strip_edges().to_lower()
 			match type:
 				"portal":
 					obj = portal_scene.instantiate()
-					var extra = data.get("extra_data", {})
-					if obj.has_method("setup_dynamic"):
-						obj.setup_dynamic(extra)
-					else:
-						if "target_map" in extra: obj.target_map = extra.target_map
-						if "spawn_pos" in extra: 
-							var sp = extra.spawn_pos
-							obj.spawn_position = Vector3(sp.x, sp.y, sp.z)
-						if "spawn_rot_y" in extra: obj.spawn_rotation_y = extra.spawn_rot_y
-						if "color" in extra: obj.portal_color = Color(extra.color)
+				"quest_giver":
+					obj = quest_giver_scene.instantiate()
 				_:
-					print("Unbekannter Objekt-Typ: ", type)
+					print("[GAME] Unbekannter Objekt-Typ: [", type, "]")
 			
 			if obj:
 				add_child(obj)
@@ -206,6 +199,25 @@ func _on_game_objects_received(object_data_list: Array):
 				obj.global_position = Vector3(pos_dict.x, pos_dict.y, pos_dict.z)
 				var rot_dict = data.get("rotation", {"x":0, "y":0, "z":0})
 				obj.rotation = Vector3(rot_dict.x, rot_dict.y, rot_dict.z)
+				
+				# Setup AFTER add_child so @onready vars are ready
+				var extra = data.get("extra_data", {})
+				if type == "portal":
+					if obj.has_method("setup_dynamic"):
+						obj.setup_dynamic(extra)
+					else:
+						# Fallback für alte Portal-Logik
+						if "target_map" in extra: obj.target_map = extra.target_map
+						if "spawn_pos" in extra: 
+							var sp = extra.spawn_pos
+							obj.spawn_position = Vector3(sp.x, sp.y, sp.z)
+						if "spawn_rot_y" in extra: obj.spawn_rotation_y = extra.spawn_rot_y
+						if "color" in extra: obj.portal_color = Color(extra.color)
+				elif type == "quest_giver":
+					if "game_object_id" in obj: obj.game_object_id = oid
+					if obj.has_method("setup_dynamic"):
+						obj.setup_dynamic(extra)
+				
 				game_objects[oid] = obj
 	
 	# Aufräumen

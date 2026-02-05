@@ -1,0 +1,115 @@
+[gd_scene format=3 uid="uid://c7x80a00w1p2q"]
+
+[ext_resource type="Script" path="res://Screens/quest_log.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
+bg_color = Color(0.02, 0.02, 0.05, 0.95)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.5, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+shadow_size = 10
+
+[node name="QuestLog" type="Control"]
+layout_mode = 3
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -200.0
+offset_right = 300.0
+offset_bottom = 200.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Panel" type="Panel" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_bg")
+
+[node name="HBox" type="HBoxContainer" parent="Panel"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="VBoxList" type="VBoxContainer" parent="Panel/HBox"]
+custom_minimum_size = Vector2(200, 0)
+layout_mode = 2
+
+[node name="Label" type="Label" parent="Panel/HBox/VBoxList"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.8, 0.8, 0.4, 1)
+text = "Aktive Quests"
+horizontal_alignment = 1
+
+[node name="QuestList" type="ItemList" parent="Panel/HBox/VBoxList"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VSeparator" type="VSeparator" parent="Panel/HBox"]
+layout_mode = 2
+
+[node name="VBoxDetails" type="VBoxContainer" parent="Panel/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 10
+
+[node name="DetailTitle" type="Label" parent="Panel/HBox/VBoxDetails"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Quest Titel"
+horizontal_alignment = 1
+
+[node name="HSeparator" type="HSeparator" parent="Panel/HBox/VBoxDetails"]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="Panel/HBox/VBoxDetails"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContent" type="VBoxContainer" parent="Panel/HBox/VBoxDetails/ScrollContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="DetailDescription" type="Label" parent="Panel/HBox/VBoxDetails/ScrollContainer/VBoxContent"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Beschreibungs-Text..."
+autowrap_mode = 3
+
+[node name="DetailObjectives" type="Label" parent="Panel/HBox/VBoxDetails/ScrollContainer/VBoxContent"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.7, 1, 0.7, 1)
+text = "Ziele:
+- Keines"
+autowrap_mode = 3
+
+[node name="AbandonButton" type="Button" parent="Panel/HBox/VBoxDetails"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Quest abbrechen"

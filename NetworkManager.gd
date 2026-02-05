@@ -42,6 +42,12 @@ signal trade_canceled()
 signal player_leveled_up(username: String)
 signal game_objects_received(objects: Array)
 signal inventory_updated(items: Array)
+signal quest_info_received(data: Dictionary)
+signal quest_accepted(data: Dictionary)
+signal quest_completed(quest_id: String)
+signal quest_rewarded(quest_id: String)
+signal quest_progress_updated(quest_id: String, progress: Dictionary)
+signal quest_sync_received(quests: Array)
 
 func _ready():
 	load_realmlist()
@@ -209,6 +215,43 @@ func _on_ws_message(message: String):
 					}
 			
 			inventory_updated.emit(items)
+		"quest_info":
+			quest_info_received.emit(data)
+		"quest_accepted":
+			if current_player_data:
+				if not current_player_data.has("quests"): current_player_data["quests"] = []
+				current_player_data["quests"].append({
+					"quest_id": data.get("quest_id"),
+					"status": "active",
+					"progress": {}
+				})
+			quest_accepted.emit(data)
+		"quest_completed":
+			var qid = data.get("quest_id", "")
+			if current_player_data and current_player_data.has("quests"):
+				for q in current_player_data["quests"]:
+					if q.quest_id == qid:
+						q.status = "completed"
+						break
+			quest_completed.emit(qid)
+		"quest_rewarded":
+			var qid = data.get("quest_id", "")
+			if current_player_data and current_player_data.has("quests"):
+				var idx = -1
+				for i in range(current_player_data["quests"].size()):
+					if current_player_data["quests"][i].quest_id == qid:
+						idx = i
+						break
+				if idx != -1:
+					current_player_data["quests"].remove_at(idx)
+			quest_rewarded.emit(qid)
+		"quest_progress":
+			quest_progress_updated.emit(data.get("quest_id", ""), data.get("progress", {}))
+		"quest_sync":
+			var quests = data.get("quests", [])
+			if current_player_data:
+				current_player_data["quests"] = quests
+			quest_sync_received.emit(quests)
 		"error":
 			print("WS Server Fehler: ", data.get("message"))
 
@@ -298,6 +341,15 @@ func send_trade_confirm():
 	_send_ws({
 		"type": "trade_confirm"
 	})
+
+func send_quest_interact(npc_id: int):
+	_send_ws({"type": "quest_interact", "npc_id": npc_id})
+
+func send_quest_accept(quest_id: String):
+	_send_ws({"type": "quest_accept", "quest_id": quest_id})
+
+func send_quest_reward(quest_id: String):
+	_send_ws({"type": "quest_reward", "quest_id": quest_id})
 
 func send_trade_cancel():
 	_send_ws({

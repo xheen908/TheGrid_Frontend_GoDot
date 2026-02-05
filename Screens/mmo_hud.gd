@@ -13,6 +13,9 @@ extends CanvasLayer
 @onready var target_mana_bar = %TargetManaBar
 @onready var hp_label = %HPLabel
 @onready var target_hp_label = %TargetHPLabel
+@onready var quest_window = %QuestWindow
+@onready var quest_log = %QuestLog
+@onready var quest_notification = %QuestNotification
 
 @onready var tot_frame = %TargetOfTargetFrame
 @onready var tot_name_label = %ToTName
@@ -150,6 +153,7 @@ func _ready():
 		NetworkManager.trade_invited.connect(_on_trade_invited)
 		NetworkManager.trade_started.connect(_on_trade_started)
 		NetworkManager.party_updated.connect(_on_party_updated)
+		NetworkManager.quest_progress_updated.connect(_on_quest_progress_updated)
 	
 	%InventoryWindow.gm_menu_requested.connect(func(): %GMCommandMenu.visible = !%GMCommandMenu.visible)
 	%InventoryWindow.item_hovered.connect(_on_inventory_item_hovered)
@@ -242,17 +246,31 @@ func _input(event):
 		elif %GMCommandMenu.visible:
 			%GMCommandMenu.hide()
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		elif quest_log.visible:
+			quest_log.hide()
+			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		else:
 			toggle_esc_menu()
 	
 	if event.is_action_pressed("toggle_inventory"):
-		if %InventoryWindow.visible:
+		if %InventoryWindow.visible: 
 			%InventoryWindow.hide()
-			if not esc_menu.visible and not %GMCommandMenu.visible:
-				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
-		else:
+			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		else: 
 			%InventoryWindow.show()
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		get_viewport().set_input_as_handled()
+	
+	if event.is_action_pressed("toggle_questlog"):
+		quest_log.toggle()
+		if quest_log.visible:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		else:
+			# Only capture if no other window is open
+			if not %InventoryWindow.visible:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_viewport().set_input_as_handled()
 	
 	# Enter öffnet Chat (Nur echte Enter-Tasten, damit Space frei zum Springen bleibt)
 	var is_enter = event is InputEventKey and event.pressed and (event.keycode == KEY_ENTER or event.keycode == KEY_KP_ENTER)
@@ -1414,3 +1432,35 @@ func _on_inventory_item_hovered(item_data: Dictionary, entered: bool):
 		show_tooltip(data)
 	else:
 		hide_tooltip()
+
+func _on_quest_progress_updated(qid: String, progress: Dictionary):
+	# Wir versuchen den Quest-Titel zu finden
+	var title = "Quest"
+	if NetworkManager and NetworkManager.current_player_data:
+		var quests = NetworkManager.current_player_data.get("quests", [])
+		for q in quests:
+			if q.get("quest_id") == qid:
+				title = q.get("title", "Quest")
+				break
+	
+	# Nachricht bauen (Letztes Update anzeigen)
+	for target_id in progress:
+		var current = progress[target_id]
+		# Da wir hier nicht wissen wie viele insgesamt nötig sind ohne Template, 
+		# verlassen wir uns darauf dass die Chat-Info meist reichet oder wir zeigen nur den Fortschritt
+		show_quest_notification("%s: %s %d" % [title, target_id, current])
+
+func show_quest_notification(msg: String):
+	if not quest_notification: return
+	
+	quest_notification.text = msg
+	quest_notification.modulate.a = 1.0
+	quest_notification.show()
+	
+	# Kleiner Tween Effekt
+	var tween = get_tree().create_tween()
+	tween.tween_property(quest_notification, "scale", Vector3(1.2, 1.2, 1.2), 0.1)
+	tween.tween_property(quest_notification, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+	tween.tween_interval(3.0)
+	tween.tween_property(quest_notification, "modulate:a", 0.0, 1.0)
+	tween.finished.connect(func(): if quest_notification.modulate.a <= 0: quest_notification.hide())

@@ -425,6 +425,11 @@ func _pick_target():
 		if collider.is_in_group("targetable") and target_hp > 0:
 			print("[RAY] Targeting valid: ", collider.name)
 			set_target(collider)
+			
+			if collider.is_in_group("quest_giver"):
+				var dist = global_position.distance_to(collider.global_position)
+				if dist < 5.0:
+					NetworkManager.send_quest_interact(collider.game_object_id)
 		else:
 			print("[RAY] Hit but not targetable or dead.")
 			set_target(null) # Deselect

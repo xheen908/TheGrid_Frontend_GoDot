@@ -8,6 +8,8 @@
 [ext_resource type="PackedScene" uid="uid://dpmm2n5fhl4o5" path="res://Screens/InventoryWindow.tscn" id="6_inv"]
 [ext_resource type="PackedScene" uid="uid://c8n3p2q5r6s7t" path="res://Screens/GMCommandMenu.tscn" id="7_gm"]
 [ext_resource type="PackedScene" uid="uid://d1g2h3j4k5l6m" path="res://Screens/TradeWindow.tscn" id="8_trade"]
+[ext_resource type="PackedScene" uid="uid://b6y7u8i9o0p1q" path="res://Screens/QuestWindow.tscn" id="9_quest"]
+[ext_resource type="PackedScene" uid="uid://c7x8y9z0w1p2q" path="res://Screens/QuestLog.tscn" id="10_questlog"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -70,6 +72,25 @@ shadow_size = 8
 
 [node name="MMO_Hud" type="CanvasLayer" unique_id=811803260]
 script = ExtResource("1_script")
+
+[node name="QuestNotification" type="RichTextLabel" parent="." unique_id=992233]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 150.0
+offset_right = 400.0
+offset_bottom = 250.0
+grow_horizontal = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 12
+theme_override_font_sizes/normal_font_size = 28
+bbcode_enabled = true
+text = "[center][color=yellow]Quest Fortschritt[/color][/center]"
+scroll_active = false
+autowrap_mode = 0
 
 [node name="PlayerFrame" type="Panel" parent="." unique_id=658144980]
 unique_name_in_owner = true
@@ -711,6 +732,14 @@ unique_name_in_owner = true
 visible = false
 
 [node name="TradeWindow" parent="." unique_id=31337 instance=ExtResource("8_trade")]
+unique_name_in_owner = true
+visible = false
+
+[node name="QuestWindow" parent="." unique_id=98765 instance=ExtResource("9_quest")]
+unique_name_in_owner = true
+visible = false
+
+[node name="QuestLog" parent="." unique_id=12345 instance=ExtResource("10_questlog")]
 unique_name_in_owner = true
 visible = false
 
