@@ -1,0 +1,61 @@
+[gd_scene format=3 uid="uid://xqo4iktayagw"]
+
+[ext_resource type="Script" uid="uid://ch6c8wfnjlrgd" path="res://Screens/skill_book.gd" id="1_script"]
+
+[node name="SkillBook" type="Panel" unique_id=1096459766]
+custom_minimum_size = Vector2(450, 600)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -225.0
+offset_top = -300.0
+offset_right = 225.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.7, 0.7)
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=830881504]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 15.0
+offset_top = 15.0
+offset_right = -15.0
+offset_bottom = -15.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 10
+
+[node name="Header" type="HBoxContainer" parent="VBox" unique_id=1643026840]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/Header" unique_id=1622878414]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 24
+text = "Zauberbuch"
+
+[node name="CloseButton" type="Button" parent="VBox/Header" unique_id=419336340]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+text = "X"
+
+[node name="HSeparator" type="HSeparator" parent="VBox" unique_id=1153097441]
+layout_mode = 2
+
+[node name="ScrollContainer" type="ScrollContainer" parent="VBox" unique_id=1104218138]
+layout_mode = 2
+size_flags_vertical = 3
+horizontal_scroll_mode = 0
+
+[node name="SkillList" type="VBoxContainer" parent="VBox/ScrollContainer" unique_id=1022306830]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8

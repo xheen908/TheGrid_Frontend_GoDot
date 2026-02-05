@@ -89,6 +89,14 @@ var debuff_update_timer = 0.0
 var is_refreshing_ui = false
 var should_update_target = false
 
+var slot_mapping = {
+	1: "Frostblitz",
+	2: "Frost Nova",
+	3: "Kältekegel",
+	4: "Eisbarriere",
+	5: ""
+}
+
 var destroy_dialog: ConfirmationDialog
 var destroy_pending_slot: int = -1
 
@@ -250,6 +258,10 @@ func _input(event):
 			quest_log.hide()
 			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		elif %SkillBook.visible:
+			%SkillBook.hide()
+			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		else:
 			toggle_esc_menu()
 	
@@ -271,6 +283,16 @@ func _input(event):
 		else:
 			# Only capture if no other window is open
 			if not %InventoryWindow.visible:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_viewport().set_input_as_handled()
+	
+	if event is InputEventKey and event.pressed and event.keycode == KEY_P:
+		if chat_input and chat_input.has_focus(): return
+		%SkillBook.toggle()
+		if %SkillBook.visible:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		else:
+			if not %InventoryWindow.visible and not quest_log.visible:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
 	
@@ -565,21 +587,31 @@ func _on_player_target_changed(_new_target):
 
 func _on_action_slot_pressed(slot):
 	if player_ref and not is_casting:
-		match slot:
-			1: # Frostblitz
-				if player_ref.current_target:
-					var target = player_ref.current_target
-					var tid = target.mob_id if "mob_id" in target else (target.username if "username" in target else "")
-					print("[UI] Casting Frostblitz on target: ", tid)
-					NetworkManager.cast_spell("Frostblitz", tid)
+		var spell = slot_mapping.get(slot, "")
+		if spell == "": return
+		
+		# Targeting check
+		var target_id = ""
+		if player_ref.current_target:
+			var target = player_ref.current_target
+			target_id = target.mob_id if "mob_id" in target else (target.username if "username" in target else "")
+		
+		match spell:
+			"Frostblitz":
+				if target_id != "":
+					print("[UI] Casting Frostblitz on target: ", target_id)
+					NetworkManager.cast_spell("Frostblitz", target_id)
 				else:
 					print("[UI] Cannot cast Frostblitz: No target!")
-			2: # Frost Nova
+			"Frost Nova":
 				NetworkManager.cast_spell("Frost Nova", "")
-			3: # Kältekegel
+			"Kältekegel":
 				NetworkManager.cast_spell("Kältekegel", "")
-			4: # Eisbarriere
+			"Eisbarriere":
 				NetworkManager.cast_spell("Eisbarriere", "")
+			_:
+				# Generic cast for other spells
+				NetworkManager.cast_spell(spell, target_id)
 	
 	# Fokus sicherheitshalber freigeben (obwohl focus_mode=NONE gesetzt ist)
 	if get_viewport().gui_get_focus_owner():
@@ -587,79 +619,57 @@ func _on_action_slot_pressed(slot):
 
 
 
+func _on_spell_assigned_to_slot(slot_index: int, spell_name: String):
+	slot_mapping[slot_index] = spell_name
+	print("[UI] Slot ", slot_index, " assigned to: ", spell_name)
+
 func _update_action_bar_ui():
-	# Slot 1
-	if slot_1_sweep: slot_1_sweep.hide()
-	if action_slot_1: action_slot_1.disabled = false
+	var slots = [
+		{"btn": action_slot_1, "sweep": slot_1_sweep, "lbl": slot_1_cd_label, "idx": 1},
+		{"btn": action_slot_2, "sweep": slot_2_sweep, "lbl": slot_2_cd_label, "idx": 2},
+		{"btn": action_slot_3, "sweep": slot_3_sweep, "lbl": slot_3_cd_label, "idx": 3},
+		{"btn": action_slot_4, "sweep": slot_4_sweep, "lbl": slot_4_cd_label, "idx": 4}
+	]
 	
-	# Slot 2: Frost Nova
-	if active_cooldowns.has("Frost Nova") and slot_2_sweep and slot_2_cd_label:
-		var fn = active_cooldowns["Frost Nova"]
-		var total = fn.get("total", 25.0)
-		if total > 0:
-			slot_2_sweep.value = (fn["current"] / total) * 100.0
-			slot_2_sweep.show()
-		slot_2_cd_label.text = str(ceil(fn["current"]))
-		slot_2_cd_label.show()
-		if action_slot_2: action_slot_2.disabled = true
-	elif active_cooldowns.has("GCD") and slot_2_sweep:
-		var gcd = active_cooldowns["GCD"]
-		var total = gcd.get("total", 1.5)
-		if total > 0:
-			slot_2_sweep.value = (gcd["current"] / total) * 100.0
-			slot_2_sweep.show()
-		if slot_2_cd_label: slot_2_cd_label.hide()
-		if action_slot_2: action_slot_2.disabled = true
-	else:
-		if slot_2_sweep: slot_2_sweep.hide()
-		if slot_2_cd_label: slot_2_cd_label.hide()
-		if action_slot_2: action_slot_2.disabled = false
+	for s in slots:
+		var spell = slot_mapping.get(s["idx"], "")
+		var btn = s["btn"]
+		var sweep = s["sweep"]
+		var lbl = s["lbl"]
 		
-	# Slot 3: Kältekegel
-	if active_cooldowns.has("Kältekegel") and slot_3_sweep and slot_3_cd_label:
-		var kc = active_cooldowns["Kältekegel"]
-		var total = kc.get("total", 10.0)
-		if total > 0:
-			slot_3_sweep.value = (kc["current"] / total) * 100.0
-			slot_3_sweep.show()
-		slot_3_cd_label.text = str(ceil(kc["current"]))
-		slot_3_cd_label.show()
-		if action_slot_3: action_slot_3.disabled = true
-	elif active_cooldowns.has("GCD") and slot_3_sweep:
-		var gcd = active_cooldowns["GCD"]
-		var total = gcd.get("total", 1.5)
-		if total > 0:
-			slot_3_sweep.value = (gcd["current"] / total) * 100.0
-			slot_3_sweep.show()
-		if slot_3_cd_label: slot_3_cd_label.hide()
-		if action_slot_3: action_slot_3.disabled = true
-	else:
-		if slot_3_sweep: slot_3_sweep.hide()
-		if slot_3_cd_label: slot_3_cd_label.hide()
-		if action_slot_3: action_slot_3.disabled = false
+		if not btn: continue
 		
-	# Slot 4: Eisbarriere
-	if active_cooldowns.has("Eisbarriere") and slot_4_sweep and slot_4_cd_label:
-		var eb = active_cooldowns["Eisbarriere"]
-		var total = eb.get("total", 30.0)
-		if total > 0:
-			slot_4_sweep.value = (eb["current"] / total) * 100.0
-			slot_4_sweep.show()
-		slot_4_cd_label.text = str(ceil(eb["current"]))
-		slot_4_cd_label.show()
-		if action_slot_4: action_slot_4.disabled = true
-	elif active_cooldowns.has("GCD") and slot_4_sweep:
-		var gcd = active_cooldowns["GCD"]
-		var total = gcd.get("total", 1.5)
-		if total > 0:
-			slot_4_sweep.value = (gcd["current"] / total) * 100.0
-			slot_4_sweep.show()
-		if slot_4_cd_label: slot_4_cd_label.hide()
-		if action_slot_4: action_slot_4.disabled = true
-	else:
-		if slot_4_sweep: slot_4_sweep.hide()
-		if slot_4_cd_label: slot_4_cd_label.hide()
-		if action_slot_4: action_slot_4.disabled = false
+		if spell == "":
+			if sweep: sweep.hide()
+			if lbl: lbl.hide()
+			btn.disabled = false
+			continue
+			
+		# Cooldown
+		if active_cooldowns.has(spell) and sweep and lbl:
+			var cd = active_cooldowns[spell]
+			var total = cd.get("total", 1.0)
+			if total > 0:
+				sweep.value = (cd["current"] / total) * 100.0
+				sweep.show()
+				lbl.text = "%.1f" % cd["current"] if cd["current"] > 1.0 else "%.1f" % cd["current"]
+				lbl.show()
+			btn.disabled = true
+		elif active_cooldowns.has("GCD") and sweep:
+			var gcd = active_cooldowns["GCD"]
+			var total = gcd.get("total", 1.5)
+			if total > 0:
+				sweep.value = (gcd["current"] / total) * 100.0
+				sweep.show()
+			if lbl: lbl.hide()
+			btn.disabled = true
+		else:
+			if sweep: sweep.hide()
+			if lbl: lbl.hide()
+			btn.disabled = false
+			if sweep: sweep.hide()
+			if lbl: lbl.hide()
+			btn.disabled = false
 
 func _on_player_status_updated(data: Dictionary):
 	if not NetworkManager or not NetworkManager.current_player_data: return

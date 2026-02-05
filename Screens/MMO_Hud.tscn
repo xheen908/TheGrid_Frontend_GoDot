@@ -8,8 +8,10 @@
 [ext_resource type="PackedScene" uid="uid://dpmm2n5fhl4o5" path="res://Screens/InventoryWindow.tscn" id="6_inv"]
 [ext_resource type="PackedScene" uid="uid://c8n3p2q5r6s7t" path="res://Screens/GMCommandMenu.tscn" id="7_gm"]
 [ext_resource type="PackedScene" uid="uid://d1g2h3j4k5l6m" path="res://Screens/TradeWindow.tscn" id="8_trade"]
-[ext_resource type="PackedScene" uid="uid://b6y7u8i9o0p1q" path="res://Screens/QuestWindow.tscn" id="9_quest"]
-[ext_resource type="PackedScene" uid="uid://c7x8y9z0w1p2q" path="res://Screens/QuestLog.tscn" id="10_questlog"]
+[ext_resource type="PackedScene" path="res://Screens/QuestWindow.tscn" id="9_quest"]
+[ext_resource type="PackedScene" path="res://Screens/QuestLog.tscn" id="10_questlog"]
+[ext_resource type="PackedScene" uid="uid://xqo4iktayagw" path="res://Screens/SkillBook.tscn" id="11_skillbook"]
+[ext_resource type="Script" uid="uid://dvl6vomhk1gw8" path="res://Screens/action_slot.gd" id="12_actionslot"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -311,6 +313,8 @@ alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 1
 
 [node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot1" unique_id=1685086172]
 layout_mode = 1
@@ -352,6 +356,8 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 2
 
 [node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot2" unique_id=79345869]
 layout_mode = 1
@@ -393,6 +399,8 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 3
 
 [node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot3" unique_id=768328846]
 layout_mode = 1
@@ -434,6 +442,8 @@ vertical_alignment = 1
 unique_name_in_owner = true
 custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
 
 [node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot4" unique_id=1158939603]
 layout_mode = 1
@@ -476,6 +486,8 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(40, 40)
 layout_mode = 2
 text = "5"
+script = ExtResource("12_actionslot")
+slot_index = 5
 
 [node name="XPBar" type="ProgressBar" parent="." unique_id=1526723056]
 unique_name_in_owner = true
@@ -663,7 +675,6 @@ theme_override_font_sizes/font_size = 28
 text = "Logout in 10s..."
 horizontal_alignment = 1
 
-
 [node name="CastBar" type="ProgressBar" parent="." unique_id=1322804223]
 unique_name_in_owner = true
 anchors_preset = 7
@@ -754,7 +765,6 @@ cancel_button_text = "Ablehnen"
 
 [node name="ChatContainer" type="VBoxContainer" parent="." unique_id=1748535117]
 unique_name_in_owner = true
-layout_mode = 3
 anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
@@ -771,10 +781,8 @@ unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_styles/normal = SubResource("StyleBoxFlat_bg")
-mouse_filter = 0
 bbcode_enabled = true
 text = "[color=yellow][System][/color] Willkommen im Grid. Tippe /w name für Flüstern."
-meta_underlined = true
 scroll_following = true
 
 [node name="ChatInputLine" type="HBoxContainer" parent="ChatContainer" unique_id=540799744]
@@ -796,7 +804,6 @@ context_menu_enabled = false
 
 [node name="Tooltip" type="PanelContainer" parent="." unique_id=302322026]
 unique_name_in_owner = true
-mouse_filter = 2
 custom_minimum_size = Vector2(200, 0)
 anchors_preset = 3
 anchor_left = 1.0
@@ -809,6 +816,7 @@ offset_right = -22.0
 offset_bottom = -33.0
 grow_horizontal = 0
 grow_vertical = 0
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_tooltip")
 
 [node name="VBox" type="VBoxContainer" parent="Tooltip" unique_id=302322027]
@@ -836,3 +844,10 @@ theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
 text = "Description..."
 fit_content = true
+
+[node name="SkillBook" parent="." unique_id=2044378373 instance=ExtResource("11_skillbook")]
+unique_name_in_owner = true
+offset_left = 105.0
+offset_top = -241.0
+offset_right = 555.0
+offset_bottom = 359.0

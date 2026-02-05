@@ -48,6 +48,7 @@ signal quest_completed(quest_id: String)
 signal quest_rewarded(quest_id: String)
 signal quest_progress_updated(quest_id: String, progress: Dictionary)
 signal quest_sync_received(quests: Array)
+signal spellbook_updated(abilities: Array)
 
 func _ready():
 	load_realmlist()
@@ -252,6 +253,11 @@ func _on_ws_message(message: String):
 			if current_player_data:
 				current_player_data["quests"] = quests
 			quest_sync_received.emit(quests)
+		"spellbook_sync":
+			var abilities = data.get("abilities", [])
+			if current_player_data:
+				current_player_data["abilities"] = abilities
+			spellbook_updated.emit(abilities)
 		"error":
 			print("WS Server Fehler: ", data.get("message"))
 
