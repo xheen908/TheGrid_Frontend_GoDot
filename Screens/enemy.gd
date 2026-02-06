@@ -54,6 +54,7 @@ func setup(data: Dictionary):
 	_update_model(data.get("model_id", ""))
 	update_data(data)
 	global_position = target_position
+	rotation.y = target_rotation + PI
 
 func update_data(data: Dictionary):
 	hp = data.get("hp", 100)

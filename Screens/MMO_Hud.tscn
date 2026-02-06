@@ -7,11 +7,13 @@
 [ext_resource type="Texture2D" uid="uid://du1k77q3hnocw" path="res://Assets/UI/spell_cone_of_cold.jpg" id="5_cone"]
 [ext_resource type="PackedScene" uid="uid://dpmm2n5fhl4o5" path="res://Screens/InventoryWindow.tscn" id="6_inv"]
 [ext_resource type="PackedScene" uid="uid://c8n3p2q5r6s7t" path="res://Screens/GMCommandMenu.tscn" id="7_gm"]
+[ext_resource type="Texture2D" uid="uid://c467rxoe7o5ex" path="res://Assets/UI/spell_blizzard.jpg" id="7_r5r2w"]
 [ext_resource type="PackedScene" uid="uid://d1g2h3j4k5l6m" path="res://Screens/TradeWindow.tscn" id="8_trade"]
 [ext_resource type="PackedScene" path="res://Screens/QuestWindow.tscn" id="9_quest"]
 [ext_resource type="PackedScene" path="res://Screens/QuestLog.tscn" id="10_questlog"]
 [ext_resource type="PackedScene" uid="uid://xqo4iktayagw" path="res://Screens/SkillBook.tscn" id="11_skillbook"]
 [ext_resource type="Script" uid="uid://dvl6vomhk1gw8" path="res://Screens/action_slot.gd" id="12_actionslot"]
+[ext_resource type="PackedScene" uid="uid://csr1sskiyf863" path="res://Screens/CharacterWindow.tscn" id="13_character"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -43,12 +45,12 @@ corner_radius_bottom_right = 5
 corner_radius_bottom_left = 5
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_menu"]
-bg_color = Color(0.05, 0.05, 0.05, 0.9)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.3, 0.3, 1)
+bg_color = Color(0, 0, 0, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.15, 0.15, 0.2, 1)
 corner_radius_top_left = 10
 corner_radius_top_right = 10
 corner_radius_bottom_right = 10
@@ -81,14 +83,14 @@ visible = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -400.0
-offset_top = 150.0
-offset_right = 400.0
-offset_bottom = 250.0
+offset_left = -119.0
+offset_top = 148.0
+offset_right = 226.0
+offset_bottom = 248.0
 grow_horizontal = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 12
-theme_override_font_sizes/normal_font_size = 28
+theme_override_font_sizes/normal_font_size = 12
 bbcode_enabled = true
 text = "[center][color=yellow]Quest Fortschritt[/color][/center]"
 scroll_active = false
@@ -295,10 +297,10 @@ anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -93.0
-offset_top = -55.0
-offset_right = 192.7143
-offset_bottom = 5.0
+offset_left = -235.0
+offset_top = -49.0
+offset_right = 475.0
+offset_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 0
 scale = Vector2(0.7, 0.7)
@@ -481,13 +483,342 @@ theme_override_font_sizes/font_size = 20
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="ActionSlot5" type="Button" parent="ActionBars/HBoxContainer" unique_id=2069512069]
+[node name="ActionSlot5" type="Button" parent="ActionBars/HBoxContainer" unique_id=117931796]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(40, 40)
+custom_minimum_size = Vector2(50, 50)
 layout_mode = 2
-text = "5"
 script = ExtResource("12_actionslot")
 slot_index = 5
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot5" unique_id=403684324]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("7_r5r2w")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot5Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot5" unique_id=6966912]
+unique_name_in_owner = true
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot5CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot5" unique_id=1086051778]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot6" type="Button" parent="ActionBars/HBoxContainer" unique_id=658891823]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot6" unique_id=2014872252]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot6" unique_id=1136651282]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot6" unique_id=1215165712]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot7" type="Button" parent="ActionBars/HBoxContainer" unique_id=1810729322]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot7" unique_id=150470678]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot7" unique_id=102981566]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot7" unique_id=1376706316]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot8" type="Button" parent="ActionBars/HBoxContainer" unique_id=1981220546]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot8" unique_id=1479456476]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot8" unique_id=306992211]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot8" unique_id=744641204]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot9" type="Button" parent="ActionBars/HBoxContainer" unique_id=1065180167]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot9" unique_id=1676667119]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot9" unique_id=1957739480]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot9" unique_id=603867156]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot10" type="Button" parent="ActionBars/HBoxContainer" unique_id=768339292]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot10" unique_id=1728599658]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot10" unique_id=1813411365]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot10" unique_id=1418096683]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot11" type="Button" parent="ActionBars/HBoxContainer" unique_id=1978789072]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot11" unique_id=104289130]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot11" unique_id=774657522]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot11" unique_id=167598899]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="ActionSlot12" type="Button" parent="ActionBars/HBoxContainer" unique_id=372451407]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 50)
+layout_mode = 2
+script = ExtResource("12_actionslot")
+slot_index = 4
+
+[node name="Icon" type="TextureRect" parent="ActionBars/HBoxContainer/ActionSlot12" unique_id=755388203]
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("5_cone")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="Slot4Sweep" type="TextureProgressBar" parent="ActionBars/HBoxContainer/ActionSlot12" unique_id=1811251590]
+modulate = Color(0, 0, 0, 0.7)
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+fill_mode = 5
+
+[node name="Slot4CDLabel" type="Label" parent="ActionBars/HBoxContainer/ActionSlot12" unique_id=466978379]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_outline_size = 4
+theme_override_font_sizes/font_size = 20
+horizontal_alignment = 1
+vertical_alignment = 1
 
 [node name="XPBar" type="ProgressBar" parent="." unique_id=1526723056]
 unique_name_in_owner = true
@@ -671,7 +1002,7 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 13
 text = "Logout in 10s..."
 horizontal_alignment = 1
 
@@ -718,6 +1049,7 @@ theme_override_constants/separation = 10
 
 [node name="PartyInvitePopup" type="ConfirmationDialog" parent="." unique_id=529066359]
 unique_name_in_owner = true
+oversampling_override = 1.0
 title = "Gruppeneinladung"
 initial_position = 2
 size = Vector2i(300, 100)
@@ -727,7 +1059,8 @@ cancel_button_text = "Ablehnen"
 
 [node name="TargetContextMenu" type="PopupMenu" parent="." unique_id=1702435439]
 unique_name_in_owner = true
-size = Vector2i(150, 60)
+oversampling_override = 1.0
+size = Vector2i(150, 62)
 item_count = 2
 item_0/text = "Einladen"
 item_0/id = 0
@@ -737,6 +1070,12 @@ item_1/id = 1
 [node name="InventoryWindow" parent="." unique_id=137085733 instance=ExtResource("6_inv")]
 unique_name_in_owner = true
 visible = false
+offset_left = 155.0
+offset_top = -209.0
+offset_right = 540.33325
+offset_bottom = 393.66663
+scale = Vector2(0.75, 0.75)
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
 
 [node name="GMCommandMenu" parent="." unique_id=2110881799 instance=ExtResource("7_gm")]
 unique_name_in_owner = true
@@ -756,6 +1095,7 @@ visible = false
 
 [node name="TradeInvitePopup" type="ConfirmationDialog" parent="." unique_id=31338]
 unique_name_in_owner = true
+oversampling_override = 1.0
 title = "Handelsanfrage"
 initial_position = 2
 size = Vector2i(300, 100)
@@ -769,9 +1109,9 @@ anchors_preset = 2
 anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 5.0
-offset_top = -250.0
+offset_top = -193.0
 offset_right = 405.0
-offset_bottom = -10.0
+offset_bottom = 47.0
 grow_vertical = 0
 scale = Vector2(0.75, 0.75)
 theme_override_constants/separation = 5
@@ -847,7 +1187,19 @@ fit_content = true
 
 [node name="SkillBook" parent="." unique_id=2044378373 instance=ExtResource("11_skillbook")]
 unique_name_in_owner = true
-offset_left = 105.0
-offset_top = -241.0
-offset_right = 555.0
-offset_bottom = 359.0
+visible = false
+offset_left = -209.0
+offset_top = -223.0
+offset_right = 241.0
+offset_bottom = 377.0
+scale = Vector2(0.75, 0.75)
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
+
+[node name="CharacterWindow" parent="." unique_id=400123456 instance=ExtResource("13_character")]
+visible = false
+offset_left = -395.0
+offset_top = -298.0
+offset_right = 205.0
+offset_bottom = 402.0
+scale = Vector2(0.75, 0.75)
+theme_override_styles/panel = SubResource("StyleBoxFlat_menu")

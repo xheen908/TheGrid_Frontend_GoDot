@@ -40,11 +40,30 @@ func get_item_icon(slug: String) -> Texture:
 		"14": return icon_luck_potion
 	return fallback_icon
 
+var dragging = false
+var drag_offset = Vector2.ZERO
+
 func _ready():
 	print("[UI] InventoryWindow: Script ready and alive.")
+	if has_node("%CloseButton"):
+		get_node("%CloseButton").pressed.connect(hide)
 	NetworkManager.inventory_updated.connect(_on_inventory_updated)
 	if NetworkManager.current_player_data:
 		update_inventory()
+
+func _gui_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging = true
+				drag_offset = get_global_mouse_position() - global_position
+				# Move to front
+				move_to_front()
+			else:
+				dragging = false
+	
+	if event is InputEventMouseMotion and dragging:
+		global_position = get_global_mouse_position() - drag_offset
 
 func update_inventory():
 	if not NetworkManager.current_player_data: 

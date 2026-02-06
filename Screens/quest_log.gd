@@ -71,6 +71,7 @@ func _on_quest_accepted(data: Dictionary):
 		"title": data.get("title", "Quest"),
 		"description": data.get("description", ""),
 		"objectives": data.get("objectives", {}),
+		"objective_names": data.get("objective_names", {}),
 		"status": "active",
 		"progress": {}
 	}
@@ -90,11 +91,17 @@ func _update_list():
 		quest_list.set_item_metadata(i, q_id)
 
 func _on_quest_selected(index: int):
+	if index < 0 or index >= quest_list.item_count:
+		return
 	var qid = quest_list.get_item_metadata(index)
+	if qid == null:
+		return
 	selected_quest_id = qid
 	_show_details(qid)
 
 func _show_details(qid: String):
+	if qid == null or qid == "": return
+	
 	var quest = null
 	for q in active_quests:
 		if q.get("quest_id", "") == qid:
@@ -109,11 +116,14 @@ func _show_details(qid: String):
 	var obj_text = "Ziele:\n"
 	var objectives = quest.get("objectives", {})
 	var progress = quest.get("progress", {})
+	var names = quest.get("objective_names", {})
 	
 	for target_id in objectives.keys():
-		var total = objectives[target_id]
-		var current = progress.get(target_id, 0)
-		obj_text += "- " + str(target_id) + ": " + str(current) + "/" + str(total) + "\n"
+		var total = int(objectives[target_id])
+		var current = int(progress.get(target_id, 0))
+		current = min(current, total)
+		var display_name = names.get(target_id, str(target_id))
+		obj_text += "- " + display_name + ": " + str(current) + "/" + str(total) + "\n"
 	
 	detail_objectives.text = obj_text
 
@@ -122,6 +132,6 @@ func toggle():
 		hide()
 	else:
 		show()
-		if active_quests.size() > 0 and selected_quest_id == "":
+		if active_quests.size() > 0 and selected_quest_id == "" and quest_list.item_count > 0:
 			quest_list.select(0)
 			_on_quest_selected(0)

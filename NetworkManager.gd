@@ -49,6 +49,7 @@ signal quest_rewarded(quest_id: String)
 signal quest_progress_updated(quest_id: String, progress: Dictionary)
 signal quest_sync_received(quests: Array)
 signal spellbook_updated(abilities: Array)
+signal spell_cast_tick(spell_id: String, extra_data: Dictionary)
 
 func _ready():
 	load_realmlist()
@@ -105,7 +106,11 @@ func connect_to_ws():
 	get_tree().create_timer(5.0).timeout.connect(func():
 		if not is_connected_to_ws:
 			socket.close()
+			is_connected_to_ws = false
+			is_authenticating = false
+			current_player_data = null
 			ws_connection_failed.emit("Zeitüberschreitung bei Verbindung zum Worldserver.")
+			get_tree().change_scene_to_file("res://Screens/LoginScreen.tscn")
 	)
 
 func _on_ws_message(message: String):
@@ -163,6 +168,8 @@ func _on_ws_message(message: String):
 		"spell_cast_finish":
 			print("[NET] Spell cast finish: ", data)
 			spell_cast_finished.emit(data.get("caster", ""), data.get("target_id", ""), data.get("spell", ""), data)
+		"spell_cast_tick":
+			spell_cast_tick.emit(data.get("spell", ""), data)
 		"player_status":
 			var tech_uname = data.get("username", "")
 			if current_player_data and current_player_data.get("username") == tech_uname:
@@ -172,6 +179,10 @@ func _on_ws_message(message: String):
 			player_status_updated.emit(data)
 		"combat_text":
 			combat_text_received.emit(data)
+		"combat_batch":
+			if data.has("hits"):
+				for hit in data["hits"]:
+					combat_text_received.emit(hit)
 		"party_invite_request":
 			party_invite_received.emit(data.get("from", "Unbekannt"))
 		"party_update":
@@ -271,11 +282,12 @@ func _send_ws(data: Dictionary):
 func send_chat(message: String, target_id: String = ""):
 	_send_ws({"type": "chat_message", "message": message, "target_id": target_id})
 
-func cast_spell(spell_id: String, target_id: String):
+func cast_spell(spell_id: String, target_id: String, target_pos: Vector3 = Vector3.ZERO):
 	_send_ws({
 		"type": "cast_spell",
 		"spell_id": spell_id,
-		"target_id": target_id
+		"target_id": target_id,
+		"target_pos": {"x": target_pos.x, "y": target_pos.y, "z": target_pos.z}
 	})
 
 func send_party_invite(target_name: String):

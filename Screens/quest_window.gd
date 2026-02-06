@@ -31,11 +31,14 @@ func show_quest(data: Dictionary):
 	objective_list.clear()
 	var objectives = data.get("objectives", {})
 	var progress = data.get("progress", {})
+	var names = data.get("objective_names", {})
 	
 	for target_id in objectives.keys():
-		var total = objectives[target_id]
-		var current = progress.get(target_id, 0)
-		var item_text = "- " + str(target_id) + ": " + str(current) + "/" + str(total)
+		var total = int(objectives[target_id])
+		var current = int(progress.get(target_id, 0))
+		current = min(current, total)
+		var display_name = names.get(target_id, str(target_id))
+		var item_text = "- " + display_name + ": " + str(current) + "/" + str(total)
 		objective_list.add_item(item_text)
 		
 	# Buttons steuern

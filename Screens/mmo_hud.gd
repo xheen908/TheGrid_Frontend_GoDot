@@ -34,7 +34,7 @@ var debuff_icon_scene = preload("res://Screens/DebuffIcon.tscn")
 var icon_frostblitz = preload("res://Assets/UI/spell_frostblitz.jpg")
 var icon_frost_nova = preload("res://Assets/UI/spell_frost_nova.jpg")
 var icon_ice_barrier = preload("res://Assets/UI/spell_ice_barrier.jpg")
-# Default icon removed to fix preload error
+var icon_blizzard = preload("res://Assets/UI/spell_blizzard.jpg")
 
 @onready var cast_bar = %CastBar
 @onready var cast_label = %CastLabel
@@ -46,6 +46,7 @@ var pending_action = "" # "char_screen" oder "exit"
 var casting_timer = 0.0
 var casting_duration = 0.0
 var is_casting = false
+var is_channeling_spell = false
 
 var last_whisper_sender = ""
 var whisper_history = [] # Liste der Namen für Tab-Cycling
@@ -94,7 +95,7 @@ var slot_mapping = {
 	2: "Frost Nova",
 	3: "Kältekegel",
 	4: "Eisbarriere",
-	5: ""
+	5: "Blizzard"
 }
 
 var destroy_dialog: ConfirmationDialog
@@ -138,6 +139,8 @@ func _ready():
 	%ActionSlot2.pressed.connect(func(): _on_action_slot_pressed(2))
 	%ActionSlot3.pressed.connect(func(): _on_action_slot_pressed(3))
 	%ActionSlot4.pressed.connect(func(): _on_action_slot_pressed(4))
+	if has_node("%ActionSlot5"):
+		%ActionSlot5.pressed.connect(func(): _on_action_slot_pressed(5))
 	
 	# Chat Signale
 	chat_input.text_submitted.connect(_on_chat_submitted)
@@ -181,6 +184,8 @@ func _ready():
 		if slot: slot.focus_mode = Control.FOCUS_NONE
 	if has_node("%ActionSlot5"):
 		%ActionSlot5.focus_mode = Control.FOCUS_NONE
+		%ActionSlot5.mouse_entered.connect(_on_spell_hover.bind("Blizzard", true))
+		%ActionSlot5.mouse_exited.connect(_on_spell_hover.bind("Blizzard", false))
 		
 	%TargetContextMenu.id_pressed.connect(_on_target_context_menu_id_pressed)
 	%PartyInvitePopup.confirmed.connect(func(): NetworkManager.send_party_response(party_invite_sender, true))
@@ -262,16 +267,20 @@ func _input(event):
 			%SkillBook.hide()
 			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		elif %CharacterWindow.visible:
+			%CharacterWindow.hide()
+			if Input.mouse_mode != Input.MOUSE_MODE_CAPTURED:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		else:
 			toggle_esc_menu()
 	
-	if event.is_action_pressed("toggle_inventory"):
+	if event.is_action_pressed("toggle_inventory") or (event is InputEventKey and event.pressed and event.keycode == KEY_B):
 		if chat_input and chat_input.has_focus(): return
 		if %InventoryWindow.visible: 
 			%InventoryWindow.hide()
 			Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		else: 
-			%InventoryWindow.show()
+			%InventoryWindow.show() # Automatically show inventory when trading
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		get_viewport().set_input_as_handled()
 	
@@ -285,14 +294,23 @@ func _input(event):
 			if not %InventoryWindow.visible:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
-	
 	if event is InputEventKey and event.pressed and event.keycode == KEY_P:
 		if chat_input and chat_input.has_focus(): return
 		%SkillBook.toggle()
 		if %SkillBook.visible:
 			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 		else:
-			if not %InventoryWindow.visible and not quest_log.visible:
+			if not %InventoryWindow.visible and not quest_log.visible and not %CharacterWindow.visible:
+				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
+		get_viewport().set_input_as_handled()
+
+	if event is InputEventKey and event.pressed and event.keycode == KEY_C:
+		if chat_input and chat_input.has_focus(): return
+		%CharacterWindow.toggle()
+		if %CharacterWindow.visible:
+			Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
+		else:
+			if not %InventoryWindow.visible and not quest_log.visible and not %SkillBook.visible:
 				Input.mouse_mode = Input.MOUSE_MODE_CAPTURED
 		get_viewport().set_input_as_handled()
 	
@@ -535,7 +553,12 @@ func _process(delta):
 	if is_casting:
 		casting_timer += delta
 		if cast_bar:
-			cast_bar.value = (casting_timer / casting_duration) * 100.0
+			if is_channeling_spell:
+				# Kanalisierte Zauber laufen rückwärts (100 -> 0)
+				cast_bar.value = 100.0 - (casting_timer / casting_duration) * 100.0
+			else:
+				# Normale Zauber laufen vorwärts (0 -> 100)
+				cast_bar.value = (casting_timer / casting_duration) * 100.0
 
 
 
@@ -553,7 +576,14 @@ func _on_spell_cast_started(caster: String, spell_id: String, duration: float):
 		casting_timer = 0.0
 		casting_duration = duration
 		cast_label.text = spell_id.to_upper()
-		cast_bar.value = 0
+		
+		# Unterscheidung Kanalisiert vs Normal
+		if spell_id == "Blizzard":
+			is_channeling_spell = true
+			cast_bar.value = 100.0
+		else:
+			is_channeling_spell = false
+			cast_bar.value = 0.0
 		cast_bar.show()
 
 func _on_spell_cast_finished(caster: String, _target_id: String, spell_id: String, _extra: Dictionary):
@@ -628,7 +658,8 @@ func _update_action_bar_ui():
 		{"btn": action_slot_1, "sweep": slot_1_sweep, "lbl": slot_1_cd_label, "idx": 1},
 		{"btn": action_slot_2, "sweep": slot_2_sweep, "lbl": slot_2_cd_label, "idx": 2},
 		{"btn": action_slot_3, "sweep": slot_3_sweep, "lbl": slot_3_cd_label, "idx": 3},
-		{"btn": action_slot_4, "sweep": slot_4_sweep, "lbl": slot_4_cd_label, "idx": 4}
+		{"btn": action_slot_4, "sweep": slot_4_sweep, "lbl": slot_4_cd_label, "idx": 4},
+		{"btn": %ActionSlot5 if has_node("%ActionSlot5") else null, "sweep": %Slot5Sweep if has_node("%Slot5Sweep") else null, "lbl": %Slot5CDLabel if has_node("%Slot5CDLabel") else null, "idx": 5}
 	]
 	
 	for s in slots:
@@ -1345,6 +1376,7 @@ func _on_spell_hover(spell_id: String, entered: bool):
 			"Frost Nova": data["description"] = "Friert alle Gegner in der Nähe ein.\n[color=cyan]Dauer: 8 Sek.[/color]"
 			"Kältekegel": data["description"] = "Schaden und Verlangsamung vor dir.\n[color=cyan]Dauer: 6 Sek.[/color]"
 			"Eisbarriere": data["description"] = "Schützt dich mit einem Eisschild.\n[color=cyan]Absorbiert Schaden.[/color]"
+			"Blizzard": data["description"] = "Beschwört einen Blizzard an der Zielposition.\n[color=cyan]Verursacht Flächenschaden.[/color]"
 		show_tooltip(data)
 	else:
 		hide_tooltip()
@@ -1392,7 +1424,8 @@ func _setup_action_slots():
 		"%ActionSlot1": "res://Assets/UI/spell_frostblitz.jpg",
 		"%ActionSlot2": "res://Assets/UI/spell_frost_nova.jpg",
 		"%ActionSlot3": "res://Assets/UI/spell_cone_of_cold.jpg",
-		"%ActionSlot4": "res://Assets/UI/spell_ice_barrier.jpg"
+		"%ActionSlot4": "res://Assets/UI/spell_ice_barrier.jpg",
+		"%ActionSlot5": "res://Assets/UI/spell_blizzard.jpg"
 	}
 	
 	for slot_name in icon_slots:

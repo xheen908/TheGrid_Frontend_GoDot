@@ -2,8 +2,10 @@ extends Panel
 
 @onready var skill_list = %SkillList
 @onready var close_button = %CloseButton
-
 @onready var title_label = $VBox/Header/Title
+
+var dragging = false
+var drag_offset = Vector2.ZERO
 
 func _ready():
 	close_button.pressed.connect(hide)
@@ -15,6 +17,20 @@ func _ready():
 		
 		if NetworkManager.current_player_data.has("abilities"):
 			_on_spellbook_updated(NetworkManager.current_player_data["abilities"])
+
+func _gui_input(event):
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				dragging = true
+				drag_offset = get_global_mouse_position() - global_position
+				# Move to front
+				move_to_front()
+			else:
+				dragging = false
+	
+	if event is InputEventMouseMotion and dragging:
+		global_position = get_global_mouse_position() - drag_offset
 
 func toggle():
 	visible = !visible
@@ -81,7 +97,7 @@ func _add_ability_entry(ability: Dictionary):
 	
 	# Add some style
 	var style = StyleBoxFlat.new()
-	style.bg_color = Color(0.2, 0.2, 0.2, 0.5)
+	style.bg_color = Color(0, 0, 0, 0.3)
 	style.content_margin_left = 5
 	style.content_margin_right = 5
 	style.content_margin_top = 5

@@ -1,0 +1,149 @@
+[gd_scene format=3 uid="uid://csr1sskiyf863"]
+
+[ext_resource type="Script" uid="uid://k1smgcpery28" path="res://Screens/character_window.gd" id="1_script"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_viewport"]
+bg_color = Color(0, 0, 0, 0.4)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 1)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="World3D" id="World3D_viewer"]
+
+[node name="CharacterWindow" type="Panel" unique_id=782068818]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(450, 600)
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -225.0
+offset_top = -300.0
+offset_right = 225.0
+offset_bottom = 300.0
+grow_horizontal = 2
+grow_vertical = 2
+scale = Vector2(0.7, 0.7)
+size_flags_stretch_ratio = 0.65
+script = ExtResource("1_script")
+
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1017358208]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 20.0
+offset_top = 20.0
+offset_right = -22.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 15
+
+[node name="Header" type="HBoxContainer" parent="VBox" unique_id=2007931922]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="VBox/Header" unique_id=231781059]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 1
+theme_override_font_sizes/font_size = 24
+text = "Charakter"
+
+[node name="CloseButton" type="Button" parent="VBox/Header" unique_id=960864727]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(30, 30)
+layout_mode = 2
+text = "X"
+
+[node name="HSeparator" type="HSeparator" parent="VBox" unique_id=985468201]
+layout_mode = 2
+
+[node name="MainArea" type="HBoxContainer" parent="VBox" unique_id=2048749459]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 20
+
+[node name="LeftSlots" type="VBoxContainer" parent="VBox/MainArea" unique_id=324251137]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="CenterColumn" type="VBoxContainer" parent="VBox/MainArea" unique_id=752691041]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 15
+
+[node name="ViewportPanel" type="Panel" parent="VBox/MainArea/CenterColumn" unique_id=1744286427]
+custom_minimum_size = Vector2(0, 257.475)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_viewport")
+
+[node name="SubViewportContainer" type="SubViewportContainer" parent="VBox/MainArea/CenterColumn/ViewportPanel" unique_id=1249143049]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 7.142848
+offset_top = 10.571426
+offset_right = -5.142914
+offset_bottom = -4.0464478
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+
+[node name="SubViewport" type="SubViewport" parent="VBox/MainArea/CenterColumn/ViewportPanel/SubViewportContainer" unique_id=1806138462]
+own_world_3d = true
+world_3d = SubResource("World3D_viewer")
+transparent_bg = true
+handle_input_locally = false
+size = Vector2i(255, 242)
+render_target_update_mode = 4
+
+[node name="Camera3D" type="Camera3D" parent="VBox/MainArea/CenterColumn/ViewportPanel/SubViewportContainer/SubViewport" unique_id=2088726130]
+transform = Transform3D(1, 0, 0, 0, 0.965926, 0.258819, 0, -0.258819, 0.965926, 0, 1.4, 2)
+current = true
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="VBox/MainArea/CenterColumn/ViewportPanel/SubViewportContainer/SubViewport" unique_id=969823442]
+transform = Transform3D(0.866025, -0.25, 0.433013, 0, 0.866025, 0.5, -0.5, -0.433013, 0.75, 0, 5, 0)
+
+[node name="ModelAnchor" type="Node3D" parent="VBox/MainArea/CenterColumn/ViewportPanel/SubViewportContainer/SubViewport" unique_id=1172577740]
+unique_name_in_owner = true
+
+[node name="StatsContainer" type="ScrollContainer" parent="VBox/MainArea/CenterColumn" unique_id=1104289567]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="StatsBlock" type="GridContainer" parent="VBox/MainArea/CenterColumn/StatsContainer" unique_id=1363645957]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 6
+columns = 2
+
+[node name="RightSlots" type="VBoxContainer" parent="VBox/MainArea" unique_id=876165323]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(50, 0)
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="BottomRow" type="HBoxContainer" parent="VBox" unique_id=841035546]
+layout_mode = 2
+theme_override_constants/separation = 40
+alignment = 1
+
+[node name="BottomSlots" type="HBoxContainer" parent="VBox/BottomRow" unique_id=528662013]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 20
+alignment = 1

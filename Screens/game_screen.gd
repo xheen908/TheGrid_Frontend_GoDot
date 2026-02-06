@@ -42,6 +42,8 @@ func _ready():
 			NetworkManager.spell_cast_started.connect(_on_spell_cast_started)
 		if not NetworkManager.spell_cast_finished.is_connected(_on_spell_cast_finished):
 			NetworkManager.spell_cast_finished.connect(_on_spell_cast_finished)
+		if not NetworkManager.spell_cast_tick.is_connected(_on_spell_cast_tick):
+			NetworkManager.spell_cast_tick.connect(_on_spell_cast_tick)
 		if not NetworkManager.mobs_synchronized.is_connected(_on_mobs_synchronized):
 			NetworkManager.mobs_synchronized.connect(_on_mobs_synchronized)
 		if not NetworkManager.combat_text_received.is_connected(_on_combat_text_received):
@@ -366,6 +368,45 @@ func _on_spell_cast_finished(caster: String, target_id: String, spell_id: String
 			add_child(bolt)
 			bolt.global_position = caster_node.global_position + Vector3(0, 1.5, 0)
 			bolt.setup(target_node)
+	elif spell_id == "Blizzard":
+		pass # Logic moved to _on_spell_cast_tick
+
+func _on_spell_cast_tick(spell_id: String, extra_data: Dictionary):
+	if spell_id == "Blizzard":
+		var pos_data = extra_data.get("target_pos", {})
+		var spawn_pos = Vector3(pos_data.get("x", 0), pos_data.get("y", 0), pos_data.get("z", 0))
+		var vfx_path = extra_data.get("vfx_path", "res://Assets/BinbunVFX/magic_projectiles/effects/mprojectile_javelin/mprojectile_javelin_vfx_02.tscn")
+		
+		if ResourceLoader.exists(vfx_path):
+			var vfx_scene = load(vfx_path)
+			# Projektile fallen vom Himmel im Zielbereich
+			for i in range(12): # Etwas mehr für dichteren Regen
+				var p = vfx_scene.instantiate()
+				add_child(p)
+				
+				# Konfiguration für VFXController (aus dem Asset Pack)
+				if "one_shot" in p: p.set("one_shot", true)
+				
+				# Zufällige Startposition weit oben
+				var start_offset = Vector3(randf_range(-6, 6), randf_range(18, 22), randf_range(-6, 6))
+				var target_offset = Vector3(start_offset.x, -0.5, start_offset.z) # Boden
+				
+				p.global_position = spawn_pos + start_offset
+				
+				# Rotation: Das Projektil schaut von Haus aus nach -X (im Asset)
+				# Um senkrecht nach unten zu fallen (-Y), müssen wir um Z um 90 Grad drehen
+				p.rotation = Vector3.ZERO
+				p.rotation.z = deg_to_rad(-90)
+				p.rotation.y = randf() * TAU # Zufällige Drehung um die eigene Achse
+				
+				# Fall-Animation mit Tween
+				var fall_time = randf_range(0.6, 0.9)
+				var tween = create_tween()
+				tween.tween_property(p, "global_position", spawn_pos + target_offset, fall_time)
+				tween.finished.connect(func(): if is_instance_valid(p): p.queue_free())
+				
+				# Kleiner Versatz innerhalb des Ticks für natürlicheren Look
+				await get_tree().create_timer(randf_range(0.02, 0.1)).timeout
 
 func _notification(what):
 	if what == NOTIFICATION_WM_CLOSE_REQUEST:

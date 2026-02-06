@@ -36,11 +36,15 @@ var max_hp = 100
 var shield = 0
 var buffs = []
 var is_casting = false
+var current_spell_id = ""
 var gravity_enabled = true
 var speed_multiplier = 1.0
 
 var selection_circle_scene = preload("res://Screens/SelectionCircle.tscn")
+var rune_cursor_scene = preload("res://Screens/RuneCursor.tscn") # Separate Scene for Blizzard Rune
 var selection_circle = null
+var aoe_cursor = null
+var is_targeting_aoe = false
 
 var casting_aura_scene = preload("res://Assets/Effects/CastingAura.tscn")
 var casting_aura = null
@@ -68,10 +72,26 @@ func _ready():
 		anim_tree.active = true
 		print("Player: AnimationTree initial refresh")
 		
-	# Selection Circle initialisieren
+	# Selection Circle initialisieren (Standard circular target)
 	selection_circle = selection_circle_scene.instantiate()
 	get_tree().root.add_child.call_deferred(selection_circle)
 	selection_circle.hide()
+	
+	# AOE Cursor initialisieren (Rune Blizzard cursor)
+	aoe_cursor = rune_cursor_scene.instantiate()
+	get_tree().root.add_child.call_deferred(aoe_cursor)
+	aoe_cursor.hide()
+	# Blizzard Radius ist 6 -> Durchmesser 12. Mesh ist 2x2 -> Scale 6.
+	# User Request: 20% larger -> 6 * 1.2 = 7.2
+	aoe_cursor.scale = Vector3(7.2, 1, 7.2)
+	
+	# Setzt das Material auf eindeutig, um die Farbe unabhängig zu ändern
+	var mat = aoe_cursor.get_surface_override_material(0)
+	if not mat:
+		mat = aoe_cursor.mesh.surface_get_material(0).duplicate()
+		aoe_cursor.set_surface_override_material(0, mat)
+		
+	mat.set_shader_parameter("circle_color", Color(0, 0.6, 1.0, 1.0))
 	
 	# Casting Aura initialisieren
 	casting_aura = casting_aura_scene.instantiate()
@@ -94,8 +114,9 @@ func update_gm_status(is_gm: bool):
 			name_label.hide()
 
 func start_casting(spell_id: String, duration: float = 0.0):
-	if is_casting: return # Verhindert Mehrfach-Triggern
+	if is_casting: stop_casting()
 	is_casting = true
+	current_spell_id = spell_id
 	
 	if anim_tree:
 		# Spezielle Animation für Frostblitz
@@ -103,14 +124,26 @@ func start_casting(spell_id: String, duration: float = 0.0):
 		if state_machine:
 			var casting_node = state_machine.get_node("Casting") as AnimationNodeAnimation
 			if casting_node:
-				var target_anim = "Frostblitz_Casting" if spell_id == "Frostblitz" else "Casting"
+				var target_anim = "Casting"
+				var should_scale_speed = true
+				
+				if spell_id == "Frostblitz":
+					target_anim = "Frostblitz_Casting"
+				elif spell_id == "Blizzard":
+					target_anim = "Frostblitz_Casting"
+					should_scale_speed = false
+				
 				casting_node.animation = target_anim
 				
-				# Animation-Speed exakt an die Cast-Dauer anpassen für perfekten Sync
-				if anim_player_ref and anim_player_ref.has_animation(target_anim) and duration > 0:
-					var anim_len = anim_player_ref.get_animation(target_anim).length
-					anim_player_ref.speed_scale = anim_len / duration
-					print("PlayerAnims: Sync speed: ", anim_player_ref.speed_scale, " for duration: ", duration)
+				# Animation-Speed exakt an die Cast-Dauer anpassen für perfekten Sync (außer bei Channeling)
+				if anim_player_ref and anim_player_ref.has_animation(target_anim):
+					if should_scale_speed and duration > 0:
+						var anim_len = anim_player_ref.get_animation(target_anim).length
+						anim_player_ref.speed_scale = anim_len / duration
+						print("PlayerAnims: Sync speed: ", anim_player_ref.speed_scale, " for duration: ", duration)
+					else:
+						anim_player_ref.speed_scale = 1.0
+						print("PlayerAnims: Normal speed (Loop) for ", spell_id)
 		
 		anim_tree.set("parameters/conditions/is_casting", true)
 		anim_tree.set("parameters/conditions/not_casting", false)
@@ -119,17 +152,18 @@ func start_casting(spell_id: String, duration: float = 0.0):
 			playback.travel("Casting")
 		print("PlayerAnims: Conditions set and travel() called to Casting")
 	
-	if casting_aura and spell_id != "Frostblitz":
+	if casting_aura and spell_id != "Frostblitz" and spell_id != "Blizzard":
 		casting_aura.show()
 
 func stop_casting():
 	is_casting = false
+	current_spell_id = ""
 	if anim_tree:
 		anim_tree.set("parameters/conditions/is_casting", false)
 		anim_tree.set("parameters/conditions/not_casting", true)
 		var playback = anim_tree.get("parameters/playback")
 		if playback:
-			playback.travel("IWS")
+			playback.start("IWS")
 		
 		# Speed zurücksetzen
 		if anim_player_ref:
@@ -308,6 +342,26 @@ func _setup_animations():
 
 
 func _unhandled_input(event):
+	if is_targeting_aoe and event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+			# Cast bestätigen
+			var pos = _get_ground_click_pos()
+			if pos != Vector3.ZERO:
+				if velocity.length() > 0.5:
+					show_message("Du kannst das nicht während der Bewegung wirken!")
+				else:
+					NetworkManager.cast_spell("Blizzard", "", pos)
+			is_targeting_aoe = false
+			aoe_cursor.hide()
+			get_viewport().set_input_as_handled()
+			return
+		elif event.button_index == MOUSE_BUTTON_RIGHT and event.pressed:
+			# Abbrechen
+			is_targeting_aoe = false
+			aoe_cursor.hide()
+			get_viewport().set_input_as_handled()
+			return
+
 	# Handle Mouse Buttons for Pointer Lock and Selection
 	if event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT:
@@ -372,6 +426,9 @@ func _input(event):
 					target_id = current_target.username
 				
 				if target_id != "":
+					if is_casting and current_spell_id == "Frostblitz":
+						return # verhindern, dass man sich selbst unterbricht
+						
 					if velocity.length() > 0.5:
 						show_message("Du kannst das nicht während der Bewegung wirken!")
 						return
@@ -404,6 +461,31 @@ func _input(event):
 		if not get_viewport().gui_get_focus_owner():
 			NetworkManager.cast_spell("Eisbarriere", "")
 			get_viewport().set_input_as_handled()
+			
+	# Blizzard (Action cast_5)
+	if event.is_action_pressed("cast_5"):
+		if not get_viewport().gui_get_focus_owner():
+			is_targeting_aoe = !is_targeting_aoe
+			if is_targeting_aoe:
+				aoe_cursor.show()
+				show_message("Zielgebiet mit Linksklick wählen")
+			else:
+				aoe_cursor.hide()
+			get_viewport().set_input_as_handled()
+
+func _get_ground_click_pos() -> Vector3:
+	var space_state = get_world_3d().direct_space_state
+	var mouse_pos = get_viewport().get_mouse_position()
+	var ray_origin = camera.project_ray_origin(mouse_pos)
+	var ray_end = ray_origin + camera.project_ray_normal(mouse_pos) * 100.0
+	
+	var query = PhysicsRayQueryParameters3D.create(ray_origin, ray_end)
+	query.collision_mask = 1 # Layer 1 (World/Ground)
+	var result = space_state.intersect_ray(query)
+	
+	if result:
+		return result.position
+	return Vector3.ZERO
 
 func _pick_target():
 	var space_state = get_world_3d().direct_space_state
@@ -596,6 +678,14 @@ func _physics_process(delta):
 
 	move_and_slide()
 	
+	if is_targeting_aoe:
+		var pos = _get_ground_click_pos()
+		if pos != Vector3.ZERO:
+			aoe_cursor.global_position = pos + Vector3(0, 0.1, 0)
+			aoe_cursor.show()
+		else:
+			aoe_cursor.hide()
+	
 	# Real-time update to server
 	_check_and_send_update()
 	_update_selection_circle()
@@ -621,7 +711,7 @@ func _update_selection_circle():
 
 func _check_and_send_update():
 	var is_moving_now = velocity.length() > 0.1
-	var pos_changed = global_position.distance_to(last_sent_pos) > 0.05
+	var pos_changed = global_position.distance_to(last_sent_pos) > 0.01
 	var rot_changed = abs(rotation.y - last_sent_rot.y) > 0.01
 	
 	# Sende Update wenn sich etwas geändert hat ODER wenn wir gerade angehalten haben
