@@ -28,6 +28,8 @@ signal map_changed(new_map: String, position: Vector3, rotation_y: float)
 signal player_left(username: String)
 signal chat_received(data: Dictionary)
 signal mobs_synchronized(mob_data: Array)
+signal mob_move_received(data: Dictionary)  # AzerothCore-style movement
+signal mob_stop_received(data: Dictionary)  # AzerothCore-style stop
 signal spell_cast_started(caster: String, spell_id: String, duration: float)
 signal spell_cast_finished(caster: String, target_id: String, spell_id: String, extra_data: Dictionary)
 signal player_status_updated(data: Dictionary)
@@ -162,6 +164,10 @@ func _on_ws_message(message: String):
 			chat_received.emit(data)
 		"mob_sync":
 			mobs_synchronized.emit(data.get("mobs", []))
+		"mob_move":
+			mob_move_received.emit(data)  # AzerothCore-style: {id, from, to, speed, rot}
+		"mob_stop":
+			mob_stop_received.emit(data)  # AzerothCore-style: {id, pos}
 		"spell_cast_start":
 			print("[NET] Spell cast start: ", data)
 			spell_cast_started.emit(data.get("caster", ""), data.get("spell", ""), data.get("duration", 0.0))
@@ -234,6 +240,10 @@ func _on_ws_message(message: String):
 				if not current_player_data.has("quests"): current_player_data["quests"] = []
 				current_player_data["quests"].append({
 					"quest_id": data.get("quest_id"),
+					"title": data.get("title", "Quest"),
+					"description": data.get("description", ""),
+					"objectives": data.get("objectives", {}),
+					"objective_names": data.get("objective_names", {}),
 					"status": "active",
 					"progress": {}
 				})
@@ -242,8 +252,9 @@ func _on_ws_message(message: String):
 			var qid = data.get("quest_id", "")
 			if current_player_data and current_player_data.has("quests"):
 				for q in current_player_data["quests"]:
-					if q.quest_id == qid:
-						q.status = "completed"
+					if q.get("quest_id", "") == qid:
+						q["status"] = "completed"
+						print("[QUEST] Quest ", qid, " status auf 'completed' gesetzt.")
 						break
 			quest_completed.emit(qid)
 		"quest_rewarded":
@@ -251,11 +262,12 @@ func _on_ws_message(message: String):
 			if current_player_data and current_player_data.has("quests"):
 				var idx = -1
 				for i in range(current_player_data["quests"].size()):
-					if current_player_data["quests"][i].quest_id == qid:
+					if current_player_data["quests"][i].get("quest_id", "") == qid:
 						idx = i
 						break
 				if idx != -1:
 					current_player_data["quests"].remove_at(idx)
+					print("[QUEST] Quest ", qid, " entfernt (belohnt).")
 			quest_rewarded.emit(qid)
 		"quest_progress":
 			quest_progress_updated.emit(data.get("quest_id", ""), data.get("progress", {}))

@@ -77,17 +77,36 @@ shadow_size = 8
 [node name="MMO_Hud" type="CanvasLayer" unique_id=811803260]
 script = ExtResource("1_script")
 
+[node name="FPSLabel" type="Label" parent="." unique_id=888888888]
+unique_name_in_owner = true
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_top = 10.0
+offset_right = -10.0
+offset_bottom = 30.0
+grow_horizontal = 0
+theme_override_colors/font_color = Color(0, 1, 0, 1)
+theme_override_colors/font_shadow_color = Color(0, 0, 0, 1)
+theme_override_constants/shadow_offset_x = 2
+theme_override_constants/shadow_offset_y = 2
+theme_override_font_sizes/font_size = 14
+text = "FPS: 60"
+horizontal_alignment = 2
+
 [node name="QuestNotification" type="RichTextLabel" parent="." unique_id=992233]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 5
 anchor_left = 0.5
 anchor_right = 0.5
-offset_left = -119.0
-offset_top = 148.0
-offset_right = 226.0
-offset_bottom = 248.0
+offset_left = -123.0
+offset_top = 98.0
+offset_right = 222.0
+offset_bottom = 198.0
 grow_horizontal = 2
+theme_override_colors/default_color = Color(1, 1, 0.03137255, 1)
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 12
 theme_override_font_sizes/normal_font_size = 12
@@ -95,6 +114,12 @@ bbcode_enabled = true
 text = "[center][color=yellow]Quest Fortschritt[/color][/center]"
 scroll_active = false
 autowrap_mode = 0
+
+[node name="QuestAudio" type="AudioStreamPlayer" parent="." unique_id=543739601]
+unique_name_in_owner = true
+
+[node name="CastAudio" type="AudioStreamPlayer" parent="." unique_id=74128913]
+unique_name_in_owner = true
 
 [node name="PlayerFrame" type="Panel" parent="." unique_id=658144980]
 unique_name_in_owner = true
@@ -994,10 +1019,10 @@ anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -150.0
-offset_top = -100.0
-offset_right = 150.0
-offset_bottom = -50.0
+offset_left = -148.0
+offset_top = -169.0
+offset_right = 152.0
+offset_bottom = -119.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
@@ -1092,6 +1117,37 @@ visible = false
 [node name="QuestLog" parent="." unique_id=12345 instance=ExtResource("10_questlog")]
 unique_name_in_owner = true
 visible = false
+
+[node name="Panel" parent="QuestLog" index="0"]
+offset_left = 105.0
+offset_top = 9.0
+offset_right = 22.0
+offset_bottom = -16.0
+scale = Vector2(0.9, 0.9)
+
+[node name="VBoxList" parent="QuestLog/Panel/HBox" index="0"]
+custom_minimum_size = Vector2(160.22, 0)
+
+[node name="Label" parent="QuestLog/Panel/HBox/VBoxList" index="0"]
+theme_override_font_sizes/font_size = 12
+
+[node name="QuestList" parent="QuestLog/Panel/HBox/VBoxList" index="1"]
+theme_override_font_sizes/font_size = 12
+
+[node name="VBoxDetails" parent="QuestLog/Panel/HBox" index="2"]
+custom_minimum_size = Vector2(-2.36, 0)
+
+[node name="DetailTitle" parent="QuestLog/Panel/HBox/VBoxDetails" index="0"]
+theme_override_font_sizes/font_size = 16
+
+[node name="ScrollContainer" parent="QuestLog/Panel/HBox/VBoxDetails" index="2"]
+custom_minimum_size = Vector2(-0.16, 0)
+
+[node name="DetailDescription" parent="QuestLog/Panel/HBox/VBoxDetails/ScrollContainer/VBoxContent" index="0"]
+theme_override_font_sizes/font_size = 12
+
+[node name="DetailObjectives" parent="QuestLog/Panel/HBox/VBoxDetails/ScrollContainer/VBoxContent" index="1"]
+theme_override_font_sizes/font_size = 12
 
 [node name="TradeInvitePopup" type="ConfirmationDialog" parent="." unique_id=31338]
 unique_name_in_owner = true
@@ -1203,3 +1259,5 @@ offset_right = 205.0
 offset_bottom = 402.0
 scale = Vector2(0.75, 0.75)
 theme_override_styles/panel = SubResource("StyleBoxFlat_menu")
+
+[editable path="QuestLog"]

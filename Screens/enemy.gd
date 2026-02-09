@@ -3,6 +3,7 @@ extends CharacterBody3D
 @onready var name_label = $NameLabel
 
 var mob_id = ""
+var type_id = ""
 var target_position = Vector3.ZERO
 var target_rotation = 0.0
 var hp = 100
@@ -14,6 +15,17 @@ var debuffs = []
 var target_name = null # Name vom Server
 var char_name = ""
 var model_id = ""
+
+# AzerothCore-Style Spline Movement: Server sends movement commands
+var move_start_pos = Vector3.ZERO
+var move_target_pos = Vector3.ZERO
+var move_speed = 0.0  # Units per second
+var move_start_time = 0.0
+var is_moving = false  # Set by mob_move command
+var last_sync_time = 0.0
+var _cam_cache: Camera3D = null
+var _last_aura_check = 0.0
+var _anim_frame_counter = 0
 
 var model_configs = {
 	"neon_cube": {"type": "geo", "shape": "cube", "color": Color(0, 1, 0)},
@@ -50,9 +62,13 @@ func _ready():
 	casting_aura.hide()
 
 func setup(data: Dictionary):
-	mob_id = data.id
+	mob_id = str(data.id)
+	type_id = str(data.get("type_id", ""))
 	_update_model(data.get("model_id", ""))
 	update_data(data)
+	# CRITICAL: On initial spawn, use server Y-position too!
+	# The update_data() intentionally skips Y to avoid "hopping" during movement,
+	# but on first spawn we MUST use the server's Y-coordinate.
 	global_position = target_position
 	rotation.y = target_rotation + PI
 
@@ -60,6 +76,8 @@ func update_data(data: Dictionary):
 	hp = data.get("hp", 100)
 	max_hp = data.get("maxHp", 100)
 	level = data.get("level", 1)
+	if data.has("type_id"):
+		type_id = str(data.type_id)
 	var new_name = data.get("name", "Unbekannt")
 	if new_name == "": new_name = "Unbekannt"
 	char_name = new_name
@@ -69,8 +87,21 @@ func update_data(data: Dictionary):
 	if data.has("model_id") and data.model_id != model_id:
 		_update_model(data.model_id)
 	
-	var trans = data.transform
-	target_position = Vector3(trans.x, trans.y, trans.z)
+	# AzerothCore-Style: mob_sync is for corrections only, not movement
+	# Movement is handled by on_mob_move() - just update last known position
+	var trans = data.get("transform", {})
+	var sync_pos = Vector3(trans.get("x", 0.0), trans.get("y", 0.0), trans.get("z", 0.0))
+	target_position = sync_pos
+	last_sync_time = Time.get_ticks_msec() / 1000.0
+	
+	# If we're not moving, only snap X/Z if significantly different
+	# Keep client Y (gravity) to avoid "hopping"
+	if not is_moving:
+		var xz_diff = Vector2(global_position.x - sync_pos.x, global_position.z - sync_pos.z).length()
+		if xz_diff > 0.5:  # Only correct if >0.5 units off
+			global_position.x = sync_pos.x
+			global_position.z = sync_pos.z
+	
 	target_rotation = trans.get("rot", 0.0)
 	target_name = data.get("target_name")
 	
@@ -87,12 +118,40 @@ func update_data(data: Dictionary):
 	if is_frozen != old_frozen or is_chilled != old_chilled:
 		_update_visuals()
 	
+	_update_aura_visibility()
+	
 	if hp <= 0:
 		if visible and (not $CollisionShape3D.disabled or (geo_mesh_instance and is_geometric)):
 			_die()
 	else:
 		if not visible or $CollisionShape3D.disabled:
 			_respawn()
+
+# AzerothCore-Style: Handle movement command from server
+func on_mob_move(data: Dictionary):
+	var from = data.get("from", {})
+	var to = data.get("to", {})
+	
+	# Parse positions
+	move_start_pos = Vector3(from.get("x", global_position.x), global_position.y, from.get("z", global_position.z))
+	move_target_pos = Vector3(to.get("x", global_position.x), global_position.y, to.get("z", global_position.z))
+	move_speed = data.get("speed", 4.0)
+	move_start_time = Time.get_ticks_msec() / 1000.0
+	is_moving = true
+	
+	# Set rotation from server
+	var rot = data.get("rot", 0.0)
+	target_rotation = rot
+
+# AzerothCore-Style: Handle stop command from server
+func on_mob_stop(data: Dictionary):
+	var pos = data.get("pos", {})
+	is_moving = false
+	move_speed = 0.0
+	# Snap to final server position (X/Z only, preserve Y)
+	global_position.x = pos.get("x", global_position.x)
+	global_position.z = pos.get("z", global_position.z)
+	target_position = global_position
 
 func _update_visuals():
 	var mesh = geo_mesh_instance if is_geometric else $MeshInstance3D
@@ -290,6 +349,15 @@ func _find_skeleton_recursive(node: Node) -> Skeleton3D:
 		if result: return result
 	return null
 
+func _update_aura_visibility():
+	if not casting_aura: return
+	var has_shield = false
+	for d in debuffs:
+		if d.get("type") == "Eisbarriere":
+			has_shield = true
+			break
+	casting_aura.visible = has_shield
+
 
 func _respawn():
 	show()
@@ -325,67 +393,110 @@ func _die():
 var gravity = ProjectSettings.get_setting("physics/3d/default_gravity")
 
 func _physics_process(delta):
-	# Aura permanent anzeigen wenn ein Schild/Eisbarriere aktiv ist
-	if casting_aura:
-		# Wir prüfen ob Eisbarriere in debuffs/buffs ist (beim Mob ist es meist debuffs)
-		var has_shield = false
-		for d in debuffs:
-			if d.get("type") == "Eisbarriere":
-				has_shield = true
-				break
-		
-		if has_shield:
-			casting_aura.show()
-		else:
-			casting_aura.hide()
+	# === WoW-Style Physics with Velocity Extrapolation ===
+	
+	# 1. Camera & Distance Check (LOD)
+	if not _cam_cache:
+		_cam_cache = get_viewport().get_camera_3d()
+	
+	if not _cam_cache: return
+	
+	var dist_sq = global_position.distance_squared_to(_cam_cache.global_position)
+	var is_very_far = dist_sq > 10000.0 # 100m: Absolute stop
+	if is_very_far: return
 
+	# 2. Base logic that always runs for non-very-far mobs
 	if is_geometric and geo_mesh_instance and hp > 0:
 		floating_time += delta
 		geo_mesh_instance.position.y = 2.5 + sin(floating_time * 2.0) * 0.4
-		geo_mesh_instance.rotation.y += delta * 0.5 # Langsame Eigenrotation
+		geo_mesh_instance.rotation.y += delta * 0.5
 
 	if hp > 0:
-		# 1. Schwerkraft anwenden
-		if not is_on_floor():
+		# 2. AzerothCore-Style Spline Movement
+		var current_time = Time.get_ticks_msec() / 1000.0
+		var computed_target = global_position
+		
+		if is_moving and move_speed > 0:
+			var elapsed = current_time - move_start_time
+			var total_distance = move_start_pos.distance_to(move_target_pos)
+			var travel_time = total_distance / move_speed if move_speed > 0 else 0.0
+			
+			if elapsed >= travel_time:
+				computed_target = move_target_pos
+				is_moving = false
+			else:
+				var t = elapsed / travel_time if travel_time > 0 else 1.0
+				computed_target = move_start_pos.lerp(move_target_pos, t)
+		else:
+			computed_target = target_position
+		
+		# 3. Physics vs Simple Transform
+		var target_pos_horizontal = Vector3(computed_target.x, global_position.y, computed_target.z)
+		var diff = target_pos_horizontal - global_position
+		var moving_now = diff.length_squared() > 0.002 # Slightly tighter deadzone
+		var falling = not is_on_floor()
+		# Only skip physics if mob is grounded AND far away
+		# If mob is falling, we need physics even if far away
+		var skip_physics = dist_sq > 900.0 and not falling # 30m
+		
+		# Apply Gravity
+		if falling:
 			velocity.y -= gravity * delta
 		else:
-			# Kleiner Anpressdruck nach unten, damit is_on_floor stabil bleibt
 			velocity.y = -0.1
 		
-		# 2. Horizontale Bewegung zum Server-Ziel
-		var target_pos_horizontal = Vector3(target_position.x, global_position.y, target_position.z)
-		var diff = target_pos_horizontal - global_position
-		
-		if diff.length() > 0.2: # Deadzone gegen Zittern
-			# Bewege dich mit konstanter Geschwindigkeit zum Ziel (limitiert durch Distanz)
+		if moving_now:
+			# If moving, we use lerp for smooth client-side visual movement
 			var move_dir = diff.normalized()
-			var desired_vel = move_dir * 4.0 # Standard-Laufgeschwindigkeit
+			var speed = move_speed if is_moving else 4.0
+			var desired_vel = move_dir * speed
+			velocity.x = lerp(velocity.x, desired_vel.x, delta * 8.0)
+			velocity.z = lerp(velocity.z, desired_vel.z, delta * 8.0)
 			
-			# Sanftes Anfahren/Bremsen
-			velocity.x = lerp(velocity.x, desired_vel.x, delta * 5.0)
-			velocity.z = lerp(velocity.z, desired_vel.z, delta * 5.0)
-		else:
-			# Stoppe sofort wenn nah genug
-			velocity.x = move_toward(velocity.x, 0, delta * 10.0)
-			velocity.z = move_toward(velocity.z, 0, delta * 10.0)
-		
-		# 3. Physik ausführen (beachtet Kollisionen und Gefälle)
-		move_and_slide()
-		
-		# 4. Rotation interpolieren
-		# Korrektur um 180 Grad (+ PI), damit sie nicht rückwärts laufen
-		rotation.y = lerp_angle(rotation.y, target_rotation + PI, delta * 10.0)
-		
-		# 5. Animationen updaten (falls FBX Modell)
-		if not is_geometric and anim_player:
-			if not is_on_floor():
-				if anim_player.has_animation("Jump_Idle") and anim_player.current_animation != "Jump_Idle":
-					anim_player.play("Jump_Idle")
+			# OPTIMIZATION: Use move_and_slide ONLY if close OR falling.
+			# Mobs far away use simple position snapping to save CPU.
+			if not skip_physics:
+				move_and_slide()
 			else:
-				var cur_speed = Vector2(velocity.x, velocity.z).length()
-				if cur_speed > 0.2:
-					if anim_player.current_animation != "Walking":
-						anim_player.play("Walking", 0.2)
+				# Simple transform move (No collision check!)
+				global_position.x = computed_target.x
+				global_position.z = computed_target.z
+		elif falling:
+			# Ensure we land if we were in the air
+			# Always use move_and_slide when falling (to detect ground)
+			move_and_slide()
+		else:
+			# Idle & Grounded: SKIP move_and_slide entirely (Major FPS boost)
+			velocity.x = 0
+			velocity.z = 0
+			# Only snap to target position if we drift too far
+			if global_position.distance_squared_to(target_pos_horizontal) > 0.1:
+				global_position.x = computed_target.x
+				global_position.z = computed_target.z
+		
+		# 4. Rotation (Throttle for distant or non-player targets)
+		if moving_now or dist_sq < 400.0: # 20m
+			rotation.y = lerp_angle(rotation.y, target_rotation + PI, delta * (10.0 if not skip_physics else 5.0))
+		
+		# 6. Animation (Throttled based on distance and movement)
+		_anim_frame_counter += 1
+		# Near: update every 1 frame. Mid: update every 2. Far/Idle: every 3
+		var throttle_limit = 1
+		if dist_sq > 400.0: throttle_limit = 3 # 20m
+		elif dist_sq > 225.0: throttle_limit = 2 # 15m
+		elif not moving_now: throttle_limit = 2
+		
+		if _anim_frame_counter >= throttle_limit:
+			_anim_frame_counter = 0
+			if not is_geometric and anim_player:
+				if not is_on_floor():
+					if anim_player.has_animation("Jump_Idle") and anim_player.current_animation != "Jump_Idle":
+						anim_player.play("Jump_Idle")
 				else:
-					if anim_player.current_animation != "Idle":
-						anim_player.play("Idle", 0.3)
+					var cur_speed = Vector2(velocity.x, velocity.z).length()
+					if cur_speed > 0.2:
+						if anim_player.current_animation != "Walking":
+							anim_player.play("Walking", 0.2)
+					else:
+						if anim_player.current_animation != "Idle":
+							anim_player.play("Idle", 0.3)

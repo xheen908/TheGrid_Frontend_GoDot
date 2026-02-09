@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://c8n3p2q5r6s7t"]
 
-[ext_resource type="Script" path="res://Screens/gm_command_menu.gd" id="1_script"]
+[ext_resource type="Script" uid="uid://tq4eix08plxr" path="res://Screens/gm_command_menu.gd" id="1_script"]
 
-[node name="GMCommandMenu" type="Panel"]
+[node name="GMCommandMenu" type="Panel" unique_id=36279691]
 custom_minimum_size = Vector2(400, 500)
 anchors_preset = 8
 anchor_left = 0.5
@@ -15,30 +15,31 @@ offset_right = 200.0
 offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
+scale = Vector2(0.705, 0.705)
 script = ExtResource("1_script")
 
-[node name="ColorRect" type="ColorRect" parent="."]
+[node name="ColorRect" type="ColorRect" parent="." unique_id=630532868]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.1, 0, 0.2, 0.95)
+color = Color(0.13483971, 0, 0.0103693465, 0.9490196)
 
-[node name="Label" type="Label" parent="."]
+[node name="Label" type="Label" parent="." unique_id=524046565]
 layout_mode = 1
 anchors_preset = 10
 anchor_right = 1.0
 offset_bottom = 40.0
 grow_horizontal = 2
 theme_override_colors/font_color = Color(1, 0.8, 0, 1)
-theme_override_font_sizes/font_size = 20
+theme_override_font_sizes/font_size = 16
 text = "--- GM KODEX MENU ---"
 horizontal_alignment = 1
 vertical_alignment = 1
 
-[node name="VBox" type="VBoxContainer" parent="."]
+[node name="VBox" type="VBoxContainer" parent="." unique_id=1659886203]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -51,96 +52,105 @@ grow_horizontal = 2
 grow_vertical = 2
 theme_override_constants/separation = 10
 
-[node name="TargetLabel" type="Label" parent="VBox"]
+[node name="TargetLabel" type="Label" parent="VBox" unique_id=701744535]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Ziel: Keines"
 
-[node name="HBoxLevel" type="HBoxContainer" parent="VBox"]
+[node name="HBoxLevel" type="HBoxContainer" parent="VBox" unique_id=1296940040]
 layout_mode = 2
 
-[node name="Label" type="Label" parent="VBox/HBoxLevel"]
+[node name="Label" type="Label" parent="VBox/HBoxLevel" unique_id=1660387771]
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Level setzen:"
 
-[node name="LevelInput" type="SpinBox" parent="VBox/HBoxLevel"]
+[node name="LevelInput" type="SpinBox" parent="VBox/HBoxLevel" unique_id=1790518145]
 unique_name_in_owner = true
 layout_mode = 2
 min_value = 1.0
 value = 1.0
 
-[node name="LevelBtn" type="Button" parent="VBox/HBoxLevel"]
+[node name="LevelBtn" type="Button" parent="VBox/HBoxLevel" unique_id=274391748]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Anwenden"
 
-[node name="HSeparator" type="HSeparator" parent="VBox"]
+[node name="HSeparator" type="HSeparator" parent="VBox" unique_id=2040754697]
 layout_mode = 2
 
-[node name="HBoxTele" type="HBoxContainer" parent="VBox"]
+[node name="HBoxTele" type="HBoxContainer" parent="VBox" unique_id=119300941]
 layout_mode = 2
 
-[node name="MapDropdown" type="OptionButton" parent="VBox/HBoxTele"]
+[node name="MapDropdown" type="OptionButton" parent="VBox/HBoxTele" unique_id=1953499088]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="TeleBtn" type="Button" parent="VBox/HBoxTele"]
+[node name="TeleBtn" type="Button" parent="VBox/HBoxTele" unique_id=1342735978]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Teleport"
 
-[node name="HSeparator2" type="HSeparator" parent="VBox"]
+[node name="HSeparator2" type="HSeparator" parent="VBox" unique_id=1416371264]
 layout_mode = 2
 
-[node name="Grid" type="GridContainer" parent="VBox"]
+[node name="Grid" type="GridContainer" parent="VBox" unique_id=111909534]
 layout_mode = 2
 theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 10
 columns = 2
 
-[node name="InvisibleBtn" type="Button" parent="VBox/Grid"]
+[node name="InvisibleBtn" type="Button" parent="VBox/Grid" unique_id=1614981802]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
 text = "Unsichtbarkeit AN"
 
-[node name="TagBtn" type="Button" parent="VBox/Grid"]
+[node name="TagBtn" type="Button" parent="VBox/Grid" unique_id=268960475]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
 text = "GM Tag AN"
 
-[node name="FlyBtn" type="Button" parent="VBox/Grid"]
+[node name="FlyBtn" type="Button" parent="VBox/Grid" unique_id=2112486951]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
 text = "Fly Mode AN"
 
-[node name="SpeedBtn" type="Button" parent="VBox/Grid"]
+[node name="SpeedBtn" type="Button" parent="VBox/Grid" unique_id=1198520177]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 12
 text = "Speed 2.0"
 
-[node name="HSeparator3" type="HSeparator" parent="VBox"]
+[node name="HSeparator3" type="HSeparator" parent="VBox" unique_id=1915883236]
 layout_mode = 2
 
-[node name="InfoBtn" type="Button" parent="VBox"]
+[node name="InfoBtn" type="Button" parent="VBox" unique_id=1867287534]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Ziel-Info abfragen"
 
-[node name="KickBtn" type="Button" parent="VBox"]
+[node name="KickBtn" type="Button" parent="VBox" unique_id=1809331121]
 unique_name_in_owner = true
 layout_mode = 2
+theme_override_font_sizes/font_size = 12
 text = "Ziel KICKEN"
 
-[node name="Spacer" type="Control" parent="VBox"]
+[node name="Spacer" type="Control" parent="VBox" unique_id=337470480]
 layout_mode = 2
 size_flags_vertical = 3
 
-[node name="CloseBtn" type="Button" parent="VBox"]
+[node name="CloseBtn" type="Button" parent="VBox" unique_id=1770912541]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Schließen"

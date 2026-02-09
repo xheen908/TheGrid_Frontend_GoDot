@@ -16,6 +16,8 @@ extends CanvasLayer
 @onready var quest_window = %QuestWindow
 @onready var quest_log = %QuestLog
 @onready var quest_notification = %QuestNotification
+@onready var quest_audio = %QuestAudio
+@onready var cast_audio = %CastAudio
 
 @onready var tot_frame = %TargetOfTargetFrame
 @onready var tot_name_label = %ToTName
@@ -35,6 +37,11 @@ var icon_frostblitz = preload("res://Assets/UI/spell_frostblitz.jpg")
 var icon_frost_nova = preload("res://Assets/UI/spell_frost_nova.jpg")
 var icon_ice_barrier = preload("res://Assets/UI/spell_ice_barrier.jpg")
 var icon_blizzard = preload("res://Assets/UI/spell_blizzard.jpg")
+
+var sfx_quest_accepted = preload("res://Assets/sound/quest_monolog/quest_1.mp3")
+var sfx_quest_done_1 = preload("res://Assets/sound/quest_monolog/quest_done_1.mp3")
+var sfx_levelup = preload("res://Assets/sound/levelup.mp3")
+var sfx_frostblitz_fire = preload("res://Assets/sound/spellcast1.mp3")    # Für das Abfeuern
 
 @onready var cast_bar = %CastBar
 @onready var cast_label = %CastLabel
@@ -89,6 +96,7 @@ var last_chat_mode = "" # Merkt sich z.B. "/p " oder "/1 "
 var debuff_update_timer = 0.0
 var is_refreshing_ui = false
 var should_update_target = false
+var _raycast_frame_counter = 0
 
 var slot_mapping = {
 	1: "Frostblitz",
@@ -100,6 +108,8 @@ var slot_mapping = {
 
 var destroy_dialog: ConfirmationDialog
 var destroy_pending_slot: int = -1
+
+var last_quest_states = {} # qid -> { target_id -> count }
 
 func _ready():
 	# Initialer Status
@@ -142,6 +152,9 @@ func _ready():
 	if has_node("%ActionSlot5"):
 		%ActionSlot5.pressed.connect(func(): _on_action_slot_pressed(5))
 	
+	print("[AUDIO] QuestAudio node: ", quest_audio)
+	print("[AUDIO] Levelup stream: ", sfx_levelup)
+	
 	# Chat Signale
 	chat_input.text_submitted.connect(_on_chat_submitted)
 	chat_log.meta_clicked.connect(_on_chat_meta_clicked)
@@ -165,6 +178,14 @@ func _ready():
 		NetworkManager.trade_started.connect(_on_trade_started)
 		NetworkManager.party_updated.connect(_on_party_updated)
 		NetworkManager.quest_progress_updated.connect(_on_quest_progress_updated)
+		NetworkManager.quest_accepted.connect(_on_quest_accepted)
+		NetworkManager.quest_rewarded.connect(_on_quest_rewarded)
+		NetworkManager.quest_sync_received.connect(_on_quest_sync_received)
+		
+		# Initial State
+		if NetworkManager.current_player_data and NetworkManager.current_player_data.has("quests"):
+			_on_quest_sync_received(NetworkManager.current_player_data["quests"])
+		NetworkManager.player_leveled_up.connect(_on_player_leveled_up)
 	
 	%InventoryWindow.gm_menu_requested.connect(func(): %GMCommandMenu.visible = !%GMCommandMenu.visible)
 	%InventoryWindow.item_hovered.connect(_on_inventory_item_hovered)
@@ -382,6 +403,33 @@ func _on_chat_submitted(text: String):
 	text = text.strip_edges()
 	
 	if text != "":
+		# --- AUDIO DEBUG COMMAND ---
+		if text.to_lower().begins_with("/testsound"):
+			if quest_audio and sfx_quest_accepted:
+				quest_audio.stream = sfx_quest_accepted
+				quest_audio.play()
+				chat_log.add_text("\n[DEBUG] Quest accepted sound played.")
+			elif quest_audio and sfx_levelup:
+				quest_audio.stream = sfx_levelup
+				quest_audio.play()
+				chat_log.add_text("\n[DEBUG] Level up sound played (Quest sound missing).")
+			else:
+				chat_log.add_text("\n[DEBUG] Audio node or streams missing.")
+			chat_input.text = ""
+			chat_input.release_focus()
+			return
+
+		if text.to_lower() == "/me":
+			var char_name = "unknown"
+			var uname = "unknown"
+			if NetworkManager and NetworkManager.current_player_data:
+				char_name = NetworkManager.current_player_data.get("char_name", "none")
+				uname = NetworkManager.current_player_data.get("username", "none")
+			chat_log.add_text("\n[DEBUG] Char: %s | Account: %s" % [char_name, uname])
+			chat_input.text = ""
+			chat_input.release_focus()
+			return
+			
 		# --- QUICK TELEPORT COMMAND (tele map) ---
 		if text.to_lower().begins_with("tele "):
 			to_send = "/" + text
@@ -523,6 +571,17 @@ func set_player_ref(val):
 			player_ref.target_changed.connect(_on_player_target_changed)
 
 func _process(delta):
+	# FPS Display (top left)
+	if has_node("%FPSLabel"):
+		var fps = Engine.get_frames_per_second()
+		%FPSLabel.text = "FPS: %d" % fps
+		if fps >= 60:
+			%FPSLabel.add_theme_color_override("font_color", Color.GREEN)
+		elif fps >= 30:
+			%FPSLabel.add_theme_color_override("font_color", Color.YELLOW)
+		else:
+			%FPSLabel.add_theme_color_override("font_color", Color.RED)
+	
 	if is_instance_valid(player_ref):
 		var pos = player_ref.global_position
 		if minimap_camera:
@@ -535,7 +594,11 @@ func _process(delta):
 			should_update_target = false
 			_update_target_frames()
 		
-		_update_3d_mouseover()
+	# Throttled 3D Mouseover (every 5 frames)
+	_raycast_frame_counter += 1
+	if _raycast_frame_counter >= 5:
+		_raycast_frame_counter = 0
+		_update_3d_mouseover_throttled()
 
 	# Update Cooldowns
 	var keys = active_cooldowns.keys()
@@ -596,6 +659,19 @@ func _on_spell_cast_finished(caster: String, _target_id: String, spell_id: Strin
 	var caster_clean = caster.strip_edges().to_lower()
 	if caster_clean == my_name or caster_clean == my_username:
 		is_casting = false
+		
+		# Sound stoppen
+		if cast_audio:
+			cast_audio.stop()
+
+		# Abfeuer-Sound für Frostblitz
+		if spell_id == "Frostblitz":
+			if cast_audio and sfx_frostblitz_fire:
+				cast_audio.stream = sfx_frostblitz_fire
+				cast_audio.pitch_scale = 1.0
+				cast_audio.play()
+				print("[AUDIO] Frostblitz fire sound played.")
+		
 		if cast_bar:
 			cast_bar.value = 100.0 # Snap to 100% so shader/effects trigger
 			# Kleiner Delay zum Anzeigen des fertigen Balkens
@@ -1257,7 +1333,7 @@ func _on_target_context_menu_id_pressed(id: int):
 	# Reset meta so it doesn't accidentally trigger on another target frame click
 	%TargetContextMenu.set_meta("context_name", "")
 
-func _update_3d_mouseover():
+func _update_3d_mouseover_throttled():
 	if not is_instance_valid(game_screen_ref) or not game_screen_ref.is_inside_tree(): return
 	
 	# Only do raycast if mouse is not over UI
@@ -1489,34 +1565,95 @@ func _on_inventory_item_hovered(item_data: Dictionary, entered: bool):
 	else:
 		hide_tooltip()
 
-func _on_quest_progress_updated(qid: String, progress: Dictionary):
-	# Wir versuchen den Quest-Titel zu finden
-	var title = "Quest"
-	if NetworkManager and NetworkManager.current_player_data:
-		var quests = NetworkManager.current_player_data.get("quests", [])
-		for q in quests:
-			if q.get("quest_id") == qid:
-				title = q.get("title", "Quest")
-				break
+func _on_quest_progress_updated(qid, progress):
+	if not NetworkManager or not NetworkManager.current_player_data: return
 	
-	# Nachricht bauen (Letztes Update anzeigen)
-	for target_id in progress:
-		var current = progress[target_id]
-		# Da wir hier nicht wissen wie viele insgesamt nötig sind ohne Template, 
-		# verlassen wir uns darauf dass die Chat-Info meist reichet oder wir zeigen nur den Fortschritt
-		show_quest_notification("%s: %s %d" % [title, target_id, current])
+	var qid_s = str(qid)
+	var old_progress = last_quest_states.get(qid_s, {})
+	
+	# Cache im NetworkManager für andere UI-Teile aktualisieren
+	var quests = NetworkManager.current_player_data.get("quests", [])
+	var current_quest = null
+	for q in quests:
+		if q is Dictionary and str(q.get("quest_id", "")) == qid_s:
+			q["progress"] = progress.duplicate()
+			current_quest = q
+			break
+			
+	if not current_quest: return
+	
+	var title = current_quest.get("title", "Quest")
+	var names = current_quest.get("objective_names", {})
+	var totals = current_quest.get("objectives", {})
+	
+	for tid in progress.keys():
+		var tid_s = str(tid)
+		var cur = int(progress[tid])
+		var old = int(old_progress.get(tid_s, 0))
+		
+		if cur > old:
+			var d_name = str(names.get(tid_s, tid_s))
+			var total = int(totals.get(tid_s, 0))
+			var msg = "%s: %s %d/%d" % [title, d_name, cur, total]
+			if total <= 0: msg = "%s: %s %d" % [title, d_name, cur]
+			show_quest_notification(msg)
+	
+	last_quest_states[qid_s] = progress.duplicate()
+
+func _on_quest_sync_received(quests: Array):
+	for q in quests:
+		if q is Dictionary:
+			var qid = str(q.get("quest_id", ""))
+			last_quest_states[qid] = q.get("progress", {}).duplicate()
 
 func show_quest_notification(msg: String):
 	if not quest_notification: return
-	
 	quest_notification.text = msg
 	quest_notification.modulate.a = 1.0
 	quest_notification.show()
 	
-	# Kleiner Tween Effekt
 	var tween = get_tree().create_tween()
-	tween.tween_property(quest_notification, "scale", Vector3(1.2, 1.2, 1.2), 0.1)
-	tween.tween_property(quest_notification, "scale", Vector3(1.0, 1.0, 1.0), 0.1)
+	tween.tween_property(quest_notification, "scale", Vector2(1.2, 1.2), 0.1)
+	tween.tween_property(quest_notification, "scale", Vector2(1.0, 1.0), 0.1)
 	tween.tween_interval(3.0)
 	tween.tween_property(quest_notification, "modulate:a", 0.0, 1.0)
 	tween.finished.connect(func(): if quest_notification.modulate.a <= 0: quest_notification.hide())
+
+func _on_quest_accepted(data: Dictionary):
+	var qid = str(data.get("quest_id", ""))
+	if qid != "":
+		last_quest_states[qid] = {}
+	
+	if quest_audio and sfx_quest_accepted:
+		quest_audio.stream = sfx_quest_accepted
+		quest_audio.play()
+		print("[AUDIO] Quest accepted sound played")
+	else:
+		push_error("[AUDIO] quest_audio or sfx_quest_accepted MISSING")
+
+func _on_quest_rewarded(qid: String):
+	print("[AUDIO] Quest rewarded: ", qid)
+	# Wir spielen den Sound für quest_1 bzw. skeleton_slayer_1
+	if qid == "quest_1" or qid == "skeleton_slayer_1":
+		if quest_audio and sfx_quest_done_1:
+			quest_audio.stream = sfx_quest_done_1
+			quest_audio.play()
+			print("[AUDIO] Quest done sound played for: ", qid)
+		else:
+			push_error("[AUDIO] quest_audio or sfx_quest_done_1 MISSING")
+
+func _on_player_leveled_up(username: String):
+	# Check if it's the local player
+	var my_char_name = ""
+	if NetworkManager and NetworkManager.current_player_data:
+		my_char_name = NetworkManager.current_player_data.get("char_name", "")
+	
+	print("[AUDIO] Level up signal received for: ", username, " My Char: ", my_char_name)
+	
+	if username == my_char_name:
+		if quest_audio and sfx_levelup:
+			quest_audio.stream = sfx_levelup
+			quest_audio.play()
+			print("[AUDIO] Level up sound played for: ", username)
+		else:
+			push_error("[AUDIO] quest_audio or sfx_levelup MISSING")

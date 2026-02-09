@@ -54,6 +54,10 @@ func _ready():
 			NetworkManager.player_leveled_up.connect(_on_player_leveled_up)
 		if not NetworkManager.game_objects_received.is_connected(_on_game_objects_received):
 			NetworkManager.game_objects_received.connect(_on_game_objects_received)
+		if not NetworkManager.mob_move_received.is_connected(_on_mob_move_received):
+			NetworkManager.mob_move_received.connect(_on_mob_move_received)
+		if not NetworkManager.mob_stop_received.is_connected(_on_mob_stop_received):
+			NetworkManager.mob_stop_received.connect(_on_mob_stop_received)
 
 func _on_remote_player_status_updated(data: Dictionary):
 	var uname = data.get("username", "")
@@ -147,27 +151,58 @@ func _on_map_changed(map_name: String, pos: Vector3, ry: float):
 func _on_mobs_synchronized(mob_data_list: Array):
 	# Bestehende Mobs updaten oder neue spawnen
 	var current_ids_set = {}
+	var collision_count = 0
+	
 	for data in mob_data_list:
-		var mid = data.id
+		var mid = str(data.id)
+		if current_ids_set.has(mid):
+			collision_count += 1
+			continue # Dublette im selben Paket ignorieren
+			
 		current_ids_set[mid] = true
 		
 		if mobs.has(mid):
 			mobs[mid].update_data(data)
 		else:
+			print("[IDENTITÄT] Spawne neuen Mob mit ID: ", mid, " (Name: ", data.get("name"), ")")
 			var m = enemy_scene.instantiate()
 			add_child(m)
 			m.setup(data)
 			mobs[mid] = m
 	
-	# Mobs löschen, die nicht mehr in der Liste sind
+	if collision_count > 0:
+		push_error("IDENTITÄTS-KRISE: %d Mobs im Paket hatten die gleiche ID!" % collision_count)
+	
+	# Mobs löschen, die seit längerer Zeit (z.B. 2 Sekunden) nicht mehr gesehen wurden
+	var now = Time.get_ticks_msec()
 	var to_remove = []
 	for mid in mobs.keys():
-		if not current_ids_set.has(mid):
-			to_remove.append(mid)
+		var m = mobs[mid]
+		# Wenn der Mob im aktuellen Paket war, Zeitstempel aktualisieren
+		if current_ids_set.has(mid):
+			m.set_meta("last_seen", now)
+		else:
+			# Nur löschen, wenn er länger als 5000ms nicht mehr im Paket war
+			# (Delta compression sendet nur geänderte Mobs, Full Sync alle 2s)
+			var last_seen = m.get_meta("last_seen", now)
+			if now - last_seen > 5000:
+				to_remove.append(mid)
 	
 	for mid in to_remove:
+		print("[IDENTITÄT] Lösche persistent verschollenen Mob: ", mid)
 		mobs[mid].queue_free()
 		mobs.erase(mid)
+
+# AzerothCore-Style: Route mob_move commands to individual enemy instances
+func _on_mob_move_received(data: Dictionary):
+	var mob_id = data.get("id", "")
+	if mobs.has(mob_id):
+		mobs[mob_id].on_mob_move(data)  # Call interpolation handler on enemy
+
+func _on_mob_stop_received(data: Dictionary):
+	var mob_id = data.get("id", "")
+	if mobs.has(mob_id):
+		mobs[mob_id].on_mob_stop(data)  # Stop movement
 
 func _on_game_objects_received(object_data_list: Array):
 	# Ähnlich wie bei Mobs: Neue spawnen, ID-basierte Verwaltung

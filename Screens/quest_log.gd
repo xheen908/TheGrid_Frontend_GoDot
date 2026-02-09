@@ -17,6 +17,12 @@ func _ready():
 		NetworkManager.quest_completed.connect(_on_quest_completed)
 		NetworkManager.quest_rewarded.connect(_on_quest_rewarded)
 		NetworkManager.quest_accepted.connect(_on_quest_accepted)
+		
+		# Initial-Sync: Falls Quests bereits im NetworkManager gecached sind
+		if NetworkManager.current_player_data and NetworkManager.current_player_data.has("quests"):
+			print("[QUEST] Lade Quests aus NetworkManager Cache...")
+			active_quests = NetworkManager.current_player_data["quests"]
+			_update_list()
 	
 	quest_list.item_selected.connect(_on_quest_selected)
 

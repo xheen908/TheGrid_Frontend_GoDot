@@ -39,6 +39,7 @@ func _ready():
 		NetworkManager.quest_accepted.connect(func(_d): update_indicator())
 		NetworkManager.quest_completed.connect(func(_q): update_indicator())
 		NetworkManager.quest_rewarded.connect(func(_q): update_indicator())
+		NetworkManager.quest_progress_updated.connect(func(_qid, _prog): update_indicator())
 	
 	update_indicator()
 	
@@ -57,27 +58,48 @@ func _process(delta):
 		quest_indicator.scale = Vector3(s, s, s)
 
 func update_indicator():
+	if quest_indicator and quest_indicator.has_method("set_billboard_mode"):
+		quest_indicator.set_billboard_mode(1) # Billboard Mode: Enabled
+		
 	if quest_id == "" or not is_inside_tree(): 
 		if quest_indicator: quest_indicator.hide()
 		return
 	
 	var status = "available"
+	var has_quest = false
+	var quest_data = {}
 	
 	# Hole Quest-Liste aus dem NetworkManager
 	if NetworkManager.current_player_data and NetworkManager.current_player_data.has("quests"):
 		for q in NetworkManager.current_player_data["quests"]:
-			if q.get("quest_id", "") == quest_id:
+			if str(q.get("quest_id", "")) == str(quest_id):
 				status = q.get("status", "active")
+				quest_data = q
+				has_quest = true
 				break
+	
+	# Fallback: Wenn Quest aktiv ist, aber laut Progress schon "fertig" aussieht
+	if status == "active" and quest_data.has("progress") and quest_data.has("objectives"):
+		var all_done = true
+		var objectives = quest_data.get("objectives", {})
+		var progress = quest_data.get("progress", {})
+		for obj_id in objectives.keys():
+			if progress.get(obj_id, 0) < objectives[obj_id]:
+				all_done = false
+				break
+		if all_done and objectives.size() > 0:
+			status = "completed"
+	
+	print("[NPC] ", npc_name, " check (", quest_id, ") -> Final Status: ", status)
 			
 	match status:
 		"available":
 			quest_indicator.text = "!"
-			quest_indicator.modulate = Color(1, 1, 0) # Gelbes !
+			quest_indicator.modulate = Color(1, 1, 0) # Gelb
 			quest_indicator.show()
 		"completed":
 			quest_indicator.text = "?"
-			quest_indicator.modulate = Color(1, 1, 0) # Gelbes ?
+			quest_indicator.modulate = Color(1, 1, 0) # Gelb
 			quest_indicator.show()
 		_:
 			quest_indicator.hide()
