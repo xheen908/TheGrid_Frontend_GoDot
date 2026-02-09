@@ -169,6 +169,7 @@ func _on_mobs_synchronized(mob_data_list: Array):
 			add_child(m)
 			m.setup(data)
 			mobs[mid] = m
+			NetworkManager.notify_entity_loaded()  # Track loading progress
 	
 	if collision_count > 0:
 		push_error("IDENTITÄTS-KRISE: %d Mobs im Paket hatten die gleiche ID!" % collision_count)

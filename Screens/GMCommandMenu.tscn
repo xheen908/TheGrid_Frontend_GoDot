@@ -15,7 +15,7 @@ offset_right = 200.0
 offset_bottom = 250.0
 grow_horizontal = 2
 grow_vertical = 2
-scale = Vector2(0.705, 0.705)
+scale = Vector2(0.855, 0.855)
 script = ExtResource("1_script")
 
 [node name="ColorRect" type="ColorRect" parent="." unique_id=630532868]

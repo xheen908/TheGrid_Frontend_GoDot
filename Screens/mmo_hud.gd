@@ -30,6 +30,8 @@ extends CanvasLayer
 @onready var xp_bar = %XPBar
 @onready var xp_label = %XPLabel
 
+@onready var loading_screen = %LoadingScreen  # Loading screen overlay
+
 @onready var debuff_container = %DebuffContainer
 @onready var player_buff_container = %PlayerBuffContainer
 var debuff_icon_scene = preload("res://Screens/DebuffIcon.tscn")
@@ -164,6 +166,21 @@ func _ready():
 	chat_log.mouse_filter = Control.MOUSE_FILTER_STOP
 	print("[UI] ChatLog initialized. Mouse filter: ", chat_log.mouse_filter)
 	
+	# --- AUTO-FIX: LoadingScreen script check ---
+	if loading_screen == null or loading_screen.get_script() == null:
+		print("[MMO_Hud] FIX: LoadingScreen missing or scriptless. Re-instantiating...")
+		if loading_screen != null:
+			loading_screen.queue_free()
+			
+		var ls_scene = load("res://Screens/LoadingScreen.tscn")
+		if ls_scene:
+			loading_screen = ls_scene.instantiate()
+			if loading_screen.get_script() == null:
+				loading_screen.set_script(load("res://Screens/loading_screen.gd"))
+			add_child(loading_screen)
+			move_child(loading_screen, get_child_count() - 1) # Top most
+	# --------------------------------------------
+	
 	# NetworkManager Signale
 	if NetworkManager:
 		NetworkManager.logout_timer_started.connect(_on_logout_timer_started)
@@ -182,9 +199,20 @@ func _ready():
 		NetworkManager.quest_rewarded.connect(_on_quest_rewarded)
 		NetworkManager.quest_sync_received.connect(_on_quest_sync_received)
 		
+		# Loading screen signals
+		NetworkManager.map_loading_started.connect(_on_map_loading_started)
+		NetworkManager.entity_loaded.connect(_on_entity_loaded)
+		NetworkManager.map_loading_complete.connect(_on_map_loading_complete)
+		
 		# Initial State
 		if NetworkManager.current_player_data and NetworkManager.current_player_data.has("quests"):
 			_on_quest_sync_received(NetworkManager.current_player_data["quests"])
+		
+		# Check if loading is already in progress (e.g. from login)
+		if NetworkManager.is_loading_map:
+			var current_map = NetworkManager.current_player_data.get("world_state", {}).get("map_name", "World")
+			_on_map_loading_started(current_map, NetworkManager.expected_entities)
+			
 		NetworkManager.player_leveled_up.connect(_on_player_leveled_up)
 	
 	%InventoryWindow.gm_menu_requested.connect(func(): %GMCommandMenu.visible = !%GMCommandMenu.visible)
@@ -1644,16 +1672,26 @@ func _on_quest_rewarded(qid: String):
 
 func _on_player_leveled_up(username: String):
 	# Check if it's the local player
-	var my_char_name = ""
-	if NetworkManager and NetworkManager.current_player_data:
-		my_char_name = NetworkManager.current_player_data.get("char_name", "")
-	
-	print("[AUDIO] Level up signal received for: ", username, " My Char: ", my_char_name)
-	
-	if username == my_char_name:
-		if quest_audio and sfx_levelup:
-			quest_audio.stream = sfx_levelup
-			quest_audio.play()
-			print("[AUDIO] Level up sound played for: ", username)
-		else:
-			push_error("[AUDIO] quest_audio or sfx_levelup MISSING")
+	if NetworkManager.current_player_data and username == NetworkManager.current_player_data.get("username"):
+		# Level up sound effect handled in game_screen.gd
+		print("[LEVEL] Player leveled up: ", username)
+
+# Loading screen callbacks
+func _on_map_loading_started(map_name: String, total_entities: int):
+	if loading_screen and loading_screen.has_method("show_loading"):
+		loading_screen.show_loading(map_name)
+		print("[LOADING] Loading screen shown for map: ", map_name)
+	else:
+		print("[ERROR] LoadingScreen (", loading_screen, ") has no show_loading method! Script: ", loading_screen.get_script() if loading_screen else "null")
+
+func _on_entity_loaded(current: int, total: int):
+	print("[DEBUG] HUD: entity_loaded signal received ", current, "/", total)
+	if loading_screen and loading_screen.has_method("update_progress"):
+		loading_screen.update_progress(current, total)
+	else:
+		print("[ERROR] HUD: LoadingScreen missing update_progress method! Script: ", loading_screen.get_script() if loading_screen else "null")
+
+func _on_map_loading_complete():
+	if loading_screen and loading_screen.has_method("hide_loading"):
+		loading_screen.hide_loading()
+		print("[LOADING] Loading complete!")

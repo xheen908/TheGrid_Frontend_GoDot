@@ -1,0 +1,85 @@
+[gd_scene load_steps=3 format=3 uid="uid://loading_screen_001"]
+
+[ext_resource type="Texture2D" uid="uid://c5qare21gyn61" path="res://Assets/bg.png" id="1"]
+[ext_resource type="FontFile" uid="uid://b4wlpcoccn8e7" path="res://Assets/TRON.TTF" id="2"]
+
+[node name="LoadingScreen" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = "res://Screens/loading_screen.gd"
+
+[node name="Background" type="ColorRect" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.14406255, 0.14406255, 0.14406255, 1)
+
+[node name="BackgroundTexture" type="TextureRect" parent="Background"]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = -0.125
+anchor_top = -0.075
+anchor_right = 29.075
+anchor_bottom = 16.35
+offset_left = -136.0
+offset_top = 3.0
+offset_right = 202.0
+offset_bottom = 3.0
+grow_horizontal = 2
+grow_vertical = 2
+texture = ExtResource("1")
+expand_mode = 1
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CenterContainer"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2")
+theme_override_font_sizes/font_size = 60
+text = "The Grid"
+horizontal_alignment = 1
+uppercase = true
+
+[node name="MapNameLabel" type="Label" parent="CenterContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0, 0.8, 1, 1)
+text = "Loading Map..."
+horizontal_alignment = 1
+
+[node name="ProgressContainer" type="VBoxContainer" parent="CenterContainer/VBoxContainer"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ProgressBar" type="ProgressBar" parent="CenterContainer/VBoxContainer/ProgressContainer"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(400, 30)
+layout_mode = 2
+max_value = 100.0
+value = 0.0
+show_percentage = false
+
+[node name="StatusLabel" type="Label" parent="CenterContainer/VBoxContainer/ProgressContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(1, 1, 0.05490196, 1)
+text = "Initializing..."
+horizontal_alignment = 1
