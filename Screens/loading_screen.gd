@@ -1,5 +1,6 @@
 extends Control
 
+@onready var background_texture = %BackgroundTexture
 @onready var progress_bar = %ProgressBar
 @onready var status_label = %StatusLabel
 @onready var map_name_label = %MapNameLabel
@@ -7,14 +8,37 @@ extends Control
 var show_time: float = 0.0
 var min_display_time: float = 0.5  # Minimum 500ms display
 
+var map_artworks = {
+	"WorldMap0": "res://Assets/Loadingscreens/WorldMap0.png",
+	"Arena": "res://Assets/Loadingscreens/Arena.jpg",
+	"Arena1": "res://Assets/Loadingscreens/Arena1.jpg",
+	"Arena2": "res://Assets/Loadingscreens/Arena1.jpg", # Use Lila for Arena2 too
+	"testmap0": "res://Assets/Loadingscreens/Arena.jpg" # Fallback for testmap
+}
+
 func _ready():
 	hide()
 
 func show_loading(map_name: String):
+	print("[LOADING] show_loading for map: ", map_name)
 	show_time = Time.get_ticks_msec() / 1000.0
 	map_name_label.text = "Loading " + map_name + "..."
 	status_label.text = "Initializing..."
 	progress_bar.value = 0
+	
+	# Set artwork (Case-insensitive lookup)
+	var path = "res://Assets/bg.png"
+	for key in map_artworks:
+		if key.to_lower() == map_name.to_lower():
+			path = map_artworks[key]
+			break
+	
+	print("[LOADING] Selected artwork path: ", path)
+	if ResourceLoader.exists(path):
+		background_texture.texture = load(path)
+	else:
+		print("[ERROR] Artwork path does not exist: ", path)
+	
 	show()
 
 func update_progress(current: int, total: int):

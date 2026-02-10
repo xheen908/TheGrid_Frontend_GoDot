@@ -178,7 +178,7 @@ mesh = SubResource("BoxMesh_wall_large")
 shape = SubResource("BoxShape3D_wall_large")
 
 [node name="Wall5_S" type="StaticBody3D" parent="Architecture" unique_id=1219713811]
-transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 4, -29.531864)
+transform = Transform3D(-1, 0, -8.74228e-08, 0, 1, 0, 8.74228e-08, 0, -1, 0, 4, -52.412395)
 
 [node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S" unique_id=1947261315]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14421462, -0.0062885284, -0.1794281)
@@ -186,6 +186,28 @@ material_override = SubResource("ShaderMaterial_electric_yellow")
 mesh = SubResource("BoxMesh_wall_large")
 
 [node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S" unique_id=1537553174]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S2" type="StaticBody3D" parent="Architecture" unique_id=604230454]
+transform = Transform3D(0.0318293, 0, 0.9994933, 0, 1, 0, -0.9994933, 0, 0.0318293, -15.124611, 4, -44.89143)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S2" unique_id=1513469950]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14421462, -0.0062885284, -0.1794281)
+material_override = SubResource("ShaderMaterial_electric_yellow")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S2" unique_id=2030593387]
+shape = SubResource("BoxShape3D_wall_large")
+
+[node name="Wall5_S7" type="StaticBody3D" parent="Architecture" unique_id=286123695]
+transform = Transform3D(0.0318293, 0, 0.9994933, 0, 1, 0, -0.9994933, 0, 0.0318293, 16.547604, 4, -44.89143)
+
+[node name="Mesh" type="MeshInstance3D" parent="Architecture/Wall5_S7" unique_id=1455501694]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.14421462, -0.0062885284, -0.1794281)
+material_override = SubResource("ShaderMaterial_electric_yellow")
+mesh = SubResource("BoxMesh_wall_large")
+
+[node name="Col" type="CollisionShape3D" parent="Architecture/Wall5_S7" unique_id=1588162913]
 shape = SubResource("BoxShape3D_wall_large")
 
 [node name="Wall5_S3" type="StaticBody3D" parent="Architecture" unique_id=87928269]

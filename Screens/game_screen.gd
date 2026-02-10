@@ -154,7 +154,7 @@ func _on_mobs_synchronized(mob_data_list: Array):
 	var collision_count = 0
 	
 	for data in mob_data_list:
-		var mid = str(data.id)
+		var mid = str(data.get("id", ""))
 		if current_ids_set.has(mid):
 			collision_count += 1
 			continue # Dublette im selben Paket ignorieren
@@ -164,8 +164,15 @@ func _on_mobs_synchronized(mob_data_list: Array):
 		if mobs.has(mid):
 			mobs[mid].update_data(data)
 		else:
-			print("[IDENTITÄT] Spawne neuen Mob mit ID: ", mid, " (Name: ", data.get("name"), ")")
-			var m = enemy_scene.instantiate()
+			var faction = data.get("faction_id", 2)
+			print("[IDENTITÄT] Spawne neue Einheit mit ID: ", mid, " (Name: ", data.get("name"), ", Faction: ", faction, ")")
+			
+			var m = null
+			if faction == 1:
+				m = quest_giver_scene.instantiate()
+			else:
+				m = enemy_scene.instantiate()
+				
 			add_child(m)
 			m.setup(data)
 			mobs[mid] = m

@@ -14,7 +14,7 @@
 [ext_resource type="PackedScene" uid="uid://xqo4iktayagw" path="res://Screens/SkillBook.tscn" id="11_skillbook"]
 [ext_resource type="Script" uid="uid://dvl6vomhk1gw8" path="res://Screens/action_slot.gd" id="12_actionslot"]
 [ext_resource type="PackedScene" uid="uid://csr1sskiyf863" path="res://Screens/CharacterWindow.tscn" id="13_character"]
-[ext_resource type="PackedScene" path="res://Screens/LoadingScreen.tscn" id="14_loadingscreen"]
+[ext_resource type="PackedScene" uid="uid://bkuunfe1viti3" path="res://Screens/LoadingScreen.tscn" id="14_loadingscreen"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_bg"]
 bg_color = Color(0.1, 0.1, 0.1, 0.6)
@@ -900,10 +900,13 @@ size = 40.0
 
 [node name="EscMenu" type="CenterContainer" parent="." unique_id=1182939810]
 unique_name_in_owner = true
-visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_left = 441.0
+offset_top = 170.0
+offset_right = -411.0
+offset_bottom = -218.0
 grow_horizontal = 2
 grow_vertical = 2
 
@@ -923,8 +926,16 @@ theme_override_font_sizes/font_size = 24
 text = "Menü"
 horizontal_alignment = 1
 
+[node name="BindingsButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1269826787]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(200, 40)
+layout_mode = 2
+size_flags_horizontal = 4
+text = "Tastaturbelegung"
+
 [node name="ResumeButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1943169586]
 unique_name_in_owner = true
+visible = false
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 size_flags_horizontal = 4
@@ -935,14 +946,7 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(200, 40)
 layout_mode = 2
 size_flags_horizontal = 4
-text = "Charakter Auswahl"
-
-[node name="BindingsButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1269826787]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 40)
-layout_mode = 2
-size_flags_horizontal = 4
-text = "Tastaturbelegung"
+text = "Logout"
 
 [node name="ExitGameButton" type="Button" parent="EscMenu/PanelContainer/VBoxContainer" unique_id=1461238063]
 unique_name_in_owner = true

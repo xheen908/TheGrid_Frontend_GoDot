@@ -1,3 +1,85 @@
-[gd_scene format=3 uid="uid://cpm6q025npnnh"]
+[gd_scene format=3 uid="uid://bp8pis5ixm8ex"]
 
-[node name="TestMap1" type="Node3D" unique_id=1118482371]
+[ext_resource type="Script" uid="uid://dkcekpue8lkq7" path="res://addons/zylann.hterrain/hterrain.gd" id="1_je2hr"]
+[ext_resource type="Resource" uid="uid://bjgbdh8gnh4v" path="res://TerrainData/data.hterrain" id="2_74ruj"]
+[ext_resource type="Script" uid="uid://15wrhhhb5yec" path="res://Maps/CollisionGenerator.gd" id="2_colgen"]
+[ext_resource type="Script" uid="uid://cum8x2wxct56l" path="res://addons/zylann.hterrain/hterrain_texture_set.gd" id="3_tn06l"]
+[ext_resource type="Texture2D" uid="uid://d1nrn2bxj00oe" path="res://Assets/textures/aerial_grass_rock/aerial_grass_rock_diff_4k.jpg" id="4_lyymt"]
+[ext_resource type="Texture2D" uid="uid://dq4ehsa33gu5d" path="res://Assets/textures/aerial_rocks_01/aerial_rocks_01_diff_4k.jpg" id="5_sihun"]
+[ext_resource type="Texture2D" uid="uid://dlr27v38cqn2i" path="res://Assets/textures/Bricks084_4K_Color.jpg" id="6_o5ytw"]
+[ext_resource type="Texture2D" uid="uid://dhanqkidcavyn" path="res://Assets/textures/aerial_grass_rock/aerial_grass_rock_nor_dx_4k.jpg" id="7_vadcl"]
+[ext_resource type="Texture2D" uid="uid://qsc8h6fihrqo" path="res://Assets/textures/aerial_rocks_01/aerial_rocks_01_nor_dx_4k.jpg" id="8_a2s2v"]
+[ext_resource type="Texture2D" uid="uid://3y2vt75hgjdr" path="res://Assets/textures/Bricks084_4K_NormalDX.jpg" id="9_hpt8u"]
+[ext_resource type="PackedScene" uid="uid://cuxiyohmoidvc" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/blue/building_church_blue.fbx" id="11_tn06l"]
+[ext_resource type="PackedScene" uid="uid://c3s8u4a1rca5q" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/blue/building_tower_B_blue.fbx" id="12_lyymt"]
+[ext_resource type="PackedScene" uid="uid://dajns6veanbd3" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/blue/building_watermill_blue.fbx" id="13_sihun"]
+[ext_resource type="PackedScene" uid="uid://bbx2kge25vipt" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/green/building_well_green.fbx" id="14_o5ytw"]
+[ext_resource type="PackedScene" uid="uid://bxdt0osedtlw0" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/green/building_blacksmith_green.fbx" id="15_vadcl"]
+[ext_resource type="PackedScene" uid="uid://b4t5uulq1omac" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/red/building_tower_B_red.fbx" id="16_a2s2v"]
+[ext_resource type="PackedScene" uid="uid://cmq5jvro3fgcm" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/red/building_home_A_red.fbx" id="17_yrxav"]
+[ext_resource type="PackedScene" uid="uid://bg5bdllhd6yec" path="res://Assets/models/KayKit_Medieval_Hexagon_Pack_1.0_FREE/Assets/fbx/buildings/red/building_home_B_red.fbx" id="18_t6wku"]
+
+[sub_resource type="Resource" id="Resource_ycdvq"]
+script = ExtResource("3_tn06l")
+mode = 0
+textures = [[ExtResource("4_lyymt"), ExtResource("5_sihun"), ExtResource("6_o5ytw")], [ExtResource("7_vadcl"), ExtResource("8_a2s2v"), ExtResource("9_hpt8u")]]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_spuua"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ko6wh"]
+albedo_color = Color(0.011764706, 1, 1, 1)
+
+[node name="Testmap1" type="Node3D" unique_id=806917967]
+script = ExtResource("2_colgen")
+
+[node name="HTerrain" type="Node3D" parent="." unique_id=741795179]
+script = ExtResource("1_je2hr")
+centered = true
+_terrain_data = ExtResource("2_74ruj")
+chunk_size = 32
+collision_enabled = true
+collision_layer = 1
+collision_mask = 1
+shader_type = "Classic4Lite"
+custom_shader = null
+custom_globalmap_shader = null
+texture_set = SubResource("Resource_ycdvq")
+render_layers = 1
+cast_shadow = 1
+shader_params/u_ground_uv_scale = 20
+shader_params/u_depth_blending = true
+shader_params/u_triplanar = null
+shader_params/u_tile_reduction = null
+metadata/_custom_type_script = "uid://dkcekpue8lkq7"
+
+[node name="Water" type="MeshInstance3D" parent="." unique_id=82482237]
+transform = Transform3D(250, 0, 0, 0, 250, 0, 0, 0, 250, 0, -1.3069687, 0)
+mesh = SubResource("PlaneMesh_spuua")
+surface_material_override/0 = SubResource("StandardMaterial3D_ko6wh")
+
+[node name="building_church_blue" parent="." unique_id=688404996 instance=ExtResource("11_tn06l")]
+transform = Transform3D(-7.171784, 0, -6.9688964, 0, 9.999999, 0, 6.9688964, 0, -7.171784, -78.54451, 0.9915309, 87.124794)
+
+[node name="building_tower_B_blue" parent="." unique_id=1187406407 instance=ExtResource("12_lyymt")]
+transform = Transform3D(3.4526541, 0, -9.385052, 0, 10, 0, 9.385052, 0, 3.4526541, -35.81653, 14.416206, -0.32566643)
+
+[node name="building_watermill_blue" parent="." unique_id=774709898 instance=ExtResource("13_sihun")]
+transform = Transform3D(7.6653795, 0, -6.4219933, 0, 10.000001, 0, 6.4219933, 0, 7.6653795, 6.793358, 0.71109056, 24.665771)
+
+[node name="building_well_green" parent="." unique_id=379568421 instance=ExtResource("14_o5ytw")]
+transform = Transform3D(3.4405699, 0, -3.6280131, 0, 5, 0, 3.6280131, 0, 3.4405699, -93.63406, 1.730628, 75.66717)
+
+[node name="building_blacksmith_green" parent="." unique_id=1340838817 instance=ExtResource("15_vadcl")]
+transform = Transform3D(-9.426047, 0.6318098, 3.27879, 0.85784733, 9.947984, 0.54925084, -3.2270348, 0.79899645, -9.431218, -115.220955, 1.9572811, 79.94554)
+
+[node name="building_tower_B_red" parent="." unique_id=1349317020 instance=ExtResource("16_a2s2v")]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -203.0931, 40.717308, 84.54829)
+
+[node name="building_tower_B_red2" parent="." unique_id=1034765706 instance=ExtResource("16_a2s2v")]
+transform = Transform3D(10, 0, 0, 0, 10, 0, 0, 0, 10, -59.85462, 24.807035, 137.17293)
+
+[node name="building_home_A_red" parent="." unique_id=2077027771 instance=ExtResource("17_yrxav")]
+transform = Transform3D(-8.26173, 0.1048409, 5.633191, -0.16120094, 9.989778, -0.4223425, -5.631859, -0.43973547, -8.251593, -100.809326, 0.8347573, 92.65699)
+
+[node name="building_home_B_red" parent="." unique_id=229069947 instance=ExtResource("18_t6wku")]
+transform = Transform3D(8.328343, 0, 5.5352235, 0, 10, 0, -5.5352235, 0, 8.328343, -107.76934, 8.542648, 42.13686)

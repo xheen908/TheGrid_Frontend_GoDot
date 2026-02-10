@@ -16,6 +16,9 @@ var item_template_cache = {} # id -> {name, description, rarity, extra_data}
 var expected_entities = 0
 var loaded_entities = 0
 var is_loading_map = false
+var last_map_loaded = ""
+var last_load_time = 0
+var _map_loading_start_time = 0
 
 signal ws_connected
 signal ws_connection_failed(reason: String)
@@ -139,17 +142,22 @@ func _on_ws_message(message: String):
 				if data.has("username"):
 					current_player_data["username"] = data.get("username")
 					print("NetworkManager: Username stored: ", current_player_data["username"])
-			# Start loading tracking for login
-			is_loading_map = true
-			expected_entities = 0
-			loaded_entities = 0
-			map_loading_started.emit(current_player_data.get("map_name", "World"), 0)
+			# Start loading tracking for login only if not already loading and not recently loaded same map
+			var target_map = current_player_data.get("map_name", "World")
+			var now = Time.get_ticks_msec()
+			if not is_loading_map and (target_map != last_map_loaded or now - last_load_time > 5000):
+				is_loading_map = true
+				last_map_loaded = target_map
+				_map_loading_start_time = Time.get_ticks_msec()
+				expected_entities = 0
+				loaded_entities = 0
+				map_loading_started.emit(target_map, 0)
 			
-			# Safety timeout for login
-			get_tree().create_timer(2.0).timeout.connect(func():
-				if is_loading_map and expected_entities == 0:
-					is_loading_map = false
-					map_loading_complete.emit()
+			# Safety timeout for login (always run to ensure screen eventually hides if bugged)
+			get_tree().create_timer(3.0).timeout.connect(func():
+				if is_loading_map:
+					print("[NET] Safety Timeout: Forcing loading complete")
+					_finish_loading()
 			)
 			
 			is_authenticating = false
@@ -168,19 +176,21 @@ func _on_ws_message(message: String):
 			var ry = data.get("rotation_y", 0.0)
 			var pos = Vector3(pos_dict.x, pos_dict.y, pos_dict.z)
 			
-			# Start loading tracking for map change
-			is_loading_map = true
-			expected_entities = 0
-			loaded_entities = 0
+			# Start loading tracking for map change if not recently loaded
+			var now = Time.get_ticks_msec()
+			if not is_loading_map and (new_map != last_map_loaded or now - last_load_time > 5000):
+				is_loading_map = true
+				last_map_loaded = new_map
+				_map_loading_start_time = Time.get_ticks_msec()
+				expected_entities = 0
+				loaded_entities = 0
+				map_loading_started.emit(new_map, 0)
 			
-			# Emit loading started signal (total will be set when mob_sync arrives)
-			map_loading_started.emit(new_map, 0)
-			
-			# Safety: If no mob_sync arrives within 2 seconds, assume 0 mobs and finish loading
-			get_tree().create_timer(2.0).timeout.connect(func():
-				if is_loading_map and expected_entities == 0:
-					is_loading_map = false
-					map_loading_complete.emit()
+			# Safety timeout for map change
+			get_tree().create_timer(3.0).timeout.connect(func():
+				if is_loading_map:
+					print("[NET] Safety Timeout (Map Change): Forcing loading complete")
+					_finish_loading()
 			)
 			
 			if current_player_data:
@@ -204,10 +214,9 @@ func _on_ws_message(message: String):
 			if is_loading_map:
 				expected_entities = mobs.size()
 				
-				# If no mobs, complete loading immediately
-				if expected_entities == 0:
-					is_loading_map = false
-					map_loading_complete.emit()
+				# If no mobs, or if all entities are already considered loaded (e.g. re-sync)
+				if expected_entities == 0 or loaded_entities >= expected_entities:
+					_finish_loading()
 			mobs_synchronized.emit(mobs)
 		"mob_move":
 			mob_move_received.emit(data)  # AzerothCore-style: {id, from, to, speed, rot}
@@ -569,6 +578,30 @@ func _on_delete_char_completed(_result, response_code, _headers, body, http):
 
 # --- PERSISTENZ (Best Practice) ---
 # Loading screen helper: called when an entity has finished loading
+func _finish_loading():
+	if not is_loading_map: return
+	
+	var elapsed = Time.get_ticks_msec() - _map_loading_start_time
+	var min_duration = 1500 # 1.5 Sekunden
+	
+	if elapsed < min_duration:
+		var delay = (min_duration - elapsed) / 1000.0
+		print("[LOADING] Map too fast (%dms), delaying completion by %.2fs" % [elapsed, delay])
+		get_tree().create_timer(delay).timeout.connect(_emit_loading_complete)
+	else:
+		_emit_loading_complete()
+
+func _emit_loading_complete():
+	if not is_loading_map: return # Falls in der Zwischenzeit schon fertig (z.B. Timeout)
+	
+	print("[LOADING] Finishing phase for map: ", last_map_loaded)
+	is_loading_map = false
+	last_load_time = Time.get_ticks_msec()
+	
+	loaded_entities = 0
+	expected_entities = 0
+	map_loading_complete.emit()
+
 func notify_entity_loaded():
 	if not is_loading_map:
 		return
@@ -580,10 +613,7 @@ func notify_entity_loaded():
 	# Check if loading is complete
 	if loaded_entities >= expected_entities and expected_entities > 0:
 		print("[LOADING] All ", expected_entities, " entities loaded!")
-		is_loading_map = false
-		loaded_entities = 0
-		expected_entities = 0
-		map_loading_complete.emit()
+		_finish_loading()
 
 func save_session(token: String):
 	var config = ConfigFile.new()

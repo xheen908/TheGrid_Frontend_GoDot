@@ -62,7 +62,7 @@ func _ready():
 	casting_aura.hide()
 
 func setup(data: Dictionary):
-	mob_id = str(data.id)
+	mob_id = str(data.get("id", ""))
 	type_id = str(data.get("type_id", ""))
 	_update_model(data.get("model_id", ""))
 	update_data(data)

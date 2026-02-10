@@ -12,9 +12,20 @@ var quest_status = "available"
 
 func _ready():
 	hide()
-	accept_button.pressed.connect(_on_accept_pressed)
-	reward_button.pressed.connect(_on_reward_pressed)
-	close_button.pressed.connect(hide)
+	if accept_button:
+		accept_button.pressed.connect(_on_accept_pressed)
+	else:
+		push_error("QuestWindow: %AcceptButton not found!")
+
+	if reward_button:
+		reward_button.pressed.connect(_on_reward_pressed)
+	else:
+		push_error("QuestWindow: %RewardButton not found!")
+
+	if close_button:
+		close_button.pressed.connect(hide)
+	else:
+		push_error("QuestWindow: %CloseButton not found!")
 	
 	if NetworkManager:
 		NetworkManager.quest_info_received.connect(_on_quest_info_received)
@@ -46,6 +57,7 @@ func show_quest(data: Dictionary):
 	reward_button.visible = (quest_status == "completed")
 	
 	show()
+	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
 
 func _on_quest_info_received(data: Dictionary):
 	show_quest(data)

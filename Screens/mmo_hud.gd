@@ -140,12 +140,22 @@ func _ready():
 		%ActionBars.show()
 	else:
 		push_error("MMO_Hud: ActionBars Node NICHT gefunden!")
-	%ResumeButton.pressed.connect(_on_resume_pressed)
-	%CharScreenButton.pressed.connect(_on_char_screen_pressed)
-	%BindingsButton.pressed.connect(_on_bindings_pressed)
-	%ExitGameButton.pressed.connect(_on_exit_game_pressed)
-	%CloseBindingsButton.pressed.connect(_on_close_bindings_pressed)
-	%BindingsMenu.hide()
+	if has_node("%ResumeButton"): %ResumeButton.pressed.connect(_on_resume_pressed)
+	else: push_error("MMO_Hud: %ResumeButton missing")
+	
+	if has_node("%CharScreenButton"): %CharScreenButton.pressed.connect(_on_char_screen_pressed)
+	else: push_error("MMO_Hud: %CharScreenButton missing")
+	
+	if has_node("%BindingsButton"): %BindingsButton.pressed.connect(_on_bindings_pressed)
+	else: push_error("MMO_Hud: %BindingsButton missing")
+	
+	if has_node("%ExitGameButton"): %ExitGameButton.pressed.connect(_on_exit_game_pressed)
+	else: push_error("MMO_Hud: %ExitGameButton missing")
+	
+	if has_node("%CloseBindingsButton"): %CloseBindingsButton.pressed.connect(_on_close_bindings_pressed)
+	else: push_error("MMO_Hud: %CloseBindingsButton missing")
+	
+	if has_node("%BindingsMenu"): %BindingsMenu.hide()
 	
 	%ActionSlot1.pressed.connect(func(): _on_action_slot_pressed(1))
 	%ActionSlot2.pressed.connect(func(): _on_action_slot_pressed(2))
