@@ -1,0 +1,13 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://Environment/LanternLight.gd" id="1_l7ntr"]
+
+[node name="LanternLight" type="OmniLight3D"]
+light_color = Color(1, 0.65, 0.3, 1)
+light_energy = 1.5
+light_volumetric_fog_energy = 2.0
+shadow_enabled = true
+shadow_bias = 0.05
+shadow_normal_bias = 1.0
+omni_range = 10.0
+script = ExtResource("1_l7ntr")
